@@ -1,0 +1,31 @@
+# nazeer-desktop — standalone-safe. The parent repo's .gitignore does NOT cover node_modules/,
+# this directory's model weights, runs/, or non-.bag files under data/ (its patterns are root-anchored).
+node_modules/
+app/dist/
+app/dist-electron/
+app/out/
+app/release/
+app/.vite/
+engine/.venv/
+engine/build/
+engine/dist/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+# RealSense recordings (≈36 GB; copies of ../data/.bag)
+*.bag
+data/
+# Weights stay out of git; MODEL_CARD.md pins the sha256. Card + metrics stay tracked.
+engine/models/*.pt
+engine/models/*.onnx
+engine/models/*.engine
+# Dev data root: sessions, candidates, overlay PNGs, PDFs, manifests, history DB
+runs/
+# engine/wheels/ — offline wheelhouse; tracking decision pending (D9)
+# IDE / OS / local agent state
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+.claude/
