@@ -82,6 +82,18 @@ candidates** after the 1.5 s gap below (END 4, QUARTER 3, spread from 1.3 s to 2
 bag is end-on), every one flagged `mask_in_depth_margin`; job 17–21 s on this laptop (CPU,
 budget 60 s).
 
+**Evidence from the real-run check (bag 006, 2026-10-11, `engine/tools/real_run.py`)** for
+the operator's call on C2.4 and the buckets: 351 sampled, 225 passed, 12 proposed (97
+`mask_cut_by_frame`). Two proposals (read indices 760 and 1115) have a **truncated hump**:
+their top mask row is 7 px below the border with a 346 / 375 px flat run. The model's
+box-cropped mask stops a few pixels short of the border, so the 1-px `frame_margin_px` never
+sees the cut. The camel (head or hump) reaches rows 4–17 in 10 of the 12 proposals (camera
+≈ 1.9 m away, where the frame is ≈ 2.2 m tall). An 8-px margin would also reject the golden frame (top
+row 9), so a flat-run test or operator review fits better than a wider margin. Side views with
+the head up measure w/h 1.38–1.49 and are badged QUARTER (1 SIDE of 12), so the SIDE / END
+thresholds 1.6 / 1.3, and the minority reservation built on them, need the operator's look
+too.
+
 **Walk and selection.** Read index = 0-based count of colour+depth pairs; sampling is
 tested before `align.process`; `sample_every` = max(5, n_frames // 400) unless given; EOF =
 a 2 s `try_wait_for_frames` timeout at position ≥ 0.99 of the duration or read index ≥

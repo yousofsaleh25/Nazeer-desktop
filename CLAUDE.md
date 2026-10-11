@@ -5,7 +5,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Project
 
 **Nazeer Desktop** (نَظِيرْ) — non-contact camel body measurement for Mzayen camel-beauty
-judging as a standalone desktop product: an **Electron + React + TypeScript + Tailwind
+judging as a standalone desktop product: an **Electron + React + React-Redux + TypeScript + Tailwind
 CSS app** (`app/`, built with Vite) talking to a local **Python 3.11 FastAPI engine**
 (`engine/`). Runs offline on the Windows camera laptop: no CDN, no font fetch, no pip at
 runtime.
@@ -46,6 +46,7 @@ history (Phases 1–21, ADR-001 honesty contract, audit disciplines D7/D8/D9); r
 | `app/` | **empty** — Electron + Vite + React + TypeScript + Tailwind CSS is the chosen stack; nothing scaffolded |
 | `engine/nazeer_engine/` | **the engine** (≈ 10.5 k lines): FastAPI sidecar, 31 HTTP operations, everything in contracts C1–C3 + ADR-D7's engine half. Integration-tested on real bags with the real model and headless Edge; not production-validated (no app, no field capture) |
 | `engine/tests/` | ≈ 430 default tests (synthetic frames, fake RealSense, stub model) + 6 opt-in real-resource tests (`realbag`, `realmodel`, `realpdf`) |
+| `engine/tools/real_run.py` | the real-bag check (the gate before the app): spawns the sidecar, walks a bag, picks a frame, places seeded random distances, prints with headless Edge, seals the PDF; **34/34 checks passed on bag 006 (2026-10-11)** |
 | `engine/openapi.json` | the API snapshot for client codegen; a test fails when it drifts from the code |
 | `engine/` | `.venv` (Python 3.11.9, **CPU-only torch 2.14.1**), `requirements.txt` (runtime pins incl. pypdf, arabic-reshaper, python-bidi), `requirements-dev.txt` (httpx2, pytest, ruff), `pyproject.toml` (pytest + ruff config) |
 | `engine/models/` | `best.pt` (pinned, below), `last.pt` (alternative), `MODEL_CARD.md`, `metrics.json`, `results.csv` |
@@ -84,6 +85,11 @@ $env:NAZEER_WRITE_GOLDEN = "1"   # with NAZEER_REAL: rewrites ..\fixtures\golden
 #   → {"event": "ready", "port": 51234, "pid": …, …}   or   {"event": "fatal", "code": …} and exit 2/3/5/6
 #   --check validates data root + model and exits; --stub-model (dev only, needs NAZEER_ENGINE_DEV=1) skips YOLO
 #   the data root must be absolute and not under Desktop/Documents/OneDrive; one engine per data root (engine.lock)
+
+# --- Real-bag check: spawn the sidecar and drive the whole flow over HTTP like the app (≈ 1 min)
+.venv\Scripts\python.exe tools\real_run.py [--bag <bag>] [--seed N] [--pick auto|<tile>|<candidate id>] [--angles]
+#   bag 006 by default; writes ..\runs\real_run_<UTC>\ (data_root\, candidates\ + contact_sheet.jpg, final_report.pdf,
+#   summary.json); random clicks, strict probes, headless Edge print; exit 0 only when every check passes
 
 # --- Model integrity (the engine refuses to load on mismatch: exit 3, model_hash_mismatch)
 Get-FileHash models\best.pt -Algorithm SHA256
@@ -518,6 +524,11 @@ load-bearing. The model card, `metrics.json` and `results.csv` stay tracked.
   overridden; the parent template's load script picks the language from `localStorage`
   and hides the other — pin the language explicitly. A synthesized bold / italic face
   makes names unsearchable (Type3 glyphs, visual-order text): embed every weight used.
+  Bidi on the page (measured in the real-run PDF): give each half of a bilingual label its
+  own isolate (`dir="rtl"` / `dir="ltr"`), operator text `dir="auto"` / `<bdi>` (an English
+  note starting with a digit is reordered otherwise); engine Arabic labels ending in a Latin
+  fragment (`… Z_ref (> 10 %)`) still lose their closing parenthesis in an RTL line until
+  `labels.py` wraps such fragments in LRI…PDI (build them with `chr()`).
 - **Arabic in the overlay:** matplotlib 3.11 already shapes and reorders with libraqm;
   feeding it `arabic_reshaper` + `get_display` output reverses the text (double bidi).
 - **Sidecar PID:** a venv `python.exe` on Windows is a launcher that runs the real
