@@ -9,6 +9,8 @@ app/.vite/
 engine/.venv/
 engine/build/
 engine/dist/
+# matplotlib font cache (MPLCONFIGDIR used by the tests)
+engine/.mplconfig/
 __pycache__/
 *.py[cod]
 .pytest_cache/

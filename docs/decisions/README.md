@@ -15,12 +15,13 @@ review). Record a decision here before coding against it. Shape: MADR-lite
 | D4 | (unrecorded) | unrecorded | `D4.md` |
 | D5 | (unrecorded) | unrecorded | `D5.md` |
 | D6 | Model licence: Ultralytics AGPL-3.0 | open | `D6-model-licence.md` |
-| D7 | Judging report is a PDF produced by Electron printToPDF | proposed — pending the half-day spike | `D7-report-pdf-route.md` |
-| D8 | Measurement types and depth provenance (KNN fallback) | accepted (types) · proposed, reviewed (contract C1) | `D8-measurement-types-and-depth.md` |
+| D7 | Judging report is a PDF produced by Electron printToPDF | proposed — engine half implemented 2026-10-11 and verified with headless Edge; Electron side pending | `D7-report-pdf-route.md` |
+| D8 | Measurement types and depth provenance (KNN fallback) | accepted (types) · proposed, reviewed (contract C1) · implemented 2026-10-11 | `D8-measurement-types-and-depth.md` |
 | D9 | App stack: Electron + Vite + React + TypeScript + Tailwind CSS | accepted | `D9-app-stack.md` |
-| D10 | Frame candidates, session, history and export flow | accepted (flow) · proposed, reviewed (contracts C2/C3) | `D10-frame-candidates-and-session-flow.md` |
+| D10 | Frame candidates, session, history and export flow | accepted (flow) · proposed, reviewed (contracts C2/C3) · implemented 2026-10-11 with **C2.4 revised on real bags — operator to confirm** | `D10-frame-candidates-and-session-flow.md` |
 
 Assumptions taken in this pass that the operator has not yet confirmed are marked in the
 status lines of the records (PDF route, angles kept, wet-ink signatures, KNN as an
 eroded-mask median of 9, the Shift-click ground modifier, the extra candidate gates,
-schema 2.1).
+schema 2.1). The engine implementation (2026-10-11) added one change that needs the
+operator: the C2.4 completeness gate (D10 "Engine parameters").

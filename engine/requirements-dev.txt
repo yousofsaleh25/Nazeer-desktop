@@ -1,0 +1,5 @@
+# Test and lint tooling for the engine (not shipped).
+# starlette 1.7 TestClient prefers httpx2 (falls back to httpx with a deprecation warning).
+httpx2==2.13.1
+pytest==9.1.1
+ruff==0.17.0

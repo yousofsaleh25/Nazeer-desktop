@@ -1,6 +1,10 @@
-﻿annotated-doc==0.0.5
+# Nazeer engine runtime pins (Python 3.11, CPU-only torch).
+# Recreate offline-capable: pip install --extra-index-url https://download.pytorch.org/whl/cpu -r requirements.txt
+# Dev/test tooling lives in requirements-dev.txt.
+annotated-doc==0.0.5
 annotated-types==0.8.0
 anyio==4.15.1
+arabic-reshaper==3.0.1
 certifi==2026.7.22
 charset-normalizer==3.5.2
 click==8.5.0
@@ -32,9 +36,11 @@ psutil==7.2.2
 pydantic==2.14.0
 pydantic_core==2.50.0
 Pygments==2.21.0
+pypdf==6.20.0
 pyparsing==3.3.3
 pyrealsense2==2.57.7.10387
 pytest==9.1.1
+python-bidi==0.6.11
 python-dateutil==2.9.0.post0
 PyYAML==6.0.3
 requests==2.34.2

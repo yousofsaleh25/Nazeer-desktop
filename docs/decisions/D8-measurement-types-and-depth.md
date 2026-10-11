@@ -67,3 +67,38 @@ Contract C1 as written in `CLAUDE.md`:
 - Parameters k = 9, erosion 2 px, the 0.10 / 0.30 m distances and the Shift-click modifier
   are defaults to confirm with the operator; the operator's "average" became "median" for
   the evidence above.
+
+## Engine parameters (implemented 2026-10-11)
+
+Status: implemented (`engine/nazeer_engine/depthlookup.py`, `session_compute.py`,
+`geometry.py`), unit-tested with adversarial cases, integration-tested on a real bag-004
+frame. Every constant is stamped into `session.json` (`CONSTANTS_STAMP`).
+
+- C1 as written: window 5×5, direct when ≥ 30 % of the **nominal** 25 pixels are valid (a
+  border-clipped window counts its missing pixels as invalid — conservative, falls to KNN;
+  `window_n_clipped` recorded); in-mask restriction when ≥ 30 % of the window is in the
+  mask, else `window_unmasked`; `depth_edge` above max(0.10 m, 5 % Z) with the nearer
+  cluster taken when the median sits in the far one; KNN k = 9 median over the 2-px-eroded
+  mask (raw mask → `knn_raw_boundary`), `k_used` clamped; agreement max(0.05 m, 3 % Z);
+  `knn_far` > 0.10 m, `knn_too_far` > 0.30 m (hard); sparse = eroded valid pixels <
+  max(9, 2 % of the mask).
+- **Cluster size (review 2026-10-11, B42):** C1.2's "nearer cluster" and C1.3's "nearest
+  cluster" must hold max(3, 20 %) of the values (`EDGE_CLUSTER_MIN_PX`,
+  `EDGE_CLUSTER_MIN_FRAC`). Without it one stray 1.5 m pixel among 24 at 2.0 m set the
+  point to 1.5 m; now the median stands and the spread is still flagged.
+- When a snapped point's own surface disagrees with the camel (`off_mask_surface`), the
+  depth-basis cell prints both depths (C1.4 "the row prints both").
+- Sources: `window_median`, `knn_snapped_to_mask` (outside the mask), `knn_fill` (inside,
+  window sparse), `knn_no_depth_band` (outside the depth-valid region), `knn_raw_boundary`,
+  `direct_off_mask` (ground target). Clicks use half-up pixel rounding, as the canvas does
+  (B32).
+- The Shift-click is a per-point `targets[i] = "ground"` in the measurement input. A ground
+  point with no valid window falls back to KNN, flagged `ground_target_unresolved`, low
+  confidence (B9).
+- Angles: `angle_4point` resolves to `angle_2d_4point` or `angle_3d_4point` from the two
+  referenced lines; one 2D and one 3D line → rejected `mixed_line_kinds` (B8);
+  `angle_2d_3point`, `angle_3d_3point`, `angle_2d_from_horizontal` as in the parent.
+- Real frame (bag 004): a click 15 px above the back resolved as `knn_no_depth_band`,
+  "outside depth coverage, snapped to camel 5.6 cm"; a 3D curve's `cross_check_2d_m`
+  equals the 2D curve on the same points; a vertical and a horizontal 2D line measure
+  90.0°.

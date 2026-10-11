@@ -1,0 +1,6097 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Nazeer Engine",
+    "summary": "Camel body measurement engine for the Nazeer Desktop app (offline, localhost)",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "tags": [
+          "system"
+        ],
+        "summary": "Liveness, model, Arabic stack, active job",
+        "operationId": "get_health",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Health"
+                }
+              }
+            }
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unexpected engine error (code internal_error) or a typed 500 such as corrupt_file"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Engine not ready, or a file could not be saved (code save_failed)"
+          }
+        }
+      }
+    },
+    "/versions": {
+      "get": {
+        "tags": [
+          "system"
+        ],
+        "summary": "Library-version stamp",
+        "operationId": "get_versions",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Get Versions"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Missing or wrong token (only when the engine runs with --token); code unauthorized"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unexpected engine error (code internal_error) or a typed 500 such as corrupt_file"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Engine not ready, or a file could not be saved (code save_failed)"
+          }
+        }
+      }
+    },
+    "/meta/labels": {
+      "get": {
+        "tags": [
+          "system"
+        ],
+        "summary": "Every code the engine emits, with Arabic and English labels",
+        "operationId": "get_labels",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Get Labels"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Missing or wrong token (only when the engine runs with --token); code unauthorized"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unexpected engine error (code internal_error) or a typed 500 such as corrupt_file"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Engine not ready, or a file could not be saved (code save_failed)"
+          }
+        }
+      }
+    },
+    "/system/shutdown": {
+      "post": {
+        "tags": [
+          "system"
+        ],
+        "summary": "Graceful shutdown (supervisor)",
+        "operationId": "shutdown_engine",
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Missing or wrong token (only when the engine runs with --token); code unauthorized"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unexpected engine error (code internal_error) or a typed 500 such as corrupt_file"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Engine not ready, or a file could not be saved (code save_failed)"
+          }
+        }
+      }
+    },
+    "/bags/inspect": {
+      "post": {
+        "tags": [
+          "bags"
+        ],
+        "summary": "Open a .bag and read its streams, intrinsics and duration",
+        "operationId": "inspect_bag",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BagPathIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BagInfoOut"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Request validation (code validation_error) or a semantic 422 with its own code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Missing or wrong token (only when the engine runs with --token); code unauthorized"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unexpected engine error (code internal_error) or a typed 500 such as corrupt_file"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Engine not ready, or a file could not be saved (code save_failed)"
+          }
+        }
+      }
+    },
+    "/bags/recent": {
+      "get": {
+        "tags": [
+          "bags"
+        ],
+        "summary": "Recently opened bags",
+        "operationId": "list_recent_bags",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecentBagList"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Missing or wrong token (only when the engine runs with --token); code unauthorized"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unexpected engine error (code internal_error) or a typed 500 such as corrupt_file"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Engine not ready, or a file could not be saved (code save_failed)"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "bags"
+        ],
+        "summary": "Remember a bag path",
+        "operationId": "add_recent_bag",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BagPathIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecentBagList"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Request validation (code validation_error) or a semantic 422 with its own code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Missing or wrong token (only when the engine runs with --token); code unauthorized"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unexpected engine error (code internal_error) or a typed 500 such as corrupt_file"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Engine not ready, or a file could not be saved (code save_failed)"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "bags"
+        ],
+        "summary": "Forget a bag path",
+        "operationId": "remove_recent_bag",
+        "parameters": [
+          {
+            "name": "path",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 4096,
+              "title": "Path"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecentBagList"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Request validation (code validation_error) or a semantic 422 with its own code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Missing or wrong token (only when the engine runs with --token); code unauthorized"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unexpected engine error (code internal_error) or a typed 500 such as corrupt_file"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Engine not ready, or a file could not be saved (code save_failed)"
+          }
+        }
+      }
+    },
+    "/candidates/jobs": {
+      "post": {
+        "tags": [
+          "candidates"
+        ],
+        "summary": "Start the candidate walk (202) or reuse a cached result (200)",
+        "operationId": "start_candidate_job",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/JobStartIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobStartOut"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "cache hit",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobStartOut"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Request validation (code validation_error) or a semantic 422 with its own code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Missing or wrong token (only when the engine runs with --token); code unauthorized"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unexpected engine error (code internal_error) or a typed 500 such as corrupt_file"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Engine not ready, or a file could not be saved (code save_failed)"
+          }
+        }
+      }
+    },
+    "/candidates/jobs/{job_id}": {
+      "get": {
+        "tags": [
+          "candidates"
+        ],
+        "summary": "Job progress snapshot (poll every 500 ms until terminal)",
+        "operationId": "get_candidate_job",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Job Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobSnapshot"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "description": "Request validation (code validation_error) or a semantic 422 with its own code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Missing or wrong token (only when the engine runs with --token); code unauthorized"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unexpected engine error (code internal_error) or a typed 500 such as corrupt_file"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Engine not ready, or a file could not be saved (code save_failed)"
+          }
+        }
+      }
+    },
+    "/candidates/jobs/{job_id}/cancel": {
+      "post": {
+        "tags": [
+          "candidates"
+        ],
+        "summary": "Cancel: discard the walk (state 'cancelling' until 'cancelled')",
+        "operationId": "cancel_candidate_job",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Job Id"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobSnapshot"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "description": "Request validation (code validation_error) or a semantic 422 with its own code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Missing or wrong token (only when the engine runs with --token); code unauthorized"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unexpected engine error (code internal_error) or a typed 500 such as corrupt_file"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Engine not ready, or a file could not be saved (code save_failed)"
+          }
+        }
+      }
+    },
+    "/candidates/jobs/{job_id}/stop": {
+      "post": {
+        "tags": [
+          "candidates"
+        ],
+        "summary": "Stop reading and keep the best frames found so far (partial result)",
+        "operationId": "stop_candidate_job",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Job Id"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobSnapshot"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "description": "Request validation (code validation_error) or a semantic 422 with its own code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Missing or wrong token (only when the engine runs with --token); code unauthorized"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unexpected engine error (code internal_error) or a typed 500 such as corrupt_file"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Engine not ready, or a file could not be saved (code save_failed)"
+          }
+        }
+      }
+    },
+    "/candidates/jobs/{job_id}/events": {
+      "get": {
+        "tags": [
+          "candidates"
+        ],
+        "summary": "Server-sent events: 'progress' snapshots, then 'done' | 'cancelled' | 'failed'",
+        "operationId": "stream_candidate_job",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Job Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "progress events",
+            "content": {
+              "application/json": {
+                "schema": {}
+              },
+              "text/event-stream": {}
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "description": "Request validation (code validation_error) or a semantic 422 with its own code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Missing or wrong token (only when the engine runs with --token); code unauthorized"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unexpected engine error (code internal_error) or a typed 500 such as corrupt_file"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Engine not ready, or a file could not be saved (code save_failed)"
+          }
+        }
+      }
+    },
+    "/candidates/{fingerprint}/{params_hash}": {
+      "get": {
+        "tags": [
+          "candidates"
+        ],
+        "summary": "A persisted candidate set: the unordered grid with URLs and session refs",
+        "operationId": "get_candidates",
+        "parameters": [
+          {
+            "name": "fingerprint",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Fingerprint"
+            }
+          },
+          {
+            "name": "params_hash",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Params Hash"
+            }
+          },
+          {
+            "name": "include_frames",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false,
+              "title": "Include Frames"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CandidateSet"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "description": "Request validation (code validation_error) or a semantic 422 with its own code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Missing or wrong token (only when the engine runs with --token); code unauthorized"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unexpected engine error (code internal_error) or a typed 500 such as corrupt_file"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Engine not ready, or a file could not be saved (code save_failed)"
+          }
+        }
+      }
+    },
+    "/candidates/{fingerprint}/{params_hash}/{candidate_id}/{asset}": {
+      "get": {
+        "tags": [
+          "candidates"
+        ],
+        "summary": "A candidate asset (thumb.jpg, rgb.png, mask.png, depth.npy, intrinsics/stats json)",
+        "operationId": "get_candidate_asset",
+        "parameters": [
+          {
+            "name": "fingerprint",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Fingerprint"
+            }
+          },
+          {
+            "name": "params_hash",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Params Hash"
+            }
+          },
+          {
+            "name": "candidate_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Candidate Id"
+            }
+          },
+          {
+            "name": "asset",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Asset"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "the file",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "description": "Request validation (code validation_error) or a semantic 422 with its own code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Missing or wrong token (only when the engine runs with --token); code unauthorized"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unexpected engine error (code internal_error) or a typed 500 such as corrupt_file"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Engine not ready, or a file could not be saved (code save_failed)"
+          }
+        }
+      }
+    },
+    "/sessions": {
+      "post": {
+        "tags": [
+          "sessions"
+        ],
+        "summary": "Start a measuring session from a chosen candidate frame",
+        "operationId": "create_session",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SessionCreateIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionView"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Request validation (code validation_error) or a semantic 422 with its own code"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Missing or wrong token (only when the engine runs with --token); code unauthorized"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unexpected engine error (code internal_error) or a typed 500 such as corrupt_file"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Engine not ready, or a file could not be saved (code save_failed)"
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "sessions"
+        ],
+        "summary": "History: reconcile the index with the session folders, then list",
+        "operationId": "list_sessions",
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "open",
+                    "finalized",
+                    "exported"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          },
+          {
+            "name": "camel_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 64
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Camel Id"
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 200
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "camel, operator, bag, names",
+              "title": "Q"
+            },
+            "description": "camel, operator, bag, names"
+          },
+          {
+            "name": "index_state",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "ok",
+                    "missing_files",
+                    "corrupt",
+                    "delete_failed",
+                    "unindexed"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Index State"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 500,
+              "minimum": 1,
+              "default": 50,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "updated_desc",
+                "created_desc",
+                "created_asc",
+                "camel_asc"
+              ],
+              "type": "string",
+              "default": "updated_desc",
+              "title": "Sort"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HistoryList"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Request validation (code validation_error) or a semantic 422 with its own code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Missing or wrong token (only when the engine runs with --token); code unauthorized"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unexpected engine error (code internal_error) or a typed 500 such as corrupt_file"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Engine not ready, or a file could not be saved (code save_failed)"
+          }
+        }
+      }
+    },
+    "/sessions/{session_id}": {
+      "get": {
+        "tags": [
+          "sessions"
+        ],
+        "summary": "Open / continue a session (also warms the KNN tree so the first click is fast)",
+        "operationId": "get_session",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionView"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Request validation (code validation_error) or a semantic 422 with its own code"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Missing or wrong token (only when the engine runs with --token); code unauthorized"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unexpected engine error (code internal_error) or a typed 500 such as corrupt_file"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Engine not ready, or a file could not be saved (code save_failed)"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "sessions"
+        ],
+        "summary": "Move the session to the trash (purged at the next start)",
+        "operationId": "delete_session",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeleteOut"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "description": "Request validation (code validation_error) or a semantic 422 with its own code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Missing or wrong token (only when the engine runs with --token); code unauthorized"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unexpected engine error (code internal_error) or a typed 500 such as corrupt_file"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Engine not ready, or a file could not be saved (code save_failed)"
+          }
+        }
+      }
+    },
+    "/sessions/{session_id}/document": {
+      "put": {
+        "tags": [
+          "sessions"
+        ],
+        "summary": "Autosave the whole measurement list (revision = stored + 1; 409 carries `current`)",
+        "operationId": "put_document",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Session Id"
+            }
+          },
+          {
+            "name": "if-match",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "optional: the ETag of the view this save is based on",
+              "title": "If-Match"
+            },
+            "description": "optional: the ETag of the view this save is based on"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DocumentIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionView"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Request validation (code validation_error) or a semantic 422 with its own code"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Missing or wrong token (only when the engine runs with --token); code unauthorized"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unexpected engine error (code internal_error) or a typed 500 such as corrupt_file"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Engine not ready, or a file could not be saved (code save_failed)"
+          }
+        }
+      }
+    },
+    "/sessions/{session_id}/depth": {
+      "post": {
+        "tags": [
+          "sessions"
+        ],
+        "summary": "Depth probe for one pixel (hover): provenance, KNN fallback, flags",
+        "operationId": "probe_depth",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DepthIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DepthOut"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "description": "Request validation (code validation_error) or a semantic 422 with its own code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Missing or wrong token (only when the engine runs with --token); code unauthorized"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unexpected engine error (code internal_error) or a typed 500 such as corrupt_file"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Engine not ready, or a file could not be saved (code save_failed)"
+          }
+        }
+      }
+    },
+    "/sessions/{session_id}/preview": {
+      "post": {
+        "tags": [
+          "sessions"
+        ],
+        "summary": "Compute one measurement without saving it (drag-time values)",
+        "operationId": "preview_measurement",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PreviewIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PreviewOut"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Request validation (code validation_error) or a semantic 422 with its own code"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Missing or wrong token (only when the engine runs with --token); code unauthorized"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unexpected engine error (code internal_error) or a typed 500 such as corrupt_file"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Engine not ready, or a file could not be saved (code save_failed)"
+          }
+        }
+      }
+    },
+    "/sessions/{session_id}/finalize": {
+      "post": {
+        "tags": [
+          "sessions"
+        ],
+        "summary": "Render the overlay once and freeze the report model (optionally save first)",
+        "operationId": "finalize_session",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FinalizeIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionView"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Request validation (code validation_error) or a semantic 422 with its own code"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Missing or wrong token (only when the engine runs with --token); code unauthorized"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Engine not ready, or a file could not be saved (code save_failed)"
+          }
+        }
+      }
+    },
+    "/sessions/{session_id}/reopen": {
+      "post": {
+        "tags": [
+          "sessions"
+        ],
+        "summary": "Reopen a finalized / exported session for editing (outputs become stale)",
+        "operationId": "reopen_session",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionView"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "description": "Request validation (code validation_error) or a semantic 422 with its own code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Missing or wrong token (only when the engine runs with --token); code unauthorized"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unexpected engine error (code internal_error) or a typed 500 such as corrupt_file"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Engine not ready, or a file could not be saved (code save_failed)"
+          }
+        }
+      }
+    },
+    "/sessions/{session_id}/report-inputs": {
+      "patch": {
+        "tags": [
+          "sessions"
+        ],
+        "summary": "Language, rubric variant, judge / council / event names, observations",
+        "operationId": "patch_report_inputs",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReportInputsIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionView"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Request validation (code validation_error) or a semantic 422 with its own code"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Missing or wrong token (only when the engine runs with --token); code unauthorized"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unexpected engine error (code internal_error) or a typed 500 such as corrupt_file"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Engine not ready, or a file could not be saved (code save_failed)"
+          }
+        }
+      }
+    },
+    "/sessions/{session_id}/report": {
+      "post": {
+        "tags": [
+          "sessions"
+        ],
+        "summary": "Upload the printToPDF bytes: probe, attach evidence, version, manifest",
+        "operationId": "upload_report",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Session Id"
+            }
+          },
+          {
+            "name": "require_text",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "description": "a missing operator string is a DRIFT (false: soft failure)",
+              "default": true,
+              "title": "Require Text"
+            },
+            "description": "a missing operator string is a DRIFT (false: soft failure)"
+          },
+          {
+            "name": "require_font",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "description": "a missing IBM Plex Sans Arabic subset is a DRIFT",
+              "default": true,
+              "title": "Require Font"
+            },
+            "description": "a missing IBM Plex Sans Arabic subset is a DRIFT"
+          },
+          {
+            "name": "x-overlay-sha256",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "sha256 of the overlay PNG embedded in the page",
+              "title": "X-Overlay-Sha256"
+            },
+            "description": "sha256 of the overlay PNG embedded in the page"
+          },
+          {
+            "name": "x-overlay-version",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Overlay-Version"
+            }
+          },
+          {
+            "name": "x-report-model-sha256",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "sha256 of the report model the page was rendered from",
+              "title": "X-Report-Model-Sha256"
+            },
+            "description": "sha256 of the report model the page was rendered from"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReportOut"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "415": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unsupported Media Type"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Request validation (code validation_error) or a semantic 422 with its own code"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Missing or wrong token (only when the engine runs with --token); code unauthorized"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unexpected engine error (code internal_error) or a typed 500 such as corrupt_file"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Engine not ready, or a file could not be saved (code save_failed)"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/pdf": {
+              "schema": {
+                "type": "string",
+                "format": "binary"
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "sessions"
+        ],
+        "summary": "The sealed PDF (latest, or version v)",
+        "operationId": "get_report",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Session Id"
+            }
+          },
+          {
+            "name": "v",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "V"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              },
+              "application/pdf": {}
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "description": "Request validation (code validation_error) or a semantic 422 with its own code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Missing or wrong token (only when the engine runs with --token); code unauthorized"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unexpected engine error (code internal_error) or a typed 500 such as corrupt_file"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Engine not ready, or a file could not be saved (code save_failed)"
+          }
+        }
+      }
+    },
+    "/sessions/{session_id}/assets/{name}": {
+      "get": {
+        "tags": [
+          "sessions"
+        ],
+        "summary": "Frame and output files (rgb.png, mask.png, overlay_vN.png, report_model_vN.json …)",
+        "operationId": "get_session_asset",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Session Id"
+            }
+          },
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Name"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "the file",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "description": "Request validation (code validation_error) or a semantic 422 with its own code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Missing or wrong token (only when the engine runs with --token); code unauthorized"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unexpected engine error (code internal_error) or a typed 500 such as corrupt_file"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Engine not ready, or a file could not be saved (code save_failed)"
+          }
+        }
+      }
+    },
+    "/history/rebuild": {
+      "post": {
+        "tags": [
+          "history"
+        ],
+        "summary": "Rebuild the index from the session folders",
+        "operationId": "rebuild_history",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "integer"
+                  },
+                  "type": "object",
+                  "title": "Response Rebuild History"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Missing or wrong token (only when the engine runs with --token); code unauthorized"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unexpected engine error (code internal_error) or a typed 500 such as corrupt_file"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Engine not ready, or a file could not be saved (code save_failed)"
+          }
+        }
+      }
+    },
+    "/history/backup": {
+      "post": {
+        "tags": [
+          "history"
+        ],
+        "summary": "Online backup of history.sqlite (Connection.backup)",
+        "operationId": "backup_history",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BackupIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BackupOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Request validation (code validation_error) or a semantic 422 with its own code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Missing or wrong token (only when the engine runs with --token); code unauthorized"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unexpected engine error (code internal_error) or a typed 500 such as corrupt_file"
+          }
+        }
+      }
+    },
+    "/history/stats": {
+      "get": {
+        "tags": [
+          "history"
+        ],
+        "summary": "Disk use of sessions, candidates, trash",
+        "operationId": "history_stats",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HistoryStats"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Missing or wrong token (only when the engine runs with --token); code unauthorized"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unexpected engine error (code internal_error) or a typed 500 such as corrupt_file"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Engine not ready, or a file could not be saved (code save_failed)"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ArabicStack": {
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "title": "Ok"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason"
+          },
+          "font_sha256": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Font Sha256"
+          },
+          "font_pinned": {
+            "type": "boolean",
+            "title": "Font Pinned",
+            "description": "the bundled TTF is the one the probes were measured with"
+          },
+          "native_layout": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Native Layout"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "ok",
+          "reason",
+          "font_sha256",
+          "font_pinned",
+          "native_layout"
+        ],
+        "title": "ArabicStack"
+      },
+      "BackupIn": {
+        "properties": {
+          "path": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 4096
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Path"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "BackupIn"
+      },
+      "BackupOut": {
+        "properties": {
+          "path": {
+            "type": "string",
+            "title": "Path"
+          },
+          "bytes": {
+            "type": "integer",
+            "title": "Bytes"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "path",
+          "bytes"
+        ],
+        "title": "BackupOut"
+      },
+      "BagInfoOut": {
+        "properties": {
+          "path": {
+            "type": "string",
+            "title": "Path"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "size_bytes": {
+            "type": "integer",
+            "title": "Size Bytes"
+          },
+          "mtime_ns": {
+            "type": "integer",
+            "title": "Mtime Ns"
+          },
+          "fingerprint": {
+            "type": "string",
+            "title": "Fingerprint"
+          },
+          "duration_s": {
+            "type": "number",
+            "title": "Duration S"
+          },
+          "device_name": {
+            "type": "string",
+            "title": "Device Name"
+          },
+          "color": {
+            "$ref": "#/components/schemas/StreamInfo"
+          },
+          "depth": {
+            "$ref": "#/components/schemas/StreamInfo"
+          },
+          "depth_units_m": {
+            "type": "number",
+            "title": "Depth Units M"
+          },
+          "intrinsics": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Intrinsics"
+          },
+          "n_frames_estimate": {
+            "type": "integer",
+            "title": "N Frames Estimate"
+          },
+          "sample_every_effective": {
+            "type": "integer",
+            "title": "Sample Every Effective"
+          },
+          "path_fallback": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Path Fallback"
+          },
+          "cached_candidate_sets": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Cached Candidate Sets",
+            "description": "params_hash values with a ready candidate set for this bag"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "path",
+          "name",
+          "size_bytes",
+          "mtime_ns",
+          "fingerprint",
+          "duration_s",
+          "device_name",
+          "color",
+          "depth",
+          "depth_units_m",
+          "intrinsics",
+          "n_frames_estimate",
+          "sample_every_effective",
+          "path_fallback",
+          "cached_candidate_sets"
+        ],
+        "title": "BagInfoOut"
+      },
+      "BagPathIn": {
+        "properties": {
+          "path": {
+            "type": "string",
+            "maxLength": 4096,
+            "minLength": 1,
+            "title": "Path"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "path"
+        ],
+        "title": "BagPathIn"
+      },
+      "Bilingual": {
+        "properties": {
+          "ar": {
+            "type": "string",
+            "title": "Ar"
+          },
+          "en": {
+            "type": "string",
+            "title": "En"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "ar",
+          "en"
+        ],
+        "title": "Bilingual"
+      },
+      "CachedResult": {
+        "properties": {
+          "fingerprint": {
+            "type": "string",
+            "title": "Fingerprint"
+          },
+          "params_hash": {
+            "type": "string",
+            "title": "Params Hash"
+          },
+          "n_candidates": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "N Candidates"
+          },
+          "partial": {
+            "type": "boolean",
+            "title": "Partial",
+            "description": "fewer than m frames passed (the walk itself was complete)",
+            "default": false
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "fingerprint",
+          "params_hash"
+        ],
+        "title": "CachedResult"
+      },
+      "CandidateAssets": {
+        "properties": {
+          "thumb": {
+            "type": "string",
+            "title": "Thumb"
+          },
+          "rgb": {
+            "type": "string",
+            "title": "Rgb"
+          },
+          "mask": {
+            "type": "string",
+            "title": "Mask"
+          },
+          "depth": {
+            "type": "string",
+            "title": "Depth"
+          },
+          "intrinsics": {
+            "type": "string",
+            "title": "Intrinsics"
+          },
+          "stats": {
+            "type": "string",
+            "title": "Stats"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "thumb",
+          "rgb",
+          "mask",
+          "depth",
+          "intrinsics",
+          "stats"
+        ],
+        "title": "CandidateAssets"
+      },
+      "CandidateItem": {
+        "properties": {
+          "candidate_id": {
+            "type": "string",
+            "title": "Candidate Id"
+          },
+          "rank": {
+            "type": "integer",
+            "title": "Rank"
+          },
+          "bucket": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "SIDE",
+                  "END",
+                  "QUARTER"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bucket"
+          },
+          "read_index": {
+            "type": "integer",
+            "title": "Read Index"
+          },
+          "frame_number_color": {
+            "type": "integer",
+            "title": "Frame Number Color"
+          },
+          "frame_number_depth": {
+            "type": "integer",
+            "title": "Frame Number Depth"
+          },
+          "bag_time_s": {
+            "type": "number",
+            "title": "Bag Time S"
+          },
+          "conf": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Conf"
+          },
+          "mask_area_frac": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mask Area Frac"
+          },
+          "z_mean": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Z Mean"
+          },
+          "z_median": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Z Median"
+          },
+          "z_var": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Z Var"
+          },
+          "rel_disp": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rel Disp"
+          },
+          "valid_frac": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Valid Frac"
+          },
+          "frame_clear": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Frame Clear"
+          },
+          "depth_fov_complete": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Depth Fov Complete"
+          },
+          "flags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Flags",
+            "description": "soft, e.g. mask_in_depth_margin"
+          },
+          "urls": {
+            "$ref": "#/components/schemas/CandidateAssets"
+          },
+          "ref": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Ref",
+            "description": "the body of POST /sessions 'candidate'"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "candidate_id",
+          "rank",
+          "bucket",
+          "read_index",
+          "frame_number_color",
+          "frame_number_depth",
+          "bag_time_s",
+          "conf",
+          "mask_area_frac",
+          "z_mean",
+          "z_median",
+          "z_var",
+          "rel_disp",
+          "valid_frac",
+          "urls",
+          "ref"
+        ],
+        "title": "CandidateItem"
+      },
+      "CandidateParamsIn": {
+        "properties": {
+          "sample_every": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sample Every",
+            "description": "0 = automatic"
+          },
+          "m": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 48.0,
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "M"
+          },
+          "z_mean_min_m": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Z Mean Min M",
+            "description": "never below 1 m"
+          },
+          "z_median_min_m": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Z Median Min M"
+          },
+          "maf_low": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 1.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Maf Low"
+          },
+          "maf_high": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 1.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Maf High"
+          },
+          "valid_frac_min": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 1.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Valid Frac Min"
+          },
+          "frame_margin_px": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Frame Margin Px",
+            "description": "px a mask keeps from the image border (0 = off)"
+          },
+          "completeness_margin_px": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Completeness Margin Px"
+          },
+          "strict_depth_fov": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Strict Depth Fov",
+            "description": "reject masks reaching the depth-less colour margin (else a soft flag)"
+          },
+          "minority_reserve": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Minority Reserve"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "CandidateParamsIn"
+      },
+      "CandidateRefIn": {
+        "properties": {
+          "fingerprint": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$",
+            "title": "Fingerprint"
+          },
+          "params_hash": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{16}$",
+            "title": "Params Hash"
+          },
+          "candidate_id": {
+            "type": "string",
+            "pattern": "^c\\d{2}_\\d{6}$",
+            "title": "Candidate Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "fingerprint",
+          "params_hash",
+          "candidate_id"
+        ],
+        "title": "CandidateRefIn"
+      },
+      "CandidateSet": {
+        "properties": {
+          "candidates_version": {
+            "type": "string",
+            "title": "Candidates Version"
+          },
+          "fingerprint": {
+            "type": "string",
+            "title": "Fingerprint"
+          },
+          "params_hash": {
+            "type": "string",
+            "title": "Params Hash"
+          },
+          "bag": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Bag"
+          },
+          "params": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Params"
+          },
+          "model": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Model"
+          },
+          "sample_every_effective": {
+            "type": "integer",
+            "title": "Sample Every Effective"
+          },
+          "walk": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Walk"
+          },
+          "rejected_by_reason": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Rejected By Reason"
+          },
+          "selection": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Selection"
+          },
+          "presentation": {
+            "type": "string",
+            "const": "unordered",
+            "title": "Presentation"
+          },
+          "candidates": {
+            "items": {
+              "$ref": "#/components/schemas/CandidateItem"
+            },
+            "type": "array",
+            "title": "Candidates"
+          },
+          "near_misses": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Near Misses"
+          },
+          "n_candidates": {
+            "type": "integer",
+            "title": "N Candidates"
+          },
+          "partial": {
+            "type": "boolean",
+            "title": "Partial"
+          },
+          "shortfall_reasons": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Shortfall Reasons"
+          },
+          "warnings": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Warnings"
+          },
+          "frames": {
+            "anyOf": [
+              {
+                "items": {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Frames",
+            "description": "every sampled frame's stats; only with include_frames=1"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "candidates_version",
+          "fingerprint",
+          "params_hash",
+          "bag",
+          "params",
+          "model",
+          "sample_every_effective",
+          "walk",
+          "rejected_by_reason",
+          "selection",
+          "presentation",
+          "candidates",
+          "near_misses",
+          "n_candidates",
+          "partial",
+          "shortfall_reasons",
+          "warnings"
+        ],
+        "title": "CandidateSet"
+      },
+      "DeleteOut": {
+        "properties": {
+          "deleted": {
+            "type": "boolean",
+            "title": "Deleted"
+          },
+          "trashed_to": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Trashed To"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "deleted",
+          "trashed_to"
+        ],
+        "title": "DeleteOut"
+      },
+      "DepthBasis": {
+        "properties": {
+          "point": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Point"
+          },
+          "ar": {
+            "type": "string",
+            "title": "Ar"
+          },
+          "en": {
+            "type": "string",
+            "title": "En"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "point",
+          "ar",
+          "en"
+        ],
+        "title": "DepthBasis"
+      },
+      "DepthIn": {
+        "properties": {
+          "u": {
+            "type": "number",
+            "title": "U"
+          },
+          "v": {
+            "type": "number",
+            "title": "V"
+          },
+          "target": {
+            "type": "string",
+            "enum": [
+              "camel",
+              "ground"
+            ],
+            "title": "Target",
+            "default": "camel"
+          },
+          "seq": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seq",
+            "description": "echoed back so stale replies are dropped"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "u",
+          "v"
+        ],
+        "title": "DepthIn"
+      },
+      "DepthOut": {
+        "properties": {
+          "source": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "window_median",
+                  "knn_snapped_to_mask",
+                  "knn_fill",
+                  "knn_no_depth_band",
+                  "knn_raw_boundary",
+                  "direct_off_mask"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source"
+          },
+          "depth_m": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Depth M"
+          },
+          "target": {
+            "type": "string",
+            "enum": [
+              "camel",
+              "ground"
+            ],
+            "title": "Target"
+          },
+          "inside_mask": {
+            "type": "boolean",
+            "title": "Inside Mask"
+          },
+          "inside_depth_bbox": {
+            "type": "boolean",
+            "title": "Inside Depth Bbox"
+          },
+          "window_n_total": {
+            "type": "integer",
+            "title": "Window N Total"
+          },
+          "window_n_valid": {
+            "type": "integer",
+            "title": "Window N Valid"
+          },
+          "window_n_in_mask": {
+            "type": "integer",
+            "title": "Window N In Mask"
+          },
+          "window_restricted_to_mask": {
+            "type": "boolean",
+            "title": "Window Restricted To Mask"
+          },
+          "window_median_m": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Window Median M"
+          },
+          "window_spread_m": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Window Spread M"
+          },
+          "knn_depth_m": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Knn Depth M"
+          },
+          "nn_depth_mean_m": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Nn Depth Mean M"
+          },
+          "k_requested": {
+            "type": "integer",
+            "title": "K Requested"
+          },
+          "k_used": {
+            "type": "integer",
+            "title": "K Used"
+          },
+          "nn_dist_px_max": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Nn Dist Px Max"
+          },
+          "nn_dist_m_max": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Nn Dist M Max"
+          },
+          "nn_centroid_px": {
+            "anyOf": [
+              {
+                "prefixItems": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ],
+                "type": "array",
+                "maxItems": 2,
+                "minItems": 2
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Nn Centroid Px"
+          },
+          "nn_depth_spread_m": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Nn Depth Spread M"
+          },
+          "direct_depth_m": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Direct Depth M"
+          },
+          "flags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Flags"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason"
+          },
+          "seq": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seq"
+          },
+          "basis": {
+            "$ref": "#/components/schemas/Bilingual"
+          },
+          "ok": {
+            "type": "boolean",
+            "title": "Ok"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "source",
+          "depth_m",
+          "target",
+          "inside_mask",
+          "inside_depth_bbox",
+          "window_n_total",
+          "window_n_valid",
+          "window_n_in_mask",
+          "window_restricted_to_mask",
+          "window_median_m",
+          "window_spread_m",
+          "knn_depth_m",
+          "nn_depth_mean_m",
+          "k_requested",
+          "k_used",
+          "nn_dist_px_max",
+          "nn_dist_m_max",
+          "nn_centroid_px",
+          "nn_depth_spread_m",
+          "direct_depth_m",
+          "flags",
+          "reason",
+          "seq",
+          "basis",
+          "ok"
+        ],
+        "title": "DepthOut"
+      },
+      "DocumentBody": {
+        "properties": {
+          "camel_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 64
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Camel Id",
+            "description": "omitted or null = keep the stored value"
+          },
+          "operator": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Operator",
+            "description": "omitted or null = keep the stored value"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 4000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes",
+            "description": "omitted or null = keep the stored value"
+          },
+          "next_measurement_id": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 9007199254740991.0,
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Measurement Id"
+          },
+          "measurements": {
+            "items": {
+              "$ref": "#/components/schemas/MeasurementInputModel"
+            },
+            "type": "array",
+            "maxItems": 500,
+            "title": "Measurements"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "DocumentBody"
+      },
+      "DocumentIn": {
+        "properties": {
+          "camel_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 64
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Camel Id",
+            "description": "omitted or null = keep the stored value"
+          },
+          "operator": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Operator",
+            "description": "omitted or null = keep the stored value"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 4000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes",
+            "description": "omitted or null = keep the stored value"
+          },
+          "next_measurement_id": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 9007199254740991.0,
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Measurement Id"
+          },
+          "measurements": {
+            "items": {
+              "$ref": "#/components/schemas/MeasurementInputModel"
+            },
+            "type": "array",
+            "maxItems": 500,
+            "title": "Measurements"
+          },
+          "revision": {
+            "type": "integer",
+            "maximum": 9007199254740991.0,
+            "minimum": 0.0,
+            "title": "Revision",
+            "description": "client-owned, strictly increasing; send stored revision + 1"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "revision"
+        ],
+        "title": "DocumentIn"
+      },
+      "ErrorDetail": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "title": "Code",
+            "description": "Stable machine-readable code, e.g. stale_revision"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "details": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Details"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "code",
+          "message"
+        ],
+        "title": "ErrorDetail"
+      },
+      "ErrorOut": {
+        "properties": {
+          "error": {
+            "$ref": "#/components/schemas/ErrorDetail"
+          }
+        },
+        "type": "object",
+        "required": [
+          "error"
+        ],
+        "title": "ErrorOut"
+      },
+      "FinalizeIn": {
+        "properties": {
+          "revision": {
+            "type": "integer",
+            "maximum": 9007199254740991.0,
+            "minimum": 0.0,
+            "title": "Revision"
+          },
+          "report_inputs": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ReportInputsIn"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "document": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DocumentBody"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "optional save-and-finalize: applied first at `revision`"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "revision"
+        ],
+        "title": "FinalizeIn"
+      },
+      "FlagChip": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "ar": {
+            "type": "string",
+            "title": "Ar"
+          },
+          "en": {
+            "type": "string",
+            "title": "En"
+          },
+          "severity": {
+            "type": "string",
+            "enum": [
+              "warn",
+              "info"
+            ],
+            "title": "Severity"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "code",
+          "ar",
+          "en",
+          "severity"
+        ],
+        "title": "FlagChip"
+      },
+      "FrameAssets": {
+        "properties": {
+          "rgb": {
+            "type": "string",
+            "title": "Rgb"
+          },
+          "mask": {
+            "type": "string",
+            "title": "Mask"
+          },
+          "thumb": {
+            "type": "string",
+            "title": "Thumb"
+          },
+          "depth": {
+            "type": "string",
+            "title": "Depth"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "rgb",
+          "mask",
+          "thumb",
+          "depth"
+        ],
+        "title": "FrameAssets"
+      },
+      "FrameBag": {
+        "properties": {
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "path": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Path"
+          },
+          "fingerprint": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fingerprint"
+          },
+          "read_index": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Read Index"
+          },
+          "frame_number_color": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Frame Number Color"
+          },
+          "frame_number_depth": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Frame Number Depth"
+          },
+          "bag_time_s": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bag Time S"
+          },
+          "bucket": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "SIDE",
+                  "END",
+                  "QUARTER"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bucket"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "name",
+          "path",
+          "fingerprint",
+          "read_index",
+          "frame_number_color",
+          "frame_number_depth",
+          "bag_time_s",
+          "bucket"
+        ],
+        "title": "FrameBag"
+      },
+      "FrameInfo": {
+        "properties": {
+          "width": {
+            "type": "integer",
+            "title": "Width"
+          },
+          "height": {
+            "type": "integer",
+            "title": "Height"
+          },
+          "z_ref": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Z Ref"
+          },
+          "ground": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Ground"
+          },
+          "depth_valid_bbox": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "integer"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Depth Valid Bbox"
+          },
+          "knn": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Knn"
+          },
+          "intrinsics": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Intrinsics"
+          },
+          "candidate": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Candidate"
+          },
+          "model": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Model"
+          },
+          "bag": {
+            "$ref": "#/components/schemas/FrameBag"
+          },
+          "assets": {
+            "$ref": "#/components/schemas/FrameAssets"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "width",
+          "height",
+          "z_ref",
+          "ground",
+          "depth_valid_bbox",
+          "knn",
+          "intrinsics",
+          "candidate",
+          "model",
+          "bag",
+          "assets"
+        ],
+        "title": "FrameInfo"
+      },
+      "Health": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "const": "ok",
+            "title": "Status"
+          },
+          "engine_version": {
+            "type": "string",
+            "title": "Engine Version"
+          },
+          "pid": {
+            "type": "integer",
+            "title": "Pid"
+          },
+          "run_id": {
+            "type": "string",
+            "title": "Run Id"
+          },
+          "started_at": {
+            "type": "string",
+            "title": "Started At"
+          },
+          "uptime_s": {
+            "type": "number",
+            "title": "Uptime S"
+          },
+          "data_root": {
+            "type": "string",
+            "title": "Data Root"
+          },
+          "model": {
+            "$ref": "#/components/schemas/ModelInfo"
+          },
+          "warmup_ms": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Warmup Ms"
+          },
+          "arabic_stack": {
+            "$ref": "#/components/schemas/ArabicStack"
+          },
+          "job": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/JobSnapshot"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "status",
+          "engine_version",
+          "pid",
+          "run_id",
+          "started_at",
+          "uptime_s",
+          "data_root",
+          "model",
+          "warmup_ms",
+          "arabic_stack",
+          "job"
+        ],
+        "title": "Health"
+      },
+      "HistoryList": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/HistoryRow"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "reconciled": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Reconciled"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "reconciled"
+        ],
+        "title": "HistoryList"
+      },
+      "HistoryRow": {
+        "properties": {
+          "session_id": {
+            "type": "string",
+            "title": "Session Id"
+          },
+          "camel_id": {
+            "type": "string",
+            "title": "Camel Id"
+          },
+          "operator": {
+            "type": "string",
+            "title": "Operator"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "revision": {
+            "type": "integer",
+            "title": "Revision"
+          },
+          "created_at": {
+            "type": "string",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "title": "Updated At"
+          },
+          "bag_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bag Name"
+          },
+          "bag_path": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bag Path"
+          },
+          "bag_fingerprint": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bag Fingerprint"
+          },
+          "read_index": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Read Index"
+          },
+          "n_measurements": {
+            "type": "integer",
+            "title": "N Measurements"
+          },
+          "n_rejected": {
+            "type": "integer",
+            "title": "N Rejected"
+          },
+          "outputs_stale": {
+            "type": "boolean",
+            "title": "Outputs Stale"
+          },
+          "report_stale": {
+            "type": "boolean",
+            "title": "Report Stale"
+          },
+          "overlay_version": {
+            "type": "integer",
+            "title": "Overlay Version"
+          },
+          "report_version": {
+            "type": "integer",
+            "title": "Report Version"
+          },
+          "index_state": {
+            "type": "string",
+            "title": "Index State"
+          },
+          "index_error": {
+            "type": "string",
+            "title": "Index Error"
+          },
+          "thumb_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Thumb Url"
+          },
+          "session_url": {
+            "type": "string",
+            "title": "Session Url"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "session_id",
+          "camel_id",
+          "operator",
+          "status",
+          "revision",
+          "created_at",
+          "updated_at",
+          "bag_name",
+          "bag_path",
+          "bag_fingerprint",
+          "read_index",
+          "n_measurements",
+          "n_rejected",
+          "outputs_stale",
+          "report_stale",
+          "overlay_version",
+          "report_version",
+          "index_state",
+          "index_error",
+          "thumb_url",
+          "session_url"
+        ],
+        "title": "HistoryRow"
+      },
+      "HistoryStats": {
+        "properties": {
+          "sessions": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Sessions"
+          },
+          "candidates": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Candidates"
+          },
+          "trash": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Trash"
+          },
+          "index": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Index"
+          },
+          "backups": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Backups"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "sessions",
+          "candidates",
+          "trash",
+          "index",
+          "backups"
+        ],
+        "title": "HistoryStats"
+      },
+      "JobCounters": {
+        "properties": {
+          "read": {
+            "type": "integer",
+            "title": "Read",
+            "default": 0
+          },
+          "sampled": {
+            "type": "integer",
+            "title": "Sampled",
+            "default": 0
+          },
+          "detected": {
+            "type": "integer",
+            "title": "Detected",
+            "default": 0
+          },
+          "passed": {
+            "type": "integer",
+            "title": "Passed",
+            "default": 0
+          },
+          "rejected_by_reason": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Rejected By Reason",
+            "description": "live, by candidate_rejections code (/meta/labels)"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "title": "JobCounters"
+      },
+      "JobSnapshot": {
+        "properties": {
+          "job_id": {
+            "type": "string",
+            "title": "Job Id"
+          },
+          "bag_path": {
+            "type": "string",
+            "title": "Bag Path"
+          },
+          "fingerprint": {
+            "type": "string",
+            "title": "Fingerprint"
+          },
+          "params_hash": {
+            "type": "string",
+            "title": "Params Hash"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "queued",
+              "running",
+              "cancelling",
+              "done",
+              "cancelled",
+              "failed"
+            ],
+            "title": "State"
+          },
+          "stage": {
+            "type": "string",
+            "enum": [
+              "queued",
+              "opening",
+              "walking",
+              "ranking",
+              "persisting",
+              "done"
+            ],
+            "title": "Stage"
+          },
+          "progress_fraction": {
+            "type": "number",
+            "title": "Progress Fraction"
+          },
+          "counters": {
+            "$ref": "#/components/schemas/JobCounters"
+          },
+          "eta_s": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Eta S"
+          },
+          "elapsed_s": {
+            "type": "number",
+            "title": "Elapsed S"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "warnings": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Warnings"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ErrorDetail"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "same shape as every API error body"
+          },
+          "result": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Result"
+          },
+          "started_at": {
+            "type": "string",
+            "title": "Started At"
+          },
+          "finished_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finished At"
+          },
+          "terminal": {
+            "type": "boolean",
+            "title": "Terminal"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "job_id",
+          "bag_path",
+          "fingerprint",
+          "params_hash",
+          "state",
+          "stage",
+          "progress_fraction",
+          "counters",
+          "eta_s",
+          "elapsed_s",
+          "message",
+          "warnings",
+          "error",
+          "result",
+          "started_at",
+          "finished_at",
+          "terminal"
+        ],
+        "title": "JobSnapshot"
+      },
+      "JobStartIn": {
+        "properties": {
+          "bag_path": {
+            "type": "string",
+            "maxLength": 4096,
+            "minLength": 1,
+            "title": "Bag Path"
+          },
+          "params": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CandidateParamsIn"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "force": {
+            "type": "boolean",
+            "title": "Force",
+            "default": false
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "bag_path"
+        ],
+        "title": "JobStartIn"
+      },
+      "JobStartOut": {
+        "properties": {
+          "cached": {
+            "type": "boolean",
+            "title": "Cached"
+          },
+          "job": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/JobSnapshot"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "result": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CachedResult"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "candidates_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Candidates Url"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "cached",
+          "job",
+          "result",
+          "candidates_url"
+        ],
+        "title": "JobStartOut"
+      },
+      "MeasurementInputModel": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "maximum": 9007199254740991.0,
+            "minimum": 1.0,
+            "title": "Id",
+            "description": "stable, unique across all kinds; chosen by the client"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "distance_2d",
+              "distance_3d",
+              "curve_2d",
+              "curve_3d",
+              "angle_2d_3point",
+              "angle_3d_3point",
+              "angle_2d_from_horizontal",
+              "angle_4point"
+            ],
+            "title": "Kind"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 200,
+            "title": "Name",
+            "default": ""
+          },
+          "points": {
+            "items": {
+              "prefixItems": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                }
+              ],
+              "type": "array",
+              "maxItems": 2,
+              "minItems": 2
+            },
+            "type": "array",
+            "maxItems": 500,
+            "title": "Points"
+          },
+          "targets": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "camel",
+                    "ground"
+                  ]
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Targets",
+            "description": "per point; 'ground' = Shift-click ground/background point"
+          },
+          "line_a_id": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 9007199254740991.0,
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Line A Id"
+          },
+          "line_b_id": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 9007199254740991.0,
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Line B Id"
+          },
+          "color": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^#[0-9A-Fa-f]{6}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Color"
+          },
+          "note": {
+            "type": "string",
+            "maxLength": 2000,
+            "title": "Note",
+            "default": ""
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "kind"
+        ],
+        "title": "MeasurementInputModel",
+        "description": "What the operator did — the only thing the client sends for a measurement."
+      },
+      "MeasurementRow": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "distance_2d",
+              "distance_3d",
+              "curve_2d",
+              "curve_3d",
+              "angle_3d_4point",
+              "angle_2d_4point",
+              "angle_2d_3point",
+              "angle_3d_3point",
+              "angle_2d_from_horizontal"
+            ],
+            "title": "Kind"
+          },
+          "family": {
+            "type": "string",
+            "enum": [
+              "lines",
+              "curves",
+              "angles"
+            ],
+            "title": "Family"
+          },
+          "input_kind": {
+            "type": "string",
+            "enum": [
+              "distance_2d",
+              "distance_3d",
+              "curve_2d",
+              "curve_3d",
+              "angle_2d_3point",
+              "angle_3d_3point",
+              "angle_2d_from_horizontal",
+              "angle_4point"
+            ],
+            "title": "Input Kind"
+          },
+          "input": {
+            "$ref": "#/components/schemas/MeasurementInputModel"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "order": {
+            "type": "integer",
+            "title": "Order"
+          },
+          "display_color": {
+            "type": "string",
+            "title": "Display Color"
+          },
+          "note": {
+            "type": "string",
+            "title": "Note"
+          },
+          "targets": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "camel",
+                "ground"
+              ]
+            },
+            "type": "array",
+            "title": "Targets"
+          },
+          "rejection_reason": {
+            "type": "string",
+            "title": "Rejection Reason"
+          },
+          "confidence": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "high",
+                  "low"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Confidence"
+          },
+          "flags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Flags"
+          },
+          "created_at": {
+            "type": "string",
+            "title": "Created At"
+          },
+          "presentation": {
+            "$ref": "#/components/schemas/Presentation"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "id",
+          "kind",
+          "family",
+          "input_kind",
+          "input",
+          "name",
+          "order",
+          "display_color",
+          "note",
+          "targets",
+          "rejection_reason",
+          "confidence",
+          "flags",
+          "created_at",
+          "presentation"
+        ],
+        "title": "MeasurementRow",
+        "description": "A computed row; kind-specific fields (p1_px, points_3d, segment_dz_m, …) pass\nthrough as additional properties."
+      },
+      "ModelInfo": {
+        "properties": {
+          "file": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "File"
+          },
+          "sha256": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sha256"
+          },
+          "stub": {
+            "type": "boolean",
+            "title": "Stub"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "file",
+          "sha256",
+          "stub"
+        ],
+        "title": "ModelInfo"
+      },
+      "NamesIn": {
+        "properties": {
+          "judge": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Judge"
+          },
+          "council": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Council"
+          },
+          "event": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Event"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "NamesIn"
+      },
+      "ObservationsIn": {
+        "properties": {
+          "colour": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Colour"
+          },
+          "age": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Age"
+          },
+          "coat": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Coat"
+          },
+          "gait": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Gait"
+          },
+          "defects": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Defects"
+          },
+          "manual": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Manual"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "ObservationsIn"
+      },
+      "Outputs": {
+        "properties": {
+          "overlay": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/OverlayOutput"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "report_model": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ReportModelOutput"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "report": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ReportOutput"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "manifest_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Manifest Url"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "overlay",
+          "report_model",
+          "report",
+          "manifest_url"
+        ],
+        "title": "Outputs"
+      },
+      "OverlayOutput": {
+        "properties": {
+          "version": {
+            "type": "integer",
+            "title": "Version"
+          },
+          "file": {
+            "type": "string",
+            "title": "File"
+          },
+          "sha256": {
+            "type": "string",
+            "title": "Sha256"
+          },
+          "width": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Width"
+          },
+          "height": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Height"
+          },
+          "url": {
+            "type": "string",
+            "title": "Url"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "version",
+          "file",
+          "sha256",
+          "width",
+          "height",
+          "url"
+        ],
+        "title": "OverlayOutput"
+      },
+      "Presentation": {
+        "properties": {
+          "kind_label": {
+            "$ref": "#/components/schemas/Bilingual"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value"
+          },
+          "unit": {
+            "type": "string",
+            "enum": [
+              "m",
+              "deg"
+            ],
+            "title": "Unit"
+          },
+          "value_text": {
+            "$ref": "#/components/schemas/Bilingual"
+          },
+          "uncertainty_text": {
+            "$ref": "#/components/schemas/Bilingual"
+          },
+          "depth_basis": {
+            "items": {
+              "$ref": "#/components/schemas/DepthBasis"
+            },
+            "type": "array",
+            "title": "Depth Basis"
+          },
+          "flags": {
+            "items": {
+              "$ref": "#/components/schemas/FlagChip"
+            },
+            "type": "array",
+            "title": "Flags"
+          },
+          "confidence": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Confidence"
+          },
+          "rejected": {
+            "type": "boolean",
+            "title": "Rejected"
+          },
+          "rejection": {
+            "items": {
+              "$ref": "#/components/schemas/RejectionPart"
+            },
+            "type": "array",
+            "title": "Rejection"
+          },
+          "n_points": {
+            "type": "integer",
+            "title": "N Points"
+          },
+          "n_points_knn": {
+            "type": "integer",
+            "title": "N Points Knn"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "kind_label",
+          "value",
+          "unit",
+          "value_text",
+          "uncertainty_text",
+          "depth_basis",
+          "flags",
+          "confidence",
+          "rejected",
+          "rejection",
+          "n_points",
+          "n_points_knn"
+        ],
+        "title": "Presentation"
+      },
+      "PreviewIn": {
+        "properties": {
+          "measurement": {
+            "$ref": "#/components/schemas/MeasurementInputModel"
+          },
+          "seq": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seq"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "measurement"
+        ],
+        "title": "PreviewIn"
+      },
+      "PreviewOut": {
+        "properties": {
+          "seq": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seq"
+          },
+          "row": {
+            "$ref": "#/components/schemas/MeasurementRow"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "seq",
+          "row"
+        ],
+        "title": "PreviewOut"
+      },
+      "RecentBag": {
+        "properties": {
+          "path": {
+            "type": "string",
+            "title": "Path"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "last_opened_at": {
+            "type": "string",
+            "title": "Last Opened At"
+          },
+          "exists": {
+            "type": "boolean",
+            "title": "Exists"
+          },
+          "size_bytes": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Size Bytes"
+          },
+          "fingerprint": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fingerprint"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "path",
+          "name",
+          "last_opened_at",
+          "exists",
+          "size_bytes"
+        ],
+        "title": "RecentBag"
+      },
+      "RecentBagList": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/RecentBag"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "items",
+          "total"
+        ],
+        "title": "RecentBagList"
+      },
+      "RejectionPart": {
+        "properties": {
+          "point": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Point"
+          },
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "ar": {
+            "type": "string",
+            "title": "Ar"
+          },
+          "en": {
+            "type": "string",
+            "title": "En"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "point",
+          "code",
+          "ar",
+          "en"
+        ],
+        "title": "RejectionPart"
+      },
+      "ReportInputsIn": {
+        "properties": {
+          "language": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "ar",
+                  "en",
+                  "both"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Language"
+          },
+          "rubric_variant": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "mjaheem",
+                  "maghateer"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rubric Variant"
+          },
+          "names": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/NamesIn"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "observations": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ObservationsIn"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "ReportInputsIn"
+      },
+      "ReportInputsOut": {
+        "properties": {
+          "language": {
+            "type": "string",
+            "enum": [
+              "ar",
+              "en",
+              "both"
+            ],
+            "title": "Language"
+          },
+          "rubric_variant": {
+            "type": "string",
+            "enum": [
+              "mjaheem",
+              "maghateer"
+            ],
+            "title": "Rubric Variant"
+          },
+          "names": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Names"
+          },
+          "observations": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Observations"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "language",
+          "rubric_variant",
+          "names",
+          "observations"
+        ],
+        "title": "ReportInputsOut"
+      },
+      "ReportModelOutput": {
+        "properties": {
+          "version": {
+            "type": "integer",
+            "title": "Version",
+            "description": "new on every finalize and every report-input change"
+          },
+          "file": {
+            "type": "string",
+            "title": "File"
+          },
+          "sha256": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sha256",
+            "description": "send it back as X-Report-Model-Sha256 on upload"
+          },
+          "url": {
+            "type": "string",
+            "title": "Url"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "version",
+          "file",
+          "sha256",
+          "url"
+        ],
+        "title": "ReportModelOutput"
+      },
+      "ReportOut": {
+        "properties": {
+          "session": {
+            "$ref": "#/components/schemas/SessionView"
+          },
+          "probe": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Probe"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "session",
+          "probe"
+        ],
+        "title": "ReportOut"
+      },
+      "ReportOutput": {
+        "properties": {
+          "version": {
+            "type": "integer",
+            "title": "Version"
+          },
+          "file": {
+            "type": "string",
+            "title": "File"
+          },
+          "sha256": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sha256"
+          },
+          "url": {
+            "type": "string",
+            "title": "Url"
+          },
+          "overlay_version": {
+            "type": "integer",
+            "title": "Overlay Version",
+            "description": "the overlay version this PDF was sealed with"
+          },
+          "report_model_version": {
+            "type": "integer",
+            "title": "Report Model Version",
+            "description": "the report model version it carries"
+          },
+          "stale": {
+            "type": "boolean",
+            "title": "Stale",
+            "description": "true when it no longer shows the current outputs"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "version",
+          "file",
+          "sha256",
+          "url",
+          "overlay_version",
+          "report_model_version",
+          "stale"
+        ],
+        "title": "ReportOutput"
+      },
+      "SessionCreateIn": {
+        "properties": {
+          "candidate": {
+            "$ref": "#/components/schemas/CandidateRefIn"
+          },
+          "camel_id": {
+            "type": "string",
+            "maxLength": 64,
+            "title": "Camel Id",
+            "default": ""
+          },
+          "operator": {
+            "type": "string",
+            "maxLength": 100,
+            "title": "Operator",
+            "default": ""
+          },
+          "notes": {
+            "type": "string",
+            "maxLength": 4000,
+            "title": "Notes",
+            "default": ""
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "candidate"
+        ],
+        "title": "SessionCreateIn"
+      },
+      "SessionSummary": {
+        "properties": {
+          "n_measurements": {
+            "type": "integer",
+            "title": "N Measurements"
+          },
+          "n_rejected": {
+            "type": "integer",
+            "title": "N Rejected"
+          },
+          "n_low_confidence": {
+            "type": "integer",
+            "title": "N Low Confidence"
+          },
+          "n_points": {
+            "type": "integer",
+            "title": "N Points"
+          },
+          "n_points_knn": {
+            "type": "integer",
+            "title": "N Points Knn"
+          },
+          "snapped_text": {
+            "$ref": "#/components/schemas/Bilingual"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "n_measurements",
+          "n_rejected",
+          "n_low_confidence",
+          "n_points",
+          "n_points_knn",
+          "snapped_text"
+        ],
+        "title": "SessionSummary"
+      },
+      "SessionView": {
+        "properties": {
+          "session_id": {
+            "type": "string",
+            "title": "Session Id"
+          },
+          "camel_id": {
+            "type": "string",
+            "title": "Camel Id"
+          },
+          "operator": {
+            "type": "string",
+            "title": "Operator"
+          },
+          "notes": {
+            "type": "string",
+            "title": "Notes"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "open",
+              "finalized",
+              "exported"
+            ],
+            "title": "Status"
+          },
+          "revision": {
+            "type": "integer",
+            "title": "Revision"
+          },
+          "outputs_stale": {
+            "type": "boolean",
+            "title": "Outputs Stale"
+          },
+          "report_stale": {
+            "type": "boolean",
+            "title": "Report Stale"
+          },
+          "created_at": {
+            "type": "string",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "title": "Updated At"
+          },
+          "next_measurement_id": {
+            "type": "integer",
+            "title": "Next Measurement Id"
+          },
+          "measurements": {
+            "items": {
+              "$ref": "#/components/schemas/MeasurementRow"
+            },
+            "type": "array",
+            "title": "Measurements"
+          },
+          "summary": {
+            "$ref": "#/components/schemas/SessionSummary"
+          },
+          "frame": {
+            "$ref": "#/components/schemas/FrameInfo"
+          },
+          "outputs": {
+            "$ref": "#/components/schemas/Outputs"
+          },
+          "report_inputs": {
+            "$ref": "#/components/schemas/ReportInputsOut"
+          },
+          "required_report_texts": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Required Report Texts",
+            "description": "strings the PDF text probe requires (measurement names, judge / council / event, camel id); render each in an embedded face, never a synthesized bold"
+          },
+          "library_versions": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Library Versions"
+          },
+          "index_state": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "ok",
+                  "missing_files",
+                  "corrupt",
+                  "delete_failed",
+                  "unindexed"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Index State"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "session_id",
+          "camel_id",
+          "operator",
+          "notes",
+          "status",
+          "revision",
+          "outputs_stale",
+          "report_stale",
+          "created_at",
+          "updated_at",
+          "next_measurement_id",
+          "measurements",
+          "summary",
+          "frame",
+          "outputs",
+          "report_inputs",
+          "required_report_texts",
+          "library_versions"
+        ],
+        "title": "SessionView"
+      },
+      "StreamInfo": {
+        "properties": {
+          "width": {
+            "type": "integer",
+            "title": "Width"
+          },
+          "height": {
+            "type": "integer",
+            "title": "Height"
+          },
+          "fps": {
+            "type": "integer",
+            "title": "Fps"
+          },
+          "format": {
+            "type": "string",
+            "title": "Format"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "width",
+          "height",
+          "fps",
+          "format"
+        ],
+        "title": "StreamInfo"
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "system",
+      "description": "Health, versions, bilingual labels"
+    },
+    {
+      "name": "bags",
+      "description": "Step 1 — open a D455 .bag"
+    },
+    {
+      "name": "candidates",
+      "description": "Step 2 — best frames by mask depth statistics"
+    },
+    {
+      "name": "sessions",
+      "description": "Steps 3-5 — measure, autosave, finalize, PDF"
+    },
+    {
+      "name": "history",
+      "description": "History index housekeeping"
+    }
+  ]
+}

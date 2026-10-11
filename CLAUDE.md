@@ -39,42 +39,56 @@ meant to become its own repository. The parent's `CLAUDE.md` (≈ 600 lines) hol
 history (Phases 1–21, ADR-001 honesty contract, audit disciplines D7/D8/D9); read it for
 *why*. Nothing here imports the parent package.
 
-## State of the scaffold (2026-10-10)
+## State of the repo (2026-10-11)
 
 | Path | What is there |
 |---|---|
 | `app/` | **empty** — Electron + Vite + React + TypeScript + Tailwind CSS is the chosen stack; nothing scaffolded |
-| `engine/` | `.venv` (Python 3.11.9, **CPU-only torch 2.14.1**) + `requirements.txt` (52 lines, UTF-8 BOM) + `models/`; **no engine source yet**; no reportlab / arabic-reshaper / python-bidi / pypdf |
+| `engine/nazeer_engine/` | **the engine** (≈ 10.5 k lines): FastAPI sidecar, 31 HTTP operations, everything in contracts C1–C3 + ADR-D7's engine half. Integration-tested on real bags with the real model and headless Edge; not production-validated (no app, no field capture) |
+| `engine/tests/` | ≈ 430 default tests (synthetic frames, fake RealSense, stub model) + 6 opt-in real-resource tests (`realbag`, `realmodel`, `realpdf`) |
+| `engine/openapi.json` | the API snapshot for client codegen; a test fails when it drifts from the code |
+| `engine/` | `.venv` (Python 3.11.9, **CPU-only torch 2.14.1**), `requirements.txt` (runtime pins incl. pypdf, arabic-reshaper, python-bidi), `requirements-dev.txt` (httpx2, pytest, ruff), `pyproject.toml` (pytest + ruff config) |
 | `engine/models/` | `best.pt` (pinned, below), `last.pt` (alternative), `MODEL_CARD.md`, `metrics.json`, `results.csv` |
 | `data/.bag/` | 6 D455 recordings (33.5 GB, copies of `../data/.bag`) + `new/` (a duplicate of bag 004) — gitignored |
-| `docs/decisions/` | ADR records D1–D10 (directory was empty until this pass) |
-| `fixtures/` | **empty** — intended home of the golden frame (below) |
+| `docs/decisions/` | ADR records D1–D10; D7/D8/D10 carry "Engine parameters (implemented 2026-10-11)" sections |
+| `fixtures/golden_frame.json` | the golden-frame oracle regenerated from bag 006 by the engine's reader (tracked) |
 | `engine/wheels/` | intended offline wheelhouse for the pinned Python deps (not created; see Decisions) |
 
-When `app/package.json` or the engine package lands, replace the "intended" commands
-below with the real ones in the same commit.
+When `app/package.json` lands, replace the "intended" app commands below with the real
+ones in the same commit.
 
 ## Commands
 
 ```powershell
-# --- Engine environment (exists today). Always use the venv path: bare `python` may be 3.13/3.14.
+# --- Engine environment. Always use the venv path: bare `python` may be 3.13/3.14.
 engine\.venv\Scripts\python.exe --version                       # Python 3.11.9
 engine\.venv\Scripts\python.exe -c "import torch; print(torch.__version__, torch.cuda.is_available())"
 #   → 2.14.1+cpu False   (GPU inference exists only in the parent's .venv-cuda; see Pitfalls)
-engine\.venv\Scripts\python.exe -m pytest engine -q             # no tests yet; NOTE: inherits the PARENT
-#   pyproject (rootdir E:\camel_beauty, --strict-markers, testpaths=tests) until engine/ has its own config
-# Recreate the venv — UNPROVEN offline: requirements.txt pins torch==2.14.1 without +cpu or an index URL,
-# so add the CPU index (or a +cpu pin) before trusting this:
+# Recreate the venv (needs the network once; the CPU torch index is required):
 py -3.11 -m venv engine\.venv
-engine\.venv\Scripts\python.exe -m pip install -r engine\requirements.txt
+engine\.venv\Scripts\python.exe -m pip install --extra-index-url https://download.pytorch.org/whl/cpu -r engine\requirements.txt -r engine\requirements-dev.txt
 
-# --- Model integrity (the engine must refuse to load on mismatch)
-Get-FileHash engine\models\best.pt -Algorithm SHA256
+# --- Tests and lint (run from engine\; engine\pyproject.toml holds the pytest + ruff config)
+cd engine
+.venv\Scripts\python.exe -m pytest -q                            # default suite ≈ 1 min, no bag / model / browser
+.venv\Scripts\python.exe -m pytest tests\test_depthlookup.py -q  # one file
+.venv\Scripts\python.exe -m pytest tests\test_api.py::test_session_measure_autosave_and_rebase -q
+$env:NAZEER_REAL = "1"; .venv\Scripts\python.exe -m pytest tests\test_integration_realbag.py tests\test_segmenter.py tests\test_pdf_finalize.py -q
+#   real bag + best.pt + headless Edge (≈ 40 s); or select by marker: -m "realbag and realmodel" / -m realpdf
+$env:NAZEER_WRITE_GOLDEN = "1"   # with NAZEER_REAL: rewrites ..\fixtures\golden_frame.json (review the diff)
+.venv\Scripts\python.exe -m ruff check . ; .venv\Scripts\python.exe -m ruff format --check .
+.venv\Scripts\python.exe -m nazeer_engine --dump-openapi openapi.json   # after any API change (test_api enforces it)
+
+# --- Run the sidecar the way Electron spawns it (one worker; prints ONE ASCII JSON line on stdout)
+.venv\Scripts\python.exe -m nazeer_engine --data-root <abs dir> [--port 0] [--token <secret>] [--cors-origin <origin>]
+#   → {"event": "ready", "port": 51234, "pid": …, …}   or   {"event": "fatal", "code": …} and exit 2/3/5/6
+#   --check validates data root + model and exits; --stub-model (dev only, needs NAZEER_ENGINE_DEV=1) skips YOLO
+#   the data root must be absolute and not under Desktop/Documents/OneDrive; one engine per data root (engine.lock)
+
+# --- Model integrity (the engine refuses to load on mismatch: exit 3, model_hash_mismatch)
+Get-FileHash models\best.pt -Algorithm SHA256
 #   → 0E9EE2BAADA7C70531B66E0B98F7E1CF4DCF3CE7971C55BCE69A7270EC3A4320
-
-# --- Intended, once the engine package exists (fill in the real module path; one worker, data root from the app)
-engine\.venv\Scripts\python.exe -m uvicorn <engine_module>:app --host 127.0.0.1 --port <port> --workers 1
-#   the app passes --data-root <absolute, writable dir>; the engine refuses to start without it
+cd ..
 
 # --- Intended, once app/ is scaffolded (Electron + Vite + React + TS + Tailwind via @tailwindcss/vite; Node 24 / npm 11)
 cd app; npm install
@@ -92,7 +106,7 @@ cd E:\camel_beauty
 .venv-cuda\Scripts\python.exe runs\electron_mvp_probe\probe_bag_timing.py
 ```
 
-## Architecture (intended; only the engine venv + model exist)
+## Architecture (engine implemented 2026-10-11; app not yet)
 
 - **`app/` — Electron + Vite + React + TypeScript + Tailwind CSS.** Owns the operator UI:
   bag discovery (OS file dialog filtered to `.bag`, a recent list, an optional bounded
@@ -114,6 +128,58 @@ cd E:\camel_beauty
 - **Model** — one pinned checkpoint, hash-checked at load. Everything the operator sees
   traces back to one known model.
 
+### Engine package map (`engine/nazeer_engine/`)
+
+| Layer | Modules |
+|---|---|
+| foundations | `constants` (every threshold; `CONSTANTS_STAMP` goes into every session / candidates / manifest), `errors` (`EngineError(code, status, details)`), `jsonsafe` (finite-only JSON, `FiniteJSONResponse`), `fsio` (atomic writes with the C3.4 retry ladder, imencode/imdecode, fingerprints), `settings` (data-root rules), `versions`, `assets`, `logsetup` |
+| measurement core | `geometry` (vendored math + `curve_length_3d`), `maskstats` (eroded-mask stats, Z_ref block, ground rows, depth-valid bbox, `frame_clearance`), `depthlookup` (C1: `build_frame_context`, `depth_for_pixel`), `provenance`, `session_compute` (input → computed row, presentation), `labels` (every code's AR/EN label) |
+| bag → candidates | `bagreader` (lazy pyrealsense2), `segmenter` (pinned YOLO, retina masks; `StubSegmenter`), `candidates` (C2 gates, holders, ranking, persistence), `candidate_cache`, `frames`, `jobs` (one background job, cancel / stop) |
+| sessions → report | `session_schema` (2.1 dataclasses, `required_report_texts`), `session_store` (locks, autosave, finalize, attach, delete), `history` (derived SQLite index), `recent`, `overlay` (the PNG), `report_model`, `report_content`, `arabic`, `pdf_finalize` (probes + attachments) |
+| HTTP | `api/app.py` (`create_app`, error handlers, token + CORS middleware), `api/routes_*.py`, `api/schemas.py` (pydantic; `extra="forbid"`, no NaN), `api/views.py` (response shapes), `__main__.py` (the sidecar) |
+
+### HTTP API for the renderer (React + Redux)
+
+31 operations; `engine/openapi.json` is the contract (operation ids = function names, e.g.
+`put_document`) — generate the client types from it. Conventions:
+
+- Errors are always `{"error": {"code", "message", "details"}}` with a stable `code`
+  (`stale_revision`, `job_busy`, `camel_id_required`, `overlay_drift`, `text_probe_failed`,
+  `report_model_mismatch`, `validation_error`, `internal_error`, …), including 500s (which
+  carry CORS headers) and a failed job's `error`; the OpenAPI documents every 4xx/5xx as
+  `ErrorOut`. `/meta/labels` gives the bilingual label of every code, kind, source, flag,
+  bucket and status — never hard-code strings.
+- Auth: `--token` ⇒ header `X-Nazeer-Token` (or `?token=` for `<img>` / `EventSource`);
+  `/health` stays open. CORS defaults to the Vite dev origins and `app://nazeer`.
+  `/docs` and `/redoc` (CDN assets) exist only with `NAZEER_ENGINE_DEV=1`;
+  `/openapi.json` always.
+- Flow: `POST /bags/inspect` → `POST /candidates/jobs` (202 job | 200 cached; poll
+  `GET /candidates/jobs/{id}` or SSE `…/events`; `cancel`, `stop`) →
+  `GET /candidates/{fp}/{ph}` (unordered grid; each item has `urls` and a `ref`) →
+  `POST /sessions {candidate: ref, camel_id}` (201 `SessionView`) → hover
+  `POST /sessions/{id}/depth` and drag `POST …/preview` (both echo `seq`) → autosave
+  `PUT …/document {revision: stored + 1, measurements: [...]}` (omitted `camel_id` /
+  `operator` / `notes` are kept; ETag `"r<revision>-<hash>"`, optional `If-Match`; 409
+  `stale_revision` carries `details.current`, the full view to rebase onto; a replay of
+  the stored revision is a 200) → `POST …/finalize` (renders the overlay; approve on
+  `outputs.overlay.url`) → print with the verified PNG bytes, the report model at
+  `outputs.report_model.url` and every `required_report_texts` string → `POST …/report`
+  with the raw PDF (`Content-Type: application/pdf`, `X-Overlay-Sha256`,
+  `X-Report-Model-Sha256`; text and font probes strict unless `require_text=false` /
+  `require_font=false`) → `GET …/report` for sign-off (`outputs.report.stale` when it no
+  longer shows the session). History: `GET /sessions?q=&status=` (reconciled on every call;
+  a broken session folder is a `corrupt` row), `DELETE`, `POST …/reopen`,
+  `PATCH …/report-inputs` (a change writes a new report model version).
+- A measurement input is `{id, kind, name, points, targets?, line_a_id?, line_b_id?,
+  color?, note}`; `kind` ∈ `distance_2d | distance_3d | curve_2d | curve_3d |
+  angle_2d_3point | angle_3d_3point | angle_2d_from_horizontal | angle_4point`. The client
+  owns ids (`next_measurement_id`, never decreases; ids and revisions ≤ 2**53 − 1) and
+  sends the whole ordered list on every save; the engine returns computed rows with
+  `presentation` (value, value text, depth basis, flag chips, rejection) for direct
+  rendering.
+- Candidate jobs: snapshot `counters` include `rejected_by_reason` live; a walk the
+  operator stops early is shown but never served as a cache hit; picks are ≥ 1.5 s apart.
+
 ### Engine inference contract (locked in `engine/models/MODEL_CARD.md` §3)
 
 | Setting | Value | Why |
@@ -126,7 +192,7 @@ cd E:\camel_beauty
 | Z_ref | **median** of valid depth (0.3–5.0 m band) over the mask **eroded by 2 px** (the same pixel set the KNN tree uses); one frozen `z_ref` block per session (statistic, n_total, n_valid, valid fraction, MAD, band). Never reuse the parent notebook's `z_used_m`, which is the mean (mean − median is +0.04 m median, +0.22 m p95 on real frames) | robust to depth holes and boundary bleed |
 | Ground line | lowest mask row **among columns whose bottom-8-px mask depth is within 12 % of Z_ref** (a far-side leg can put the raw lowest row ~37 px / 10 cm too low); both rows stored, the near-plane one drawn, a badge when they differ by > 8 px. Not a depth-projected plane (it rode up through the hooves) | perspective |
 | 2D distance | `Z_ref · sqrt(((u1−u2)/fx)² + ((v1−v2)/fy)²)`, `uncertainty_m = distance · z_mad / z_median` | per-pixel depth never enters the 2D formula; the Z-plane assumption (5–12 % on real frames) is the dominant 2D error |
-| Depth FOV | the aligned depth map does not cover the whole colour frame (~32 px left, 8–18 px right, 18–46 px top have no depth); store `depth_valid_bbox` per frame | completeness and KNN provenance are judged against it |
+| Depth FOV | the aligned depth map does not cover the whole colour frame (~32 px left, 8–18 px right, 18–46 px top have no depth); store `depth_valid_bbox` per frame | KNN provenance (`knn_no_depth_band`) and the candidate flag `mask_in_depth_margin` are judged against it |
 | Distortion | the colour stream's inverse Brown-Conrady coefficients are recorded but ignored by the pinhole math | state it in the report model |
 | Serialisation | every number is passed through one finite-only normaliser (`float`/`int`/`bool`, NaN/Inf → `null`, no numpy scalars); sessions and API responses are written with `allow_nan=False` as the tripwire | bare `NaN` tokens break `JSON.parse`; Starlette raises on them |
 
@@ -146,9 +212,12 @@ opencv 4.13.0) from `E:\camel_beauty\reference\notebooks\data\rgbd_20260514_1454
 `last.pt`. The 2.051 m / 2.063 m heights in the card are computed from rows 711/715, not
 measured. "Read index 180" is the 0-based count of aligned colour+depth pairs (pairs
 missing either stream are skipped without incrementing); `bag_time_sec 1776178686.5478632`
-is the robust key. Z_ref on that frame ≈ 1.93 m. A frame regenerated from the bag has
-**not yet** been shown to reproduce 269,033 px — run that once and record it. `fixtures/`
-is empty: regenerate the frame from the bag with the engine's own reader.
+is the robust key. **Regenerated from the bag on 2026-10-11** by the engine's reader:
+bit-identical to the parent capture (RGB and depth max |Δ| = 0; colour frame 9689, depth
+frame 9538, timestamp 1776178686547.86 ms), and `best.pt` gives conf 0.9593, 269,033 px,
+rows 9–715 in `engine/.venv`; Z_ref 1.930 m, depth-valid bbox [38, 22, 1276, 719], ground
+row 715. The oracle is `fixtures/golden_frame.json` (frame bytes exact, model tolerances
+as above), checked by `tests/test_integration_realbag.py`.
 
 ### Measurement types (decision 2026-10-10)
 
@@ -230,10 +299,16 @@ depth.
 3. `compute_mask_depth_stats` on the 2-px-eroded mask → `z_mean`, `z_median`, `z_var`
    (= mean((d − z_mean)²), **the operator's depth MSE**), `z_mad_mean`, `n_valid`,
    `n_total`; plus `mask_area_frac`, bbox aspect, completeness against `depth_valid_bbox`.
-4. Hard filters: `rejection_reason == "ok"`; mask complete (no mask pixel within 8 px of
-   the depth-valid region's edge); `mask_area_frac` ∈ [0.10, 0.80] (parent MAF);
-   **`z_mean ≥ 1.0 m` (operator's absolute floor)** and proposed `z_median ≥ 1.5 m` (A8);
-   valid fraction ≥ 0.6. Every rejected frame is counted by reason in `candidates.json`.
+4. Hard filters: `rejection_reason == "ok"`; the camel not cut off by the image border
+   (`mask_cut_by_frame`, `frame_margin_px` 1 — revised 2026-10-11, see below);
+   `mask_area_frac` ∈ [0.10, 0.80] (parent MAF); **`z_mean ≥ 1.0 m` (operator's absolute
+   floor)** and proposed `z_median ≥ 1.5 m` (A8); valid fraction ≥ 0.6. Every rejected
+   frame is counted by reason in `candidates.json`. **Revision (D10, operator to
+   confirm):** the original "no mask pixel within 8 px of the depth-valid region" rule
+   rejected 155/155 sampled frames of bag 004 and the golden frame itself (the head sits in
+   the 22 depth-less top rows); it is now the soft, visible flag `mask_in_depth_margin`
+   (clicks there resolve by KNN with provenance), and the hard `mask_incomplete` again with
+   `strict_depth_fov: true`.
 5. Rank ascending by `z_var`; also record `rel_disp = z_mad / z_median` (same order,
    Spearman 0.965). Present the top M as an **unordered** grid (differences below ~15 %
    are frame-to-frame noise) with `z_median`, `rel_disp`, mask area, valid fraction and a
@@ -316,11 +391,13 @@ depth.
 
 ### Report = PDF (ADR-D7, proposed pending a half-day spike)
 
-- Engine `POST /sessions/{id}/finalize` renders `overlay.png` **once** (fixed figsize/dpi;
-  IBM Plex Sans Arabic TTF from an engine asset dir; `arabic_reshaper` configured from
-  the TTF + `python-bidi`; HTTP 500 if the font or locale stack is missing — never an
-  Arial fallback), writes `session.json` + `report_model.json` atomically and returns
-  `overlay_png_sha256`.
+- Engine `POST /sessions/{id}/finalize` renders `overlay_vN.png` **once** (1280×(H+120)
+  at dpi 100; IBM Plex Sans Arabic TTF from `nazeer_engine/assets/fonts`; matplotlib 3.11
+  shapes with libraqm, so labels go in as logical Unicode with LRM/FSI…PDI isolates —
+  `arabic_reshaper` + `python-bidi` only when libraqm is missing; HTTP 500
+  `arabic_stack_missing` if the font or stack is missing — never an Arial fallback),
+  writes `session.json` + `report_model_vN.json` atomically and returns the overlay
+  sha256 in `outputs.overlay`.
 - App: approve on that PNG; embed the same bytes in `print.html` (React + Tailwind,
   `@page { size: A4; margin: 12mm }`, Plex `@font-face`, `print-color-adjust: exact`,
   `page-break-inside: avoid` on the camel view and signature wells); await
@@ -328,10 +405,20 @@ depth.
   `printToPDF({pageSize:'A4', printBackground:true, preferCSSPageSize:true, margins:{top:0,right:0,bottom:0,left:0}})`
   in a hidden window (`contextIsolation`, `sandbox`, fresh partition). Language
   (`ar | en | both`), rubric variant and names are explicit inputs, never `localStorage`.
-- App POSTs the PDF bytes to `POST /sessions/{id}/report/finalize`; the engine attaches,
-  probes and writes `report.manifest.json` (contract C3.7) and refuses the PDF on DRIFT.
-  PNG file bytes cannot survive inside a PDF container on any route, so this is the
-  restated byte-identity guarantee.
+- App POSTs the PDF bytes to `POST /sessions/{id}/report` (`X-Overlay-Sha256`); the
+  engine attaches, probes and writes `report.manifest.json` (contract C3.7) and refuses
+  the PDF on DRIFT (409, the rejected file kept as `report_vN.rejected_<UTC>.pdf`). PNG
+  file bytes cannot survive inside a PDF container on any route, so this is the restated
+  byte-identity guarantee.
+- Every string in `SessionView.required_report_texts` (measurement names, judge /
+  council / event, camel id) must be printed in an **embedded** Plex face: with only the
+  Regular TTF embedded, a bold heading is a synthesized bold that Chromium emits as Type3
+  glyphs whose text extracts in visual order — the probe fails `text_probe_failed` with
+  the hint `synthesized_face` (measured with headless Edge, 2026-10-11). Embed each weight
+  the page uses, or keep those strings regular.
+- The page is rendered from one report model version (`outputs.report_model`); the upload
+  names it with `X-Report-Model-Sha256`. Changing report inputs after printing writes a
+  new model, so that print is refused (409 `report_model_mismatch`) — reprint.
 - The generated PDF is the final review surface shown in-app; `--export <session_dir>`
   re-exports headlessly. Tests assert content (attachments, pixels, text, font names),
   never file bytes.
@@ -397,8 +484,10 @@ paths, the 3D reconstruction, or anything PyQt.
 - **The live editing canvas is never an approval surface:** approve on the engine PNG,
   sign off on the PDF.
 - **Python style:** `from __future__ import annotations`, ruff line length 100, double
-  quotes, target py311 (add ruff to the engine dev deps; not in the venv yet). The venv
-  was built with cp311 wheels; other interpreters are untested.
+  quotes, target py311 (`ruff check` + `ruff format` clean; config in
+  `engine/pyproject.toml`). The venv was built with cp311 wheels; other interpreters are
+  untested. Never type `\u` escapes for bidi control characters into source (they become
+  the invisible character); build them with `chr()` — a test bans invisible controls.
 
 ## Data and artefacts (never commit)
 
@@ -427,7 +516,19 @@ load-bearing. The model card, `metrics.json` and `results.csv` stay tracked.
 - **Arabic in the PDF:** `printToPDF` before `document.fonts.ready` captures a fallback
   face; `printToPDF` defaults are Letter, no backgrounds, scaled-to-fit, 1 cm margins — all
   overridden; the parent template's load script picks the language from `localStorage`
-  and hides the other — pin the language explicitly.
+  and hides the other — pin the language explicitly. A synthesized bold / italic face
+  makes names unsearchable (Type3 glyphs, visual-order text): embed every weight used.
+- **Arabic in the overlay:** matplotlib 3.11 already shapes and reorders with libraqm;
+  feeding it `arabic_reshaper` + `get_display` output reverses the text (double bidi).
+- **Sidecar PID:** a venv `python.exe` on Windows is a launcher that runs the real
+  interpreter as a child, so the PID Electron holds is not the engine's; identify the
+  engine by the ready line's `pid` (also in `engine.lock` and `/health`), stop it via
+  `POST /system/shutdown` or by killing the spawned process (the launcher's job object
+  takes the child with it).
+- **Real-resource tests are opt-in** (`NAZEER_REAL=1` or `-m realbag` etc.); a test
+  marked `realbag` and `realmodel` needs both names in `-m`. The real flow hard-links bag
+  004 under `runs\اختبار\` (same volume, removed afterwards) — librealsense 2.57 opens
+  non-ASCII paths directly (8.3 short names are disabled on drive E:).
 - **Paths:** `cv2.imwrite`/`imread` fail silently on non-ASCII Windows paths; the parent's
   four-view page writes to a CWD-relative `runs/` (lost or scattered sessions under
   Electron's spawn cwd or a read-only install dir); `playback.seek()` costs ≈ 10 s.
@@ -455,5 +556,9 @@ the card's numbering gap and never referenced — operator to fill. D7 PDF route
 (Electron printToPDF; engine = rendering authority; **proposed pending the spike**), D8
 measurement types + depth provenance (contract C1, **reviewed, parameters proposed**),
 D9 app stack (Tailwind; offline rule) and D10 frame candidates + session/history flow
-(contracts C2/C3, **reviewed, parameters proposed**) are drafted 2026-10-10. Record a
-decision there before coding against it.
+(contracts C2/C3, **reviewed, parameters proposed**) are drafted 2026-10-10. D7, D8 and
+D10 gained "Engine parameters (implemented 2026-10-11)" sections, updated after an
+adversarial review of the engine (24 findings fixed: report-model versioning, strict
+probes, the 1.5 s pick gap, cluster sizes, autosave semantics, robustness); the one open
+change for the operator is D10's C2.4 completeness revision. Record a decision there
+before coding against it.

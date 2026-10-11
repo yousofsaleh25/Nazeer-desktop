@@ -1,0 +1,34 @@
+[project]
+name = "nazeer-engine"
+version = "0.1.0"
+description = "Nazeer Desktop measurement engine: FastAPI sidecar for the Electron app"
+requires-python = ">=3.11,<3.12"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-ra -q --strict-markers"
+markers = [
+    "realbag: needs a real D455 .bag under nazeer-desktop/data/.bag (slow)",
+    "realmodel: needs engine/models/best.pt and loads ultralytics",
+    "realpdf: prints a fixture page with the local msedge.exe headless and probes it",
+    "slow: long-running",
+]
+filterwarnings = [
+    "ignore::DeprecationWarning:starlette.testclient",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+extend-exclude = [".venv", "models", "build", "dist"]
+
+[tool.ruff.format]
+quote-style = "double"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+ignore = ["B008"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["nazeer_engine"]

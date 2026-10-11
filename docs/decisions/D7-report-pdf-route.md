@@ -118,3 +118,37 @@ Ultralytics (AGPL, D6) need one counsel pass; no PDF/A or PDF/UA promise.
   `--export`, Route C's engine-side converter becomes relevant.
 - Licence posture (closed-source?) — see D6.
 - Is the half-day spike acceptable before this record is locked?
+
+## Engine side (implemented 2026-10-11)
+
+Status: the engine half is implemented (`overlay.py`, `report_model.py`, `pdf_finalize.py`,
+`session_store.finalize / attach_report`, `POST /sessions/{id}/finalize`,
+`POST /sessions/{id}/report`) and integration-tested against **headless Microsoft Edge**
+(the same Chromium print path as `printToPDF`) on a real bag-004 session: pixel probe max
+|Δ| = 0 on the 1280×840 overlay, the Plex subset found, every Arabic and English name found
+in the text layer, three attachments read back by sha256. Printing from Electron itself is
+still untested — the app does not exist yet.
+
+- Overlay: 1280×(H + 120) px at dpi 100 (a 120 px bilingual footer: Z_ref, ground row,
+  "N of M points snapped"); hollow KNN markers with leader lines; red ground line; labels
+  de-overlapped. matplotlib 3.11 lays text out with libraqm, so labels go in as logical
+  Unicode with LRM + FSI…PDI isolates; `arabic_reshaper` + `python-bidi` only run when
+  libraqm is missing (B36). Font = the pinned Plex Regular TTF from `engine/nazeer_engine/
+  assets/fonts/` (sha256-checked); a missing font or locale stack is a 500
+  `arabic_stack_missing`, never a fallback face.
+- Upload: the raw PDF bytes (`Content-Type: application/pdf`, ≤ 64 MiB) with
+  `X-Overlay-Sha256` (and `X-Overlay-Version`) **and** `X-Report-Model-Sha256` — the
+  report model the page was rendered from. Every finalize and every *changed* report-input
+  PATCH writes a new `report_model_v<M>.json` (never rewritten in place); a page printed
+  from an older model is refused (409 `report_model_mismatch`), so the sealed PDF and its
+  attached `report_model.json` always agree (review 2026-10-11, B40). The pixel probe is
+  always hard; the text and font probes are hard by default (`require_text` /
+  `require_font` default true, B39) and can be relaxed per upload; attachment failures are
+  soft (C3.7).
+- **Print-page font rule (B38, measured):** every operator string the probe checks
+  (`SessionView.required_report_texts`: measurement names, judge / council / event, camel
+  id) must be drawn in an **embedded** face. With only Plex Regular embedded, a bold
+  heading is a synthesized bold that Chromium emits as Type3 glyphs whose text extracts in
+  visual order — the names become unsearchable and the probe fails (`text_probe_failed`,
+  hint `synthesized_face`, `fonts.type3_present`). Either embed every Plex weight the page
+  uses (`@font-face` per weight) or keep those strings in the regular weight.
