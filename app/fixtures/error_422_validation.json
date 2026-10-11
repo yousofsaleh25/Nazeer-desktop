@@ -1,0 +1,19 @@
+{
+  "error": {
+    "code": "validation_error",
+    "message": "the request does not match the API schema",
+    "details": {
+      "errors": [
+        {
+          "type": "missing",
+          "loc": [
+            "body",
+            "candidate"
+          ],
+          "msg": "Field required",
+          "input": {}
+        }
+      ]
+    }
+  }
+}

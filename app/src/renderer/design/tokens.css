@@ -1,0 +1,330 @@
+/*
+ * Nazeer design tokens (Tailwind CSS v4). README.md beside this file explains the rules.
+ *
+ * Theme values are --nz-* custom properties on [data-theme] scopes (light is also the :root
+ * default). `@theme inline` maps them to Tailwind utilities, so `bg-surface` reads
+ * var(--nz-surface) at the element it styles: a [data-theme="dark"] subtree is dark even inside a
+ * light page. Every text/surface pair is checked for WCAG AA by design/contrast.test.ts.
+ */
+
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+/* direction from the computed directionality: Tailwind's default `rtl:` also matches anything
+   inside a [dir="rtl"] element, so an LTR island in an RTL page (ids, code, the measuring canvas)
+   would mirror its arrows */
+@custom-variant rtl (&:dir(rtl));
+@custom-variant ltr (&:dir(ltr));
+
+@theme {
+  /* only Nazeer colours: Tailwind's default palette is removed */
+  --color-*: initial;
+  --color-white: #ffffff;
+  --color-black: #000000;
+
+  /* raw neutral scales (the semantic tokens below are built from them) */
+  --color-sand-50: #fdfbf7;
+  --color-sand-100: #faf6f0;
+  --color-sand-200: #f5efe6;
+  --color-sand-300: #efe5d2;
+  --color-sand-400: #e5d8c0;
+  --color-sand-500: #c4b295;
+  --color-sand-600: #8a7a66;
+  --color-sand-700: #66584a;
+  --color-sand-800: #5a4a38;
+  --color-sand-900: #3b2e23;
+  --color-sand-950: #2a1f18;
+  --color-night-50: #e8e5dd;
+  --color-night-100: #c9c5bd;
+  --color-night-200: #a8a39b;
+  --color-night-300: #9a958c;
+  --color-night-400: #6f6b65;
+  --color-night-500: #4a4852;
+  --color-night-600: #3a3a45;
+  --color-night-700: #2a2a30;
+  --color-night-800: #1f1f25;
+  --color-night-900: #16161a;
+  --color-night-950: #0e0e10;
+
+  /* measurement strokes = the engine's assign_color(0..11) (geometry.py: golden-ratio HLS,
+     l 0.46, s 0.62); the same in both themes because they are drawn on the camel image */
+  --color-measure-0: #be2c2c;
+  --color-measure-1: #2c57be;
+  --color-measure-2: #81be2c;
+  --color-measure-3: #be2cab;
+  --color-measure-4: #2cbea5;
+  --color-measure-5: #be7b2c;
+  --color-measure-6: #502cbe;
+  --color-measure-7: #32be2c;
+  --color-measure-8: #be2c5d;
+  --color-measure-9: #2c87be;
+  --color-measure-10: #b2be2c;
+  --color-measure-11: #9f2cbe;
+
+  /* the engine overlay's own conventions (overlay.py) */
+  --color-overlay-ground: #ff3333;
+  --color-overlay-jump: #ff3333;
+  --color-overlay-rejected: #9e9e9e;
+  --color-overlay-default: #d97757;
+
+  /* type: IBM Plex Sans Arabic for Arabic and Latin (bundled, design/fonts.css) */
+  --font-sans: "IBM Plex Sans Arabic", "Segoe UI", Tahoma, sans-serif;
+  --font-mono: Consolas, "Courier New", monospace;
+  /* Arabic needs taller lines than Tailwind's defaults */
+  --text-xs: 0.75rem;
+  --text-xs--line-height: 1.6;
+  --text-sm: 0.875rem;
+  --text-sm--line-height: 1.6;
+  --text-base: 1rem;
+  --text-base--line-height: 1.65;
+  --text-lg: 1.125rem;
+  --text-lg--line-height: 1.6;
+  --text-xl: 1.25rem;
+  --text-xl--line-height: 1.5;
+  --text-2xl: 1.5rem;
+  --text-2xl--line-height: 1.4;
+  --text-3xl: 1.875rem;
+  --text-3xl--line-height: 1.35;
+  --text-4xl: 2.25rem;
+  --text-4xl--line-height: 1.3;
+
+  /* radius (Tailwind's scale kept: sm 4 px controls, md 6 px tables, lg 8 px cards) */
+
+  --shadow-*: initial;
+
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-emphasized: cubic-bezier(0.3, 0, 0, 1);
+}
+
+@theme inline {
+  /* surfaces and text */
+  --color-canvas: var(--nz-canvas);
+  --color-surface: var(--nz-surface);
+  --color-surface-raised: var(--nz-surface-raised);
+  --color-surface-sunken: var(--nz-surface-sunken);
+  --color-surface-hover: var(--nz-surface-hover);
+  --color-border: var(--nz-border);
+  --color-border-strong: var(--nz-border-strong);
+  --color-border-control: var(--nz-border-control);
+  --color-ink: var(--nz-ink);
+  --color-ink-secondary: var(--nz-ink-secondary);
+  --color-ink-muted: var(--nz-ink-muted);
+  --color-focus: var(--nz-focus);
+  --color-backdrop: var(--nz-backdrop);
+
+  /* primary (terracotta) */
+  --color-primary: var(--nz-primary);
+  --color-primary-hover: var(--nz-primary-hover);
+  --color-primary-active: var(--nz-primary-active);
+  --color-primary-fg: var(--nz-primary-fg);
+  --color-primary-text: var(--nz-primary-text);
+  --color-primary-soft: var(--nz-primary-soft);
+  --color-primary-border: var(--nz-primary-border);
+
+  /* status: solid (fills), fg (text on solid), text (on surfaces), soft (chip fill), border */
+  --color-success: var(--nz-success);
+  --color-success-fg: var(--nz-success-fg);
+  --color-success-text: var(--nz-success-text);
+  --color-success-soft: var(--nz-success-soft);
+  --color-success-border: var(--nz-success-border);
+  --color-warning: var(--nz-warning);
+  --color-warning-fg: var(--nz-warning-fg);
+  --color-warning-text: var(--nz-warning-text);
+  --color-warning-soft: var(--nz-warning-soft);
+  --color-warning-border: var(--nz-warning-border);
+  --color-danger: var(--nz-danger);
+  --color-danger-fg: var(--nz-danger-fg);
+  --color-danger-text: var(--nz-danger-text);
+  --color-danger-soft: var(--nz-danger-soft);
+  --color-danger-border: var(--nz-danger-border);
+  --color-info: var(--nz-info);
+  --color-info-fg: var(--nz-info-fg);
+  --color-info-text: var(--nz-info-text);
+  --color-info-soft: var(--nz-info-soft);
+  --color-info-border: var(--nz-info-border);
+
+  /* candidate buckets (SIDE / END / QUARTER) */
+  --color-bucket-side-text: var(--nz-bucket-side-text);
+  --color-bucket-side-soft: var(--nz-bucket-side-soft);
+  --color-bucket-side-border: var(--nz-bucket-side-border);
+  --color-bucket-end-text: var(--nz-bucket-end-text);
+  --color-bucket-end-soft: var(--nz-bucket-end-soft);
+  --color-bucket-end-border: var(--nz-bucket-end-border);
+  --color-bucket-quarter-text: var(--nz-bucket-quarter-text);
+  --color-bucket-quarter-soft: var(--nz-bucket-quarter-soft);
+  --color-bucket-quarter-border: var(--nz-bucket-quarter-border);
+
+  --shadow-sm: var(--nz-shadow-sm);
+  --shadow-md: var(--nz-shadow-md);
+  --shadow-lg: var(--nz-shadow-lg);
+}
+
+:root,
+[data-theme="light"] {
+  color-scheme: light;
+  --nz-canvas: #f5efe6;
+  --nz-surface: #faf6f0;
+  --nz-surface-raised: #fdfbf7;
+  --nz-surface-sunken: #efe5d2;
+  --nz-surface-hover: #e5d8c0;
+  --nz-border: #e0d4bc;
+  --nz-border-strong: #c4b295;
+  --nz-border-control: #8a7a66;
+  --nz-ink: #2a1f18;
+  --nz-ink-secondary: #5a4a38;
+  --nz-ink-muted: #66584a;
+  --nz-focus: #1e5fa8;
+  --nz-backdrop: rgb(42 31 24 / 0.45);
+
+  --nz-primary: #a5543a;
+  --nz-primary-hover: #8f4630;
+  --nz-primary-active: #7a3b28;
+  --nz-primary-fg: #ffffff;
+  --nz-primary-text: #8e4329;
+  --nz-primary-soft: #f6e3d8;
+  --nz-primary-border: #d99a7e;
+
+  --nz-success: #2d7b4f;
+  --nz-success-fg: #ffffff;
+  --nz-success-text: #246a43;
+  --nz-success-soft: #ddefe3;
+  --nz-success-border: #8cc4a2;
+  --nz-warning: #d99a2b;
+  --nz-warning-fg: #2a1f18;
+  --nz-warning-text: #7a4f07;
+  --nz-warning-soft: #fbebc8;
+  --nz-warning-border: #e2b65c;
+  --nz-danger: #b3261e;
+  --nz-danger-fg: #ffffff;
+  --nz-danger-text: #a3241c;
+  --nz-danger-soft: #fbe2df;
+  --nz-danger-border: #e59a93;
+  --nz-info: #2b5c8a;
+  --nz-info-fg: #ffffff;
+  --nz-info-text: #2b5c8a;
+  --nz-info-soft: #e0eaf5;
+  --nz-info-border: #94b4d6;
+
+  --nz-bucket-side-text: #1f6b6b;
+  --nz-bucket-side-soft: #ddf0ee;
+  --nz-bucket-side-border: #8ccbc4;
+  --nz-bucket-end-text: #5b3f8c;
+  --nz-bucket-end-soft: #ece4f7;
+  --nz-bucket-end-border: #b9a3dd;
+  --nz-bucket-quarter-text: #6b5a12;
+  --nz-bucket-quarter-soft: #f1ecd2;
+  --nz-bucket-quarter-border: #cdbf7a;
+
+  --nz-shadow-sm: 0 1px 2px rgb(75 50 30 / 0.08);
+  --nz-shadow-md: 0 2px 12px rgb(75 50 30 / 0.1);
+  --nz-shadow-lg: 0 12px 32px rgb(75 50 30 / 0.18);
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+  --nz-canvas: #0e0e10;
+  --nz-surface: #16161a;
+  --nz-surface-raised: #1f1f25;
+  --nz-surface-sunken: #121215;
+  --nz-surface-hover: #28282e;
+  --nz-border: #2a2a30;
+  --nz-border-strong: #3a3a45;
+  --nz-border-control: #6f6b65;
+  --nz-ink: #e8e5dd;
+  --nz-ink-secondary: #a8a39b;
+  --nz-ink-muted: #9a958c;
+  --nz-focus: #8dbbe9;
+  --nz-backdrop: rgb(0 0 0 / 0.6);
+
+  --nz-primary: #e08866;
+  --nz-primary-hover: #e89876;
+  --nz-primary-active: #f0a088;
+  --nz-primary-fg: #1a0f0a;
+  --nz-primary-text: #ea9a7b;
+  --nz-primary-soft: #3a2219;
+  --nz-primary-border: #7a3b28;
+
+  --nz-success: #5fb888;
+  --nz-success-fg: #0e0e10;
+  --nz-success-text: #6cc495;
+  --nz-success-soft: #14291d;
+  --nz-success-border: #2d6b48;
+  --nz-warning: #e3b04b;
+  --nz-warning-fg: #1a1306;
+  --nz-warning-text: #e8bc5e;
+  --nz-warning-soft: #2e2410;
+  --nz-warning-border: #7a5a1a;
+  --nz-danger: #f07a70;
+  --nz-danger-fg: #1a0806;
+  --nz-danger-text: #f3897f;
+  --nz-danger-soft: #3a1714;
+  --nz-danger-border: #8a3029;
+  --nz-info: #7fb2e5;
+  --nz-info-fg: #08131f;
+  --nz-info-text: #8dbbe9;
+  --nz-info-soft: #13233a;
+  --nz-info-border: #33557a;
+
+  --nz-bucket-side-text: #6ccfc4;
+  --nz-bucket-side-soft: #10302d;
+  --nz-bucket-side-border: #2c6a63;
+  --nz-bucket-end-text: #b79bea;
+  --nz-bucket-end-soft: #261c3a;
+  --nz-bucket-end-border: #5a4685;
+  --nz-bucket-quarter-text: #d6c46a;
+  --nz-bucket-quarter-soft: #2b2710;
+  --nz-bucket-quarter-border: #6b6024;
+
+  --nz-shadow-sm: 0 1px 2px rgb(0 0 0 / 0.5);
+  --nz-shadow-md: 0 4px 16px rgb(0 0 0 / 0.5);
+  --nz-shadow-lg: 0 16px 40px rgb(0 0 0 / 0.6);
+}
+
+/* theme-independent: layers, motion, focus, hit targets */
+:root {
+  --nz-z-sticky: 10;
+  --nz-z-dropdown: 30;
+  --nz-z-overlay: 40;
+  --nz-z-dialog: 50;
+  --nz-z-toast: 60;
+  --nz-z-tooltip: 70;
+  --nz-duration-fast: 120ms;
+  --nz-duration-base: 200ms;
+  --nz-duration-slow: 320ms;
+  --nz-focus-width: 2px;
+  --nz-focus-offset: 2px;
+  --nz-hit-min: 2rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --nz-duration-fast: 0ms;
+    --nz-duration-base: 0ms;
+    --nz-duration-slow: 0ms;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@layer base {
+  html {
+    font-family: var(--font-sans);
+    /* never a synthesized bold or italic: every weight in use is bundled (D9, B38) */
+    font-synthesis: none;
+    background-color: var(--nz-canvas);
+    color: var(--nz-ink);
+    -webkit-font-smoothing: antialiased;
+  }
+  :focus-visible {
+    outline: var(--nz-focus-width) solid var(--nz-focus);
+    outline-offset: var(--nz-focus-offset);
+  }
+  ::selection {
+    background-color: var(--nz-primary-soft);
+    color: var(--nz-ink);
+  }
+}

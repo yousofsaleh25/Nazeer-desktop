@@ -1,0 +1,9 @@
+/*
+ * IBM Plex Sans Arabic (OFL-1.1) for the operator UI, bundled from @fontsource: the real 400, 500,
+ * 600 and 700 cuts (Arabic + Latin subsets), so no weight is ever synthesized. The print page does
+ * not use these files: it gets the engine's pinned Regular TTF from main (D9).
+ */
+@import "@fontsource/ibm-plex-sans-arabic/400.css";
+@import "@fontsource/ibm-plex-sans-arabic/500.css";
+@import "@fontsource/ibm-plex-sans-arabic/600.css";
+@import "@fontsource/ibm-plex-sans-arabic/700.css";

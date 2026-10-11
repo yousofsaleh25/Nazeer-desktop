@@ -1,11 +1,15 @@
 # nazeer-desktop — standalone-safe. The parent repo's .gitignore does NOT cover node_modules/,
 # this directory's model weights, runs/, or non-.bag files under data/ (its patterns are root-anchored).
 node_modules/
-app/dist/
-app/dist-electron/
+app/dist*/
 app/out/
 app/release/
 app/.vite/
+# Playwright / Vitest artefacts
+app/test-results/
+app/playwright-report/
+app/blob-report/
+app/coverage/
 engine/.venv/
 engine/build/
 engine/dist/

@@ -1,0 +1,10 @@
+out/
+dist*/
+release/
+coverage/
+test-results/
+playwright-report/
+fixtures/
+package-lock.json
+src/shared/api.d.ts
+src/shared/engine-codes.json

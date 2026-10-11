@@ -1,0 +1,355 @@
+{
+  "kinds": {
+    "distance_2d": {
+      "ar": "مسافة ثنائية الأبعاد (مستوى Z_ref)",
+      "en": "2D distance (Z_ref plane)"
+    },
+    "distance_3d": {
+      "ar": "مسافة ثلاثية الأبعاد",
+      "en": "3D distance"
+    },
+    "curve_2d": {
+      "ar": "طول خط منكسر ثنائي الأبعاد (مستوى Z_ref)",
+      "en": "2D polyline length (Z_ref plane)"
+    },
+    "curve_3d": {
+      "ar": "طول خط منكسر ثلاثي الأبعاد",
+      "en": "3D polyline length"
+    },
+    "angle_3d_4point": {
+      "ar": "زاوية بين خطين (ثلاثية الأبعاد)",
+      "en": "Angle between two lines (3D)"
+    },
+    "angle_2d_4point": {
+      "ar": "زاوية بين خطين (ثنائية الأبعاد)",
+      "en": "Angle between two lines (2D)"
+    },
+    "angle_2d_3point": {
+      "ar": "زاوية بثلاث نقاط (ثنائية الأبعاد)",
+      "en": "3-point angle (2D)"
+    },
+    "angle_3d_3point": {
+      "ar": "زاوية بثلاث نقاط (ثلاثية الأبعاد)",
+      "en": "3-point angle (3D)"
+    },
+    "angle_2d_from_horizontal": {
+      "ar": "زاوية مع الأفق",
+      "en": "Angle vs horizontal"
+    }
+  },
+  "input_kinds": {
+    "distance_2d": {
+      "ar": "مسافة ثنائية الأبعاد (مستوى Z_ref)",
+      "en": "2D distance (Z_ref plane)"
+    },
+    "distance_3d": {
+      "ar": "مسافة ثلاثية الأبعاد",
+      "en": "3D distance"
+    },
+    "curve_2d": {
+      "ar": "طول خط منكسر ثنائي الأبعاد (مستوى Z_ref)",
+      "en": "2D polyline length (Z_ref plane)"
+    },
+    "curve_3d": {
+      "ar": "طول خط منكسر ثلاثي الأبعاد",
+      "en": "3D polyline length"
+    },
+    "angle_2d_3point": {
+      "ar": "زاوية بثلاث نقاط (ثنائية الأبعاد)",
+      "en": "3-point angle (2D)"
+    },
+    "angle_3d_3point": {
+      "ar": "زاوية بثلاث نقاط (ثلاثية الأبعاد)",
+      "en": "3-point angle (3D)"
+    },
+    "angle_2d_from_horizontal": {
+      "ar": "زاوية مع الأفق",
+      "en": "Angle vs horizontal"
+    },
+    "angle_4point": {
+      "ar": "زاوية بين خطين",
+      "en": "Angle between two lines"
+    }
+  },
+  "sources": {
+    "window_median": {
+      "ar": "مباشر",
+      "en": "direct"
+    },
+    "knn_snapped_to_mask": {
+      "ar": "مُقرَّب إلى الجمل",
+      "en": "snapped to camel"
+    },
+    "knn_fill": {
+      "ar": "مُكمَّل من الجوار",
+      "en": "filled from neighbours"
+    },
+    "knn_no_depth_band": {
+      "ar": "خارج تغطية العمق، مُقرَّب إلى الجمل",
+      "en": "outside depth coverage, snapped to camel"
+    },
+    "knn_raw_boundary": {
+      "ar": "من حافة القناع",
+      "en": "from the mask boundary"
+    },
+    "direct_off_mask": {
+      "ar": "أرض / خلفية (مباشر)",
+      "en": "ground / background (direct)"
+    }
+  },
+  "planes": {
+    "zref_plane": {
+      "ar": "مستوى Z_ref",
+      "en": "Z_ref plane"
+    },
+    "image_plane": {
+      "ar": "مستوى الصورة",
+      "en": "image plane"
+    },
+    "from_lines": {
+      "ar": "من الخطين",
+      "en": "from the two lines"
+    }
+  },
+  "flags": {
+    "knn_far": {
+      "ar": "الجيران بعيدون (> 10 سم)",
+      "en": "neighbours far (> 10 cm)",
+      "severity": "warn"
+    },
+    "knn_spread": {
+      "ar": "تباين أعماق الجيران",
+      "en": "neighbour depths spread",
+      "severity": "warn"
+    },
+    "depth_edge": {
+      "ar": "حافة عمق في النافذة",
+      "en": "depth edge in the window",
+      "severity": "warn"
+    },
+    "depth_edge_near_cluster": {
+      "ar": "استُخدمت الطبقة الأقرب",
+      "en": "nearer depth layer used",
+      "severity": "info"
+    },
+    "off_mask_surface": {
+      "ar": "سطح آخر تحت النقطة",
+      "en": "another surface under the click",
+      "severity": "warn"
+    },
+    "knn_disagree": {
+      "ar": "يختلف عن الجيران",
+      "en": "differs from neighbours",
+      "severity": "info"
+    },
+    "window_unmasked": {
+      "ar": "نافذة غير مقيدة بالقناع",
+      "en": "window not limited to the mask",
+      "severity": "info"
+    },
+    "knn_raw_boundary": {
+      "ar": "استُخدمت حافة القناع",
+      "en": "mask boundary used",
+      "severity": "warn"
+    },
+    "ground_target_unresolved": {
+      "ar": "لا عمق للأرض؛ قُرِّبت إلى الجمل",
+      "en": "no ground depth; snapped to camel",
+      "severity": "warn"
+    },
+    "outside_depth_fov": {
+      "ar": "خارج تغطية العمق",
+      "en": "outside depth coverage",
+      "severity": "info"
+    },
+    "segment_depth_jump": {
+      "ar": "قفزة عمق في مقطع",
+      "en": "depth jump in a segment",
+      "severity": "warn"
+    },
+    "endpoint_dz": {
+      "ar": "نقطة بعيدة عن مستوى Z_ref (> 10 %)",
+      "en": "point off the Z_ref plane (> 10 %)",
+      "severity": "warn"
+    }
+  },
+  "rejections": {
+    "pixel_out_of_image": {
+      "ar": "النقطة خارج الصورة",
+      "en": "point outside the image"
+    },
+    "no_valid_depth_in_mask": {
+      "ar": "لا يوجد عمق صالح في القناع",
+      "en": "no valid depth in the mask"
+    },
+    "mask_valid_too_sparse": {
+      "ar": "العمق الصالح في القناع قليل جدًا",
+      "en": "too little valid depth in the mask"
+    },
+    "knn_too_far": {
+      "ar": "أقرب نقاط الجمل بعيدة جدًا (> 30 سم)",
+      "en": "nearest camel pixels too far (> 30 cm)"
+    },
+    "too_few_points": {
+      "ar": "عدد النقاط غير كافٍ",
+      "en": "too few points"
+    },
+    "line_not_found": {
+      "ar": "الخط المرجعي غير موجود",
+      "en": "referenced line not found"
+    },
+    "referenced_line_invalid": {
+      "ar": "الخط المرجعي مرفوض",
+      "en": "referenced line is rejected"
+    },
+    "mixed_line_kinds": {
+      "ar": "خط ثنائي الأبعاد مع خط ثلاثي الأبعاد",
+      "en": "one 2D and one 3D line"
+    },
+    "degenerate_lines": {
+      "ar": "خط بطول صفر",
+      "en": "zero-length line"
+    },
+    "degenerate_ray": {
+      "ar": "ضلع بطول صفر",
+      "en": "zero-length ray"
+    },
+    "zero_length": {
+      "ar": "خط بطول صفر",
+      "en": "zero-length line"
+    }
+  },
+  "candidate_rejections": {
+    "no_detection": {
+      "ar": "لم يُكتشف جمل",
+      "en": "no camel detected"
+    },
+    "mask_area_out_of_range": {
+      "ar": "مساحة القناع خارج النطاق",
+      "en": "mask area out of range"
+    },
+    "mask_cut_by_frame": {
+      "ar": "الجمل مقطوع عند حافة الصورة",
+      "en": "camel cut off by the image edge"
+    },
+    "mask_incomplete": {
+      "ar": "الجمل يدخل الهامش الخالي من العمق (وضع صارم)",
+      "en": "camel reaches the depth-less margin (strict mode)"
+    },
+    "z_mean_below_floor": {
+      "ar": "متوسط العمق أقل من 1 م",
+      "en": "mean depth below 1 m"
+    },
+    "z_median_below_min": {
+      "ar": "وسيط العمق أقل من الحد",
+      "en": "median depth below the minimum"
+    },
+    "valid_frac_too_low": {
+      "ar": "العمق الصالح قليل",
+      "en": "too little valid depth"
+    },
+    "no_valid_depth_in_mask": {
+      "ar": "لا يوجد عمق صالح في القناع",
+      "en": "no valid depth in the mask"
+    }
+  },
+  "candidate_flags": {
+    "mask_in_depth_margin": {
+      "ar": "جزء من الجمل خارج مجال العمق (العمق هناك من أقرب نقاط الجمل)",
+      "en": "part of the camel is outside the depth field (KNN depth there)",
+      "severity": "info"
+    }
+  },
+  "statuses": {
+    "open": {
+      "ar": "مفتوحة",
+      "en": "open"
+    },
+    "finalized": {
+      "ar": "مُعتمدة",
+      "en": "finalized"
+    },
+    "exported": {
+      "ar": "مُصدَّرة",
+      "en": "exported"
+    }
+  },
+  "buckets": {
+    "SIDE": {
+      "ar": "جانبي",
+      "en": "side"
+    },
+    "END": {
+      "ar": "أمامي / خلفي",
+      "en": "end-on"
+    },
+    "QUARTER": {
+      "ar": "مائل",
+      "en": "quarter"
+    }
+  },
+  "targets": {
+    "camel": {
+      "ar": "الجمل",
+      "en": "camel"
+    },
+    "ground": {
+      "ar": "أرض / خلفية",
+      "en": "ground / background"
+    }
+  },
+  "ground_badges": {
+    "far_side_row_differs": {
+      "ar": "خط الأرض من الساق القريبة",
+      "en": "ground line from the near legs"
+    },
+    "ground_row_unresolved": {
+      "ar": "خط الأرض غير محسوم",
+      "en": "ground line unresolved"
+    }
+  },
+  "confidence": {
+    "high": {
+      "ar": "عالية",
+      "en": "high"
+    },
+    "low": {
+      "ar": "منخفضة",
+      "en": "low"
+    }
+  },
+  "job_states": {
+    "queued": {
+      "ar": "في الانتظار",
+      "en": "queued"
+    },
+    "running": {
+      "ar": "قيد التشغيل",
+      "en": "running"
+    },
+    "cancelling": {
+      "ar": "جارٍ الإلغاء",
+      "en": "cancelling"
+    },
+    "done": {
+      "ar": "اكتمل",
+      "en": "done"
+    },
+    "cancelled": {
+      "ar": "أُلغي",
+      "en": "cancelled"
+    },
+    "failed": {
+      "ar": "فشل",
+      "en": "failed"
+    }
+  },
+  "constants": {
+    "KNN_K": 9,
+    "KNN_RING_EXCLUDE_PX": 2,
+    "KNN_FAR_M": 0.1,
+    "KNN_MAX_DIST_M": 0.3,
+    "ENDPOINT_DZ_FLAG_FRAC": 0.1,
+    "Z_MEAN_MIN_M": 1
+  }
+}

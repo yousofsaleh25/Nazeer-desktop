@@ -1,0 +1,158 @@
+{
+  "seq": 4,
+  "row": {
+    "id": 10,
+    "view": "frame",
+    "name": "خارج الصورة",
+    "p1_px": [
+      -40,
+      120
+    ],
+    "p2_px": [
+      395.35,
+      358.18
+    ],
+    "p1_3d": null,
+    "p2_3d": [
+      -0.9290259317667136,
+      -0.02949910500398437,
+      2.3420000076293945
+    ],
+    "distance_m": null,
+    "uncertainty_m": null,
+    "rejection_reason": "p1:pixel_out_of_image",
+    "created_at": "2026-10-11T19:18:38+00:00",
+    "measurement_type": "distance_3d",
+    "z_constant_m": null,
+    "order": 9,
+    "display_color": "#2C87BE",
+    "note": "",
+    "targets": [
+      "camel",
+      "camel"
+    ],
+    "p1_depth": {
+      "source": null,
+      "depth_m": null,
+      "target": "camel",
+      "inside_mask": false,
+      "inside_depth_bbox": false,
+      "window_n_total": 0,
+      "window_n_valid": 0,
+      "window_n_in_mask": 0,
+      "window_restricted_to_mask": false,
+      "window_median_m": null,
+      "window_spread_m": null,
+      "knn_depth_m": null,
+      "nn_depth_mean_m": null,
+      "k_requested": 9,
+      "k_used": 0,
+      "nn_dist_px_max": null,
+      "nn_dist_m_max": null,
+      "nn_centroid_px": null,
+      "nn_depth_spread_m": null,
+      "direct_depth_m": null,
+      "flags": [],
+      "reason": "pixel_out_of_image"
+    },
+    "p2_depth": {
+      "source": "window_median",
+      "depth_m": 2.3420000076293945,
+      "target": "camel",
+      "inside_mask": true,
+      "inside_depth_bbox": true,
+      "window_n_total": 25,
+      "window_n_valid": 25,
+      "window_n_in_mask": 25,
+      "window_restricted_to_mask": true,
+      "window_median_m": 2.3420000076293945,
+      "window_spread_m": 0.012000083923339844,
+      "knn_depth_m": 2.3420000076293945,
+      "nn_depth_mean_m": 2.3415556218889026,
+      "k_requested": 9,
+      "k_used": 9,
+      "nn_dist_px_max": 1.6597891432347447,
+      "nn_dist_m_max": 0.006046378042339344,
+      "nn_centroid_px": [
+        395.3333333333333,
+        358.1111111111111
+      ],
+      "nn_depth_spread_m": 0.00800013542175293,
+      "direct_depth_m": 2.3420000076293945,
+      "flags": [],
+      "reason": ""
+    },
+    "endpoint_dz_frac": null,
+    "flags": [],
+    "confidence": null,
+    "n_points_knn": 0,
+    "uncertainty_basis": null,
+    "kind": "distance_3d",
+    "family": "lines",
+    "input_kind": "distance_3d",
+    "input": {
+      "id": 10,
+      "kind": "distance_3d",
+      "name": "خارج الصورة",
+      "points": [
+        [
+          -40,
+          120
+        ],
+        [
+          395.35,
+          358.18
+        ]
+      ],
+      "targets": [
+        "camel",
+        "camel"
+      ],
+      "line_a_id": null,
+      "line_b_id": null,
+      "color": "#2C87BE",
+      "note": ""
+    },
+    "presentation": {
+      "kind_label": {
+        "ar": "مسافة ثلاثية الأبعاد",
+        "en": "3D distance"
+      },
+      "value": null,
+      "unit": "m",
+      "value_text": {
+        "ar": "--",
+        "en": "--"
+      },
+      "uncertainty_text": {
+        "ar": "",
+        "en": ""
+      },
+      "depth_basis": [
+        {
+          "point": 1,
+          "ar": "مرفوض: النقطة خارج الصورة",
+          "en": "rejected: point outside the image"
+        },
+        {
+          "point": 2,
+          "ar": "مباشر 2.342 م",
+          "en": "direct 2.342 m"
+        }
+      ],
+      "flags": [],
+      "confidence": null,
+      "rejected": true,
+      "rejection": [
+        {
+          "point": "p1",
+          "code": "pixel_out_of_image",
+          "ar": "النقطة خارج الصورة",
+          "en": "point outside the image"
+        }
+      ],
+      "n_points": 2,
+      "n_points_knn": 0
+    }
+  }
+}

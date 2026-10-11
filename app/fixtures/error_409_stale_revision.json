@@ -1,0 +1,1950 @@
+{
+  "error": {
+    "code": "stale_revision",
+    "message": "stale revision",
+    "details": {
+      "stored_revision": 9,
+      "sent_revision": 0,
+      "current": {
+        "session_id": "20261011_152956_e20a7c",
+        "camel_id": "جمل-تجربة-1",
+        "operator": "المشغل",
+        "notes": "real-bag check (real_run/1): random measurements, seed 20261011",
+        "status": "exported",
+        "revision": 9,
+        "outputs_stale": false,
+        "report_stale": false,
+        "created_at": "2026-10-11T15:29:57+00:00",
+        "updated_at": "2026-10-11T15:30:05+00:00",
+        "next_measurement_id": 10,
+        "measurements": [
+          {
+            "id": 1,
+            "view": "frame",
+            "name": "مسافة ثنائية الأبعاد 1",
+            "p1_px": [
+              841.57,
+              338.84
+            ],
+            "p2_px": [
+              482.2,
+              279.95
+            ],
+            "p1_3d": null,
+            "p2_3d": null,
+            "distance_m": 1.319283717991235,
+            "uncertainty_m": 0.058886106167952416,
+            "rejection_reason": "",
+            "created_at": "2026-10-11T15:29:57+00:00",
+            "measurement_type": "distance_2d",
+            "z_constant_m": 2.3289999961853027,
+            "order": 0,
+            "display_color": "#BE2C2C",
+            "note": "random clicks, both inside the camel",
+            "targets": [
+              "camel",
+              "camel"
+            ],
+            "p1_depth": {
+              "source": null,
+              "depth_m": null,
+              "target": "camel",
+              "inside_mask": true,
+              "inside_depth_bbox": true,
+              "window_n_total": 25,
+              "window_n_valid": 25,
+              "window_n_in_mask": 25,
+              "window_restricted_to_mask": true,
+              "window_median_m": 2.42900013923645,
+              "window_spread_m": 0.01399993896484375,
+              "knn_depth_m": null,
+              "nn_depth_mean_m": null,
+              "k_requested": 9,
+              "k_used": 0,
+              "nn_dist_px_max": null,
+              "nn_dist_m_max": null,
+              "nn_centroid_px": null,
+              "nn_depth_spread_m": null,
+              "direct_depth_m": 2.42900013923645,
+              "flags": [],
+              "reason": ""
+            },
+            "p2_depth": {
+              "source": null,
+              "depth_m": null,
+              "target": "camel",
+              "inside_mask": true,
+              "inside_depth_bbox": true,
+              "window_n_total": 25,
+              "window_n_valid": 25,
+              "window_n_in_mask": 25,
+              "window_restricted_to_mask": true,
+              "window_median_m": 2.0940001010894775,
+              "window_spread_m": 0.006999969482421875,
+              "knn_depth_m": null,
+              "nn_depth_mean_m": null,
+              "k_requested": 9,
+              "k_used": 0,
+              "nn_dist_px_max": null,
+              "nn_dist_m_max": null,
+              "nn_centroid_px": null,
+              "nn_depth_spread_m": null,
+              "direct_depth_m": 2.0940001010894775,
+              "flags": [],
+              "reason": ""
+            },
+            "endpoint_dz_frac": [
+              0.04293694427434045,
+              0.10090162966111393
+            ],
+            "flags": [
+              "endpoint_dz"
+            ],
+            "confidence": "low",
+            "n_points_knn": 0,
+            "uncertainty_basis": "z_mad_over_z_median",
+            "kind": "distance_2d",
+            "family": "lines",
+            "input_kind": "distance_2d",
+            "input": {
+              "id": 1,
+              "kind": "distance_2d",
+              "name": "مسافة ثنائية الأبعاد 1",
+              "points": [
+                [
+                  841.57,
+                  338.84
+                ],
+                [
+                  482.2,
+                  279.95
+                ]
+              ],
+              "targets": [
+                "camel",
+                "camel"
+              ],
+              "line_a_id": null,
+              "line_b_id": null,
+              "color": "#BE2C2C",
+              "note": "random clicks, both inside the camel"
+            },
+            "presentation": {
+              "kind_label": {
+                "ar": "مسافة ثنائية الأبعاد (مستوى Z_ref)",
+                "en": "2D distance (Z_ref plane)"
+              },
+              "value": 1.319283717991235,
+              "unit": "m",
+              "value_text": {
+                "ar": "1.319 م",
+                "en": "1.319 m"
+              },
+              "uncertainty_text": {
+                "ar": "± 5.9 سم",
+                "en": "± 5.9 cm"
+              },
+              "depth_basis": [
+                {
+                  "point": 1,
+                  "ar": "مستوى Z_ref 2.329 م",
+                  "en": "Z_ref 2.329 m"
+                },
+                {
+                  "point": 2,
+                  "ar": "مستوى Z_ref 2.329 م",
+                  "en": "Z_ref 2.329 m"
+                }
+              ],
+              "flags": [
+                {
+                  "code": "endpoint_dz",
+                  "ar": "نقطة بعيدة عن مستوى Z_ref (> 10 %)",
+                  "en": "point off the Z_ref plane (> 10 %)",
+                  "severity": "warn"
+                }
+              ],
+              "confidence": {
+                "code": "low",
+                "ar": "منخفضة",
+                "en": "low"
+              },
+              "rejected": false,
+              "rejection": [],
+              "n_points": 2,
+              "n_points_knn": 0
+            }
+          },
+          {
+            "id": 2,
+            "view": "frame",
+            "name": "Random 2D distance 2",
+            "p1_px": [
+              651.15,
+              333.34
+            ],
+            "p2_px": [
+              625.24,
+              171.94
+            ],
+            "p1_3d": null,
+            "p2_3d": null,
+            "distance_m": 0.5930527891325889,
+            "uncertainty_m": 0.02647085613793192,
+            "rejection_reason": "",
+            "created_at": "2026-10-11T15:29:57+00:00",
+            "measurement_type": "distance_2d",
+            "z_constant_m": 2.3289999961853027,
+            "order": 1,
+            "display_color": "#2C57BE",
+            "note": "random clicks, both inside the camel",
+            "targets": [
+              "camel",
+              "camel"
+            ],
+            "p1_depth": {
+              "source": null,
+              "depth_m": null,
+              "target": "camel",
+              "inside_mask": true,
+              "inside_depth_bbox": true,
+              "window_n_total": 25,
+              "window_n_valid": 25,
+              "window_n_in_mask": 25,
+              "window_restricted_to_mask": true,
+              "window_median_m": 2.313000202178955,
+              "window_spread_m": 0.03600001335144043,
+              "knn_depth_m": null,
+              "nn_depth_mean_m": null,
+              "k_requested": 9,
+              "k_used": 0,
+              "nn_dist_px_max": null,
+              "nn_dist_m_max": null,
+              "nn_centroid_px": null,
+              "nn_depth_spread_m": null,
+              "direct_depth_m": 2.313000202178955,
+              "flags": [],
+              "reason": ""
+            },
+            "p2_depth": {
+              "source": null,
+              "depth_m": null,
+              "target": "camel",
+              "inside_mask": true,
+              "inside_depth_bbox": true,
+              "window_n_total": 25,
+              "window_n_valid": 25,
+              "window_n_in_mask": 25,
+              "window_restricted_to_mask": true,
+              "window_median_m": 2.367000102996826,
+              "window_spread_m": 0.013000011444091797,
+              "knn_depth_m": null,
+              "nn_depth_mean_m": null,
+              "k_requested": 9,
+              "k_used": 0,
+              "nn_dist_px_max": null,
+              "nn_dist_m_max": null,
+              "nn_centroid_px": null,
+              "nn_depth_spread_m": null,
+              "direct_depth_m": 2.367000102996826,
+              "flags": [],
+              "reason": ""
+            },
+            "endpoint_dz_frac": [
+              0.006869812809168705,
+              0.016316061345540693
+            ],
+            "flags": [],
+            "confidence": "high",
+            "n_points_knn": 0,
+            "uncertainty_basis": "z_mad_over_z_median",
+            "kind": "distance_2d",
+            "family": "lines",
+            "input_kind": "distance_2d",
+            "input": {
+              "id": 2,
+              "kind": "distance_2d",
+              "name": "Random 2D distance 2",
+              "points": [
+                [
+                  651.15,
+                  333.34
+                ],
+                [
+                  625.24,
+                  171.94
+                ]
+              ],
+              "targets": [
+                "camel",
+                "camel"
+              ],
+              "line_a_id": null,
+              "line_b_id": null,
+              "color": "#2C57BE",
+              "note": "random clicks, both inside the camel"
+            },
+            "presentation": {
+              "kind_label": {
+                "ar": "مسافة ثنائية الأبعاد (مستوى Z_ref)",
+                "en": "2D distance (Z_ref plane)"
+              },
+              "value": 0.5930527891325889,
+              "unit": "m",
+              "value_text": {
+                "ar": "0.593 م",
+                "en": "0.593 m"
+              },
+              "uncertainty_text": {
+                "ar": "± 2.6 سم",
+                "en": "± 2.6 cm"
+              },
+              "depth_basis": [
+                {
+                  "point": 1,
+                  "ar": "مستوى Z_ref 2.329 م",
+                  "en": "Z_ref 2.329 m"
+                },
+                {
+                  "point": 2,
+                  "ar": "مستوى Z_ref 2.329 م",
+                  "en": "Z_ref 2.329 m"
+                }
+              ],
+              "flags": [],
+              "confidence": {
+                "code": "high",
+                "ar": "عالية",
+                "en": "high"
+              },
+              "rejected": false,
+              "rejection": [],
+              "n_points": 2,
+              "n_points_knn": 0
+            }
+          },
+          {
+            "id": 3,
+            "view": "frame",
+            "name": "مسافة ثنائية الأبعاد 3",
+            "p1_px": [
+              910.14,
+              305.26
+            ],
+            "p2_px": [
+              615.79,
+              349.73
+            ],
+            "p1_3d": null,
+            "p2_3d": null,
+            "distance_m": 1.0784606247612538,
+            "uncertainty_m": 0.04813698977831955,
+            "rejection_reason": "",
+            "created_at": "2026-10-11T15:29:57+00:00",
+            "measurement_type": "distance_2d",
+            "z_constant_m": 2.3289999961853027,
+            "order": 2,
+            "display_color": "#81BE2C",
+            "note": "random clicks, both inside the camel",
+            "targets": [
+              "camel",
+              "camel"
+            ],
+            "p1_depth": {
+              "source": null,
+              "depth_m": null,
+              "target": "camel",
+              "inside_mask": true,
+              "inside_depth_bbox": true,
+              "window_n_total": 25,
+              "window_n_valid": 25,
+              "window_n_in_mask": 25,
+              "window_restricted_to_mask": true,
+              "window_median_m": 2.42900013923645,
+              "window_spread_m": 0.005000114440917969,
+              "knn_depth_m": null,
+              "nn_depth_mean_m": null,
+              "k_requested": 9,
+              "k_used": 0,
+              "nn_dist_px_max": null,
+              "nn_dist_m_max": null,
+              "nn_centroid_px": null,
+              "nn_depth_spread_m": null,
+              "direct_depth_m": 2.42900013923645,
+              "flags": [],
+              "reason": ""
+            },
+            "p2_depth": {
+              "source": null,
+              "depth_m": null,
+              "target": "camel",
+              "inside_mask": true,
+              "inside_depth_bbox": true,
+              "window_n_total": 25,
+              "window_n_valid": 25,
+              "window_n_in_mask": 25,
+              "window_restricted_to_mask": true,
+              "window_median_m": 2.249000072479248,
+              "window_spread_m": 0.023000001907348633,
+              "knn_depth_m": null,
+              "nn_depth_mean_m": null,
+              "k_requested": 9,
+              "k_used": 0,
+              "nn_dist_px_max": null,
+              "nn_dist_m_max": null,
+              "nn_centroid_px": null,
+              "nn_depth_spread_m": null,
+              "direct_depth_m": 2.249000072479248,
+              "flags": [],
+              "reason": ""
+            },
+            "endpoint_dz_frac": [
+              0.04293694427434045,
+              0.03434947352386755
+            ],
+            "flags": [],
+            "confidence": "high",
+            "n_points_knn": 0,
+            "uncertainty_basis": "z_mad_over_z_median",
+            "kind": "distance_2d",
+            "family": "lines",
+            "input_kind": "distance_2d",
+            "input": {
+              "id": 3,
+              "kind": "distance_2d",
+              "name": "مسافة ثنائية الأبعاد 3",
+              "points": [
+                [
+                  910.14,
+                  305.26
+                ],
+                [
+                  615.79,
+                  349.73
+                ]
+              ],
+              "targets": [
+                "camel",
+                "camel"
+              ],
+              "line_a_id": null,
+              "line_b_id": null,
+              "color": "#81BE2C",
+              "note": "random clicks, both inside the camel"
+            },
+            "presentation": {
+              "kind_label": {
+                "ar": "مسافة ثنائية الأبعاد (مستوى Z_ref)",
+                "en": "2D distance (Z_ref plane)"
+              },
+              "value": 1.0784606247612538,
+              "unit": "m",
+              "value_text": {
+                "ar": "1.078 م",
+                "en": "1.078 m"
+              },
+              "uncertainty_text": {
+                "ar": "± 4.8 سم",
+                "en": "± 4.8 cm"
+              },
+              "depth_basis": [
+                {
+                  "point": 1,
+                  "ar": "مستوى Z_ref 2.329 م",
+                  "en": "Z_ref 2.329 m"
+                },
+                {
+                  "point": 2,
+                  "ar": "مستوى Z_ref 2.329 م",
+                  "en": "Z_ref 2.329 m"
+                }
+              ],
+              "flags": [],
+              "confidence": {
+                "code": "high",
+                "ar": "عالية",
+                "en": "high"
+              },
+              "rejected": false,
+              "rejection": [],
+              "n_points": 2,
+              "n_points_knn": 0
+            }
+          },
+          {
+            "id": 4,
+            "view": "frame",
+            "name": "Random 3D distance 1",
+            "p1_px": [
+              564.16,
+              218.68
+            ],
+            "p2_px": [
+              380.38,
+              348.66
+            ],
+            "p1_3d": [
+              -0.28872897249963164,
+              -0.49499357626049534,
+              2.1530001163482666
+            ],
+            "p2_3d": [
+              -0.9697006700862169,
+              -0.06332650323220534,
+              2.309000015258789
+            ],
+            "distance_m": 0.8212154913972701,
+            "uncertainty_m": 0.012702151226561802,
+            "rejection_reason": "",
+            "created_at": "2026-10-11T15:29:57+00:00",
+            "measurement_type": "distance_3d",
+            "z_constant_m": null,
+            "order": 3,
+            "display_color": "#BE2CAB",
+            "note": "random clicks, both inside the camel",
+            "targets": [
+              "camel",
+              "camel"
+            ],
+            "p1_depth": {
+              "source": "window_median",
+              "depth_m": 2.1530001163482666,
+              "target": "camel",
+              "inside_mask": true,
+              "inside_depth_bbox": true,
+              "window_n_total": 25,
+              "window_n_valid": 25,
+              "window_n_in_mask": 25,
+              "window_restricted_to_mask": true,
+              "window_median_m": 2.1530001163482666,
+              "window_spread_m": 0.01399993896484375,
+              "knn_depth_m": 2.1530001163482666,
+              "nn_depth_mean_m": 2.1528890132904053,
+              "k_requested": 9,
+              "k_used": 9,
+              "nn_dist_px_max": 1.6876018487783226,
+              "nn_dist_m_max": 0.00565157547087692,
+              "nn_centroid_px": [
+                564.1111111111111,
+                218.66666666666666
+              ],
+              "nn_depth_spread_m": 0.009999990463256836,
+              "direct_depth_m": 2.1530001163482666,
+              "flags": [],
+              "reason": ""
+            },
+            "p2_depth": {
+              "source": "window_median",
+              "depth_m": 2.309000015258789,
+              "target": "camel",
+              "inside_mask": true,
+              "inside_depth_bbox": true,
+              "window_n_total": 25,
+              "window_n_valid": 25,
+              "window_n_in_mask": 25,
+              "window_restricted_to_mask": true,
+              "window_median_m": 2.309000015258789,
+              "window_spread_m": 0.003999948501586914,
+              "knn_depth_m": 2.309000015258789,
+              "nn_depth_mean_m": 2.308111137813992,
+              "k_requested": 9,
+              "k_used": 9,
+              "nn_dist_px_max": 1.6552945357246842,
+              "nn_dist_m_max": 0.005945038931152049,
+              "nn_centroid_px": [
+                380.3333333333333,
+                348.8888888888889
+              ],
+              "nn_depth_spread_m": 0.003999948501586914,
+              "direct_depth_m": 2.309000015258789,
+              "flags": [],
+              "reason": ""
+            },
+            "endpoint_dz_frac": null,
+            "flags": [],
+            "confidence": "high",
+            "n_points_knn": 0,
+            "uncertainty_basis": "sigma_d_1pct",
+            "kind": "distance_3d",
+            "family": "lines",
+            "input_kind": "distance_3d",
+            "input": {
+              "id": 4,
+              "kind": "distance_3d",
+              "name": "Random 3D distance 1",
+              "points": [
+                [
+                  564.16,
+                  218.68
+                ],
+                [
+                  380.38,
+                  348.66
+                ]
+              ],
+              "targets": [
+                "camel",
+                "camel"
+              ],
+              "line_a_id": null,
+              "line_b_id": null,
+              "color": "#BE2CAB",
+              "note": "random clicks, both inside the camel"
+            },
+            "presentation": {
+              "kind_label": {
+                "ar": "مسافة ثلاثية الأبعاد",
+                "en": "3D distance"
+              },
+              "value": 0.8212154913972701,
+              "unit": "m",
+              "value_text": {
+                "ar": "0.821 م",
+                "en": "0.821 m"
+              },
+              "uncertainty_text": {
+                "ar": "± 1.3 سم",
+                "en": "± 1.3 cm"
+              },
+              "depth_basis": [
+                {
+                  "point": 1,
+                  "ar": "مباشر 2.153 م",
+                  "en": "direct 2.153 m"
+                },
+                {
+                  "point": 2,
+                  "ar": "مباشر 2.309 م",
+                  "en": "direct 2.309 m"
+                }
+              ],
+              "flags": [],
+              "confidence": {
+                "code": "high",
+                "ar": "عالية",
+                "en": "high"
+              },
+              "rejected": false,
+              "rejection": [],
+              "n_points": 2,
+              "n_points_knn": 0
+            }
+          },
+          {
+            "id": 5,
+            "view": "frame",
+            "name": "مسافة ثلاثية الأبعاد 2",
+            "p1_px": [
+              718.95,
+              512.41
+            ],
+            "p2_px": [
+              397.19,
+              294.89
+            ],
+            "p1_3d": [
+              0.26345607057083625,
+              0.5623295091908856,
+              2.4700000286102295
+            ],
+            "p2_3d": [
+              -0.9014506977848779,
+              -0.25451124912347667,
+              2.2890000343322754
+            ],
+            "distance_m": 1.4342236929200256,
+            "uncertainty_m": 0.010303911498555314,
+            "rejection_reason": "",
+            "created_at": "2026-10-11T15:29:58+00:00",
+            "measurement_type": "distance_3d",
+            "z_constant_m": null,
+            "order": 4,
+            "display_color": "#2CBEA5",
+            "note": "random clicks, both inside the camel",
+            "targets": [
+              "camel",
+              "camel"
+            ],
+            "p1_depth": {
+              "source": "window_median",
+              "depth_m": 2.4700000286102295,
+              "target": "camel",
+              "inside_mask": true,
+              "inside_depth_bbox": true,
+              "window_n_total": 25,
+              "window_n_valid": 25,
+              "window_n_in_mask": 25,
+              "window_restricted_to_mask": true,
+              "window_median_m": 2.4700000286102295,
+              "window_spread_m": 0.003999948501586914,
+              "knn_depth_m": 2.4700000286102295,
+              "nn_depth_mean_m": 2.4695555898878307,
+              "k_requested": 9,
+              "k_used": 9,
+              "nn_dist_px_max": 1.7001764614298118,
+              "nn_dist_m_max": 0.006532004018000135,
+              "nn_centroid_px": [
+                718.8888888888889,
+                512.3333333333334
+              ],
+              "nn_depth_spread_m": 0.003999948501586914,
+              "direct_depth_m": 2.4700000286102295,
+              "flags": [],
+              "reason": ""
+            },
+            "p2_depth": {
+              "source": "window_median",
+              "depth_m": 2.2890000343322754,
+              "target": "camel",
+              "inside_mask": true,
+              "inside_depth_bbox": true,
+              "window_n_total": 25,
+              "window_n_valid": 25,
+              "window_n_in_mask": 25,
+              "window_restricted_to_mask": true,
+              "window_median_m": 2.2890000343322754,
+              "window_spread_m": 0.019999980926513672,
+              "knn_depth_m": 2.2890000343322754,
+              "nn_depth_mean_m": 2.2903334299723306,
+              "k_requested": 9,
+              "k_used": 9,
+              "nn_dist_px_max": 1.627329100090091,
+              "nn_dist_m_max": 0.0057939757815834445,
+              "nn_centroid_px": [
+                397,
+                295
+              ],
+              "nn_depth_spread_m": 0.004000186920166016,
+              "direct_depth_m": 2.2890000343322754,
+              "flags": [],
+              "reason": ""
+            },
+            "endpoint_dz_frac": null,
+            "flags": [],
+            "confidence": "high",
+            "n_points_knn": 0,
+            "uncertainty_basis": "sigma_d_1pct",
+            "kind": "distance_3d",
+            "family": "lines",
+            "input_kind": "distance_3d",
+            "input": {
+              "id": 5,
+              "kind": "distance_3d",
+              "name": "مسافة ثلاثية الأبعاد 2",
+              "points": [
+                [
+                  718.95,
+                  512.41
+                ],
+                [
+                  397.19,
+                  294.89
+                ]
+              ],
+              "targets": [
+                "camel",
+                "camel"
+              ],
+              "line_a_id": null,
+              "line_b_id": null,
+              "color": "#2CBEA5",
+              "note": "random clicks, both inside the camel"
+            },
+            "presentation": {
+              "kind_label": {
+                "ar": "مسافة ثلاثية الأبعاد",
+                "en": "3D distance"
+              },
+              "value": 1.4342236929200256,
+              "unit": "m",
+              "value_text": {
+                "ar": "1.434 م",
+                "en": "1.434 m"
+              },
+              "uncertainty_text": {
+                "ar": "± 1.0 سم",
+                "en": "± 1.0 cm"
+              },
+              "depth_basis": [
+                {
+                  "point": 1,
+                  "ar": "مباشر 2.470 م",
+                  "en": "direct 2.470 m"
+                },
+                {
+                  "point": 2,
+                  "ar": "مباشر 2.289 م",
+                  "en": "direct 2.289 m"
+                }
+              ],
+              "flags": [],
+              "confidence": {
+                "code": "high",
+                "ar": "عالية",
+                "en": "high"
+              },
+              "rejected": false,
+              "rejection": [],
+              "n_points": 2,
+              "n_points_knn": 0
+            }
+          },
+          {
+            "id": 6,
+            "view": "frame",
+            "name": "Random 3D distance 3",
+            "p1_px": [
+              778.09,
+              335.09
+            ],
+            "p2_px": [
+              466.7,
+              409.42
+            ],
+            "p1_3d": [
+              0.46107030876309396,
+              -0.11272003321546759,
+              2.321000099182129
+            ],
+            "p2_3d": [
+              -0.7528179118402781,
+              0.17714044572898505,
+              2.635000228881836
+            ],
+            "distance_m": 1.2869109490656148,
+            "uncertainty_m": 0.09088591206990103,
+            "rejection_reason": "",
+            "created_at": "2026-10-11T15:29:58+00:00",
+            "measurement_type": "distance_3d",
+            "z_constant_m": null,
+            "order": 5,
+            "display_color": "#BE7B2C",
+            "note": "random; P2 is 18 px outside the camel (operator rule: KNN depth)",
+            "targets": [
+              "camel",
+              "camel"
+            ],
+            "p1_depth": {
+              "source": "window_median",
+              "depth_m": 2.321000099182129,
+              "target": "camel",
+              "inside_mask": true,
+              "inside_depth_bbox": true,
+              "window_n_total": 25,
+              "window_n_valid": 25,
+              "window_n_in_mask": 25,
+              "window_restricted_to_mask": true,
+              "window_median_m": 2.321000099182129,
+              "window_spread_m": 0.007999897003173828,
+              "knn_depth_m": 2.321000099182129,
+              "nn_depth_mean_m": 2.321888976626926,
+              "k_requested": 9,
+              "k_used": 9,
+              "nn_dist_px_max": 1.5414927829866785,
+              "nn_dist_m_max": 0.005565089337401849,
+              "nn_centroid_px": [
+                778,
+                335
+              ],
+              "nn_depth_spread_m": 0.007999897003173828,
+              "direct_depth_m": 2.321000099182129,
+              "flags": [],
+              "reason": ""
+            },
+            "p2_depth": {
+              "source": "knn_snapped_to_mask",
+              "depth_m": 2.635000228881836,
+              "target": "camel",
+              "inside_mask": false,
+              "inside_depth_bbox": true,
+              "window_n_total": 25,
+              "window_n_valid": 0,
+              "window_n_in_mask": 0,
+              "window_restricted_to_mask": false,
+              "window_median_m": null,
+              "window_spread_m": null,
+              "knn_depth_m": 2.635000228881836,
+              "nn_depth_mean_m": 2.6406668292151556,
+              "k_requested": 9,
+              "k_used": 9,
+              "nn_dist_px_max": 21.911330402328378,
+              "nn_dist_m_max": 0.08980590436842636,
+              "nn_centroid_px": [
+                448,
+                399.1111111111111
+              ],
+              "nn_depth_spread_m": 0.042999982833862305,
+              "direct_depth_m": null,
+              "flags": [],
+              "reason": ""
+            },
+            "endpoint_dz_frac": null,
+            "flags": [],
+            "confidence": "high",
+            "n_points_knn": 1,
+            "uncertainty_basis": "sigma_d_1pct+knn_snap",
+            "kind": "distance_3d",
+            "family": "lines",
+            "input_kind": "distance_3d",
+            "input": {
+              "id": 6,
+              "kind": "distance_3d",
+              "name": "Random 3D distance 3",
+              "points": [
+                [
+                  778.09,
+                  335.09
+                ],
+                [
+                  466.7,
+                  409.42
+                ]
+              ],
+              "targets": [
+                "camel",
+                "camel"
+              ],
+              "line_a_id": null,
+              "line_b_id": null,
+              "color": "#BE7B2C",
+              "note": "random; P2 is 18 px outside the camel (operator rule: KNN depth)"
+            },
+            "presentation": {
+              "kind_label": {
+                "ar": "مسافة ثلاثية الأبعاد",
+                "en": "3D distance"
+              },
+              "value": 1.2869109490656148,
+              "unit": "m",
+              "value_text": {
+                "ar": "1.287 م",
+                "en": "1.287 m"
+              },
+              "uncertainty_text": {
+                "ar": "± 9.1 سم",
+                "en": "± 9.1 cm"
+              },
+              "depth_basis": [
+                {
+                  "point": 1,
+                  "ar": "مباشر 2.321 م",
+                  "en": "direct 2.321 m"
+                },
+                {
+                  "point": 2,
+                  "ar": "مُقرَّب إلى الجمل 9.0 سم",
+                  "en": "snapped to camel 9.0 cm"
+                }
+              ],
+              "flags": [],
+              "confidence": {
+                "code": "high",
+                "ar": "عالية",
+                "en": "high"
+              },
+              "rejected": false,
+              "rejection": [],
+              "n_points": 2,
+              "n_points_knn": 1
+            }
+          },
+          {
+            "id": 7,
+            "view": "frame",
+            "name": "من الخف إلى الأرض",
+            "p1_px": [
+              764.07,
+              670.25
+            ],
+            "p2_px": [
+              822.15,
+              717.94
+            ],
+            "p1_3d": [
+              0.4217734276200527,
+              1.1294094152319456,
+              2.385000228881836
+            ],
+            "p2_3d": [
+              0.5789890538453908,
+              1.1871657333900418,
+              2.1670000553131104
+            ],
+            "distance_m": 0.27491202427794775,
+            "uncertainty_m": 0.018140279419666304,
+            "rejection_reason": "",
+            "created_at": "2026-10-11T15:29:58+00:00",
+            "measurement_type": "distance_3d",
+            "z_constant_m": null,
+            "order": 6,
+            "display_color": "#502CBE",
+            "note": "random hoof point; P2 is a Shift-click ground point 48 px from the camel",
+            "targets": [
+              "camel",
+              "ground"
+            ],
+            "p1_depth": {
+              "source": "window_median",
+              "depth_m": 2.385000228881836,
+              "target": "camel",
+              "inside_mask": true,
+              "inside_depth_bbox": true,
+              "window_n_total": 25,
+              "window_n_valid": 25,
+              "window_n_in_mask": 25,
+              "window_restricted_to_mask": true,
+              "window_median_m": 2.385000228881836,
+              "window_spread_m": 0.020999908447265625,
+              "knn_depth_m": 2.385000228881836,
+              "nn_depth_mean_m": 2.3827779557969837,
+              "k_requested": 9,
+              "k_used": 9,
+              "nn_dist_px_max": 1.6454178800536072,
+              "nn_dist_m_max": 0.006104078682315228,
+              "nn_centroid_px": [
+                764,
+                670
+              ],
+              "nn_depth_spread_m": 0.020999908447265625,
+              "direct_depth_m": 2.385000228881836,
+              "flags": [],
+              "reason": ""
+            },
+            "p2_depth": {
+              "source": "direct_off_mask",
+              "depth_m": 2.1670000553131104,
+              "target": "ground",
+              "inside_mask": false,
+              "inside_depth_bbox": true,
+              "window_n_total": 25,
+              "window_n_valid": 20,
+              "window_n_in_mask": 0,
+              "window_restricted_to_mask": false,
+              "window_median_m": 2.1670000553131104,
+              "window_spread_m": 0.04700016975402832,
+              "knn_depth_m": 2.3630001544952393,
+              "nn_depth_mean_m": 2.3650001419915094,
+              "k_requested": 9,
+              "k_used": 9,
+              "nn_dist_px_max": 53.13328617731076,
+              "nn_dist_m_max": 0.1952926563466718,
+              "nn_centroid_px": [
+                784.4444444444445,
+                681.3333333333334
+              ],
+              "nn_depth_spread_m": 0.02500009536743164,
+              "direct_depth_m": 2.1670000553131104,
+              "flags": [],
+              "reason": ""
+            },
+            "endpoint_dz_frac": null,
+            "flags": [],
+            "confidence": "high",
+            "n_points_knn": 0,
+            "uncertainty_basis": "sigma_d_1pct",
+            "kind": "distance_3d",
+            "family": "lines",
+            "input_kind": "distance_3d",
+            "input": {
+              "id": 7,
+              "kind": "distance_3d",
+              "name": "من الخف إلى الأرض",
+              "points": [
+                [
+                  764.07,
+                  670.25
+                ],
+                [
+                  822.15,
+                  717.94
+                ]
+              ],
+              "targets": [
+                "camel",
+                "ground"
+              ],
+              "line_a_id": null,
+              "line_b_id": null,
+              "color": "#502CBE",
+              "note": "random hoof point; P2 is a Shift-click ground point 48 px from the camel"
+            },
+            "presentation": {
+              "kind_label": {
+                "ar": "مسافة ثلاثية الأبعاد",
+                "en": "3D distance"
+              },
+              "value": 0.27491202427794775,
+              "unit": "m",
+              "value_text": {
+                "ar": "0.275 م",
+                "en": "0.275 m"
+              },
+              "uncertainty_text": {
+                "ar": "± 1.8 سم",
+                "en": "± 1.8 cm"
+              },
+              "depth_basis": [
+                {
+                  "point": 1,
+                  "ar": "مباشر 2.385 م",
+                  "en": "direct 2.385 m"
+                },
+                {
+                  "point": 2,
+                  "ar": "أرض (مباشر) 2.167 م",
+                  "en": "ground (direct) 2.167 m"
+                }
+              ],
+              "flags": [],
+              "confidence": {
+                "code": "high",
+                "ar": "عالية",
+                "en": "high"
+              },
+              "rejected": false,
+              "rejection": [],
+              "n_points": 2,
+              "n_points_knn": 0
+            }
+          },
+          {
+            "id": 8,
+            "view": "frame",
+            "name": "Random 2D curve 1",
+            "points_px": [
+              [
+                395.35,
+                358.18
+              ],
+              [
+                482.3,
+                304.17
+              ],
+              [
+                585.55,
+                348.81
+              ],
+              [
+                678.22,
+                324.11
+              ],
+              [
+                769.3,
+                292.8
+              ]
+            ],
+            "measurement_type": "curve_2d",
+            "z_constant_m": 2.3289999961853027,
+            "total_length_m": 1.4749844312144784,
+            "segment_lengths_m": [
+              0.37096612725016975,
+              0.4075962750296199,
+              0.34746493545172935,
+              0.3489570934829594
+            ],
+            "display_color": "#32BE2C",
+            "rejection_reason": "",
+            "created_at": "2026-10-11T15:29:58+00:00",
+            "order": 7,
+            "note": "5 random control points inside the camel",
+            "targets": [
+              "camel",
+              "camel",
+              "camel",
+              "camel",
+              "camel"
+            ],
+            "points_3d": [],
+            "point_depth": [
+              {
+                "source": null,
+                "depth_m": null,
+                "target": "camel",
+                "inside_mask": true,
+                "inside_depth_bbox": true,
+                "window_n_total": 25,
+                "window_n_valid": 25,
+                "window_n_in_mask": 25,
+                "window_restricted_to_mask": true,
+                "window_median_m": 2.3420000076293945,
+                "window_spread_m": 0.012000083923339844,
+                "knn_depth_m": null,
+                "nn_depth_mean_m": null,
+                "k_requested": 9,
+                "k_used": 0,
+                "nn_dist_px_max": null,
+                "nn_dist_m_max": null,
+                "nn_centroid_px": null,
+                "nn_depth_spread_m": null,
+                "direct_depth_m": 2.3420000076293945,
+                "flags": [],
+                "reason": ""
+              },
+              {
+                "source": null,
+                "depth_m": null,
+                "target": "camel",
+                "inside_mask": true,
+                "inside_depth_bbox": true,
+                "window_n_total": 25,
+                "window_n_valid": 25,
+                "window_n_in_mask": 25,
+                "window_restricted_to_mask": true,
+                "window_median_m": 2.0940001010894775,
+                "window_spread_m": 0.006999969482421875,
+                "knn_depth_m": null,
+                "nn_depth_mean_m": null,
+                "k_requested": 9,
+                "k_used": 0,
+                "nn_dist_px_max": null,
+                "nn_dist_m_max": null,
+                "nn_centroid_px": null,
+                "nn_depth_spread_m": null,
+                "direct_depth_m": 2.0940001010894775,
+                "flags": [],
+                "reason": ""
+              },
+              {
+                "source": null,
+                "depth_m": null,
+                "target": "camel",
+                "inside_mask": true,
+                "inside_depth_bbox": true,
+                "window_n_total": 25,
+                "window_n_valid": 25,
+                "window_n_in_mask": 25,
+                "window_restricted_to_mask": true,
+                "window_median_m": 2.200000047683716,
+                "window_spread_m": 0.01399993896484375,
+                "knn_depth_m": null,
+                "nn_depth_mean_m": null,
+                "k_requested": 9,
+                "k_used": 0,
+                "nn_dist_px_max": null,
+                "nn_dist_m_max": null,
+                "nn_centroid_px": null,
+                "nn_depth_spread_m": null,
+                "direct_depth_m": 2.200000047683716,
+                "flags": [],
+                "reason": ""
+              },
+              {
+                "source": null,
+                "depth_m": null,
+                "target": "camel",
+                "inside_mask": true,
+                "inside_depth_bbox": true,
+                "window_n_total": 25,
+                "window_n_valid": 25,
+                "window_n_in_mask": 25,
+                "window_restricted_to_mask": true,
+                "window_median_m": 2.3380000591278076,
+                "window_spread_m": 0.013000011444091797,
+                "knn_depth_m": null,
+                "nn_depth_mean_m": null,
+                "k_requested": 9,
+                "k_used": 0,
+                "nn_dist_px_max": null,
+                "nn_dist_m_max": null,
+                "nn_centroid_px": null,
+                "nn_depth_spread_m": null,
+                "direct_depth_m": 2.3380000591278076,
+                "flags": [],
+                "reason": ""
+              },
+              {
+                "source": null,
+                "depth_m": null,
+                "target": "camel",
+                "inside_mask": true,
+                "inside_depth_bbox": true,
+                "window_n_total": 25,
+                "window_n_valid": 25,
+                "window_n_in_mask": 25,
+                "window_restricted_to_mask": true,
+                "window_median_m": 2.2930002212524414,
+                "window_spread_m": 0,
+                "knn_depth_m": null,
+                "nn_depth_mean_m": null,
+                "k_requested": 9,
+                "k_used": 0,
+                "nn_dist_px_max": null,
+                "nn_dist_m_max": null,
+                "nn_centroid_px": null,
+                "nn_depth_spread_m": null,
+                "direct_depth_m": 2.2930002212524414,
+                "flags": [],
+                "reason": ""
+              }
+            ],
+            "point_dz_frac": [
+              0.0055817996845790785,
+              0.10090162966111393,
+              0.05538855676808823,
+              0.003864346482286902,
+              0.015457181190135592
+            ],
+            "segment_dz_m": [],
+            "segment_flags": [],
+            "cross_check_2d_m": null,
+            "uncertainty_m": 0.06583579303534598,
+            "n_points": 5,
+            "n_direct": 0,
+            "n_knn": 0,
+            "n_flagged": 0,
+            "flags": [
+              "endpoint_dz"
+            ],
+            "confidence": "low",
+            "shape_note": "polyline",
+            "uncertainty_basis": "z_mad_over_z_median",
+            "kind": "curve_2d",
+            "family": "curves",
+            "input_kind": "curve_2d",
+            "input": {
+              "id": 8,
+              "kind": "curve_2d",
+              "name": "Random 2D curve 1",
+              "points": [
+                [
+                  395.35,
+                  358.18
+                ],
+                [
+                  482.3,
+                  304.17
+                ],
+                [
+                  585.55,
+                  348.81
+                ],
+                [
+                  678.22,
+                  324.11
+                ],
+                [
+                  769.3,
+                  292.8
+                ]
+              ],
+              "targets": [
+                "camel",
+                "camel",
+                "camel",
+                "camel",
+                "camel"
+              ],
+              "line_a_id": null,
+              "line_b_id": null,
+              "color": "#32BE2C",
+              "note": "5 random control points inside the camel"
+            },
+            "presentation": {
+              "kind_label": {
+                "ar": "طول خط منكسر ثنائي الأبعاد (مستوى Z_ref)",
+                "en": "2D polyline length (Z_ref plane)"
+              },
+              "value": 1.4749844312144784,
+              "unit": "m",
+              "value_text": {
+                "ar": "1.475 م",
+                "en": "1.475 m"
+              },
+              "uncertainty_text": {
+                "ar": "± 6.6 سم",
+                "en": "± 6.6 cm"
+              },
+              "depth_basis": [
+                {
+                  "point": 1,
+                  "ar": "مستوى Z_ref 2.329 م",
+                  "en": "Z_ref 2.329 m"
+                },
+                {
+                  "point": 2,
+                  "ar": "مستوى Z_ref 2.329 م",
+                  "en": "Z_ref 2.329 m"
+                },
+                {
+                  "point": 3,
+                  "ar": "مستوى Z_ref 2.329 م",
+                  "en": "Z_ref 2.329 m"
+                },
+                {
+                  "point": 4,
+                  "ar": "مستوى Z_ref 2.329 م",
+                  "en": "Z_ref 2.329 m"
+                },
+                {
+                  "point": 5,
+                  "ar": "مستوى Z_ref 2.329 م",
+                  "en": "Z_ref 2.329 m"
+                }
+              ],
+              "flags": [
+                {
+                  "code": "endpoint_dz",
+                  "ar": "نقطة بعيدة عن مستوى Z_ref (> 10 %)",
+                  "en": "point off the Z_ref plane (> 10 %)",
+                  "severity": "warn"
+                }
+              ],
+              "confidence": {
+                "code": "low",
+                "ar": "منخفضة",
+                "en": "low"
+              },
+              "rejected": false,
+              "rejection": [],
+              "n_points": 5,
+              "n_points_knn": 0
+            }
+          },
+          {
+            "id": 9,
+            "view": "frame",
+            "name": "منحنى ثلاثي الأبعاد 1",
+            "points_px": [
+              [
+                395.35,
+                358.18
+              ],
+              [
+                482.3,
+                304.17
+              ],
+              [
+                585.55,
+                348.81
+              ],
+              [
+                678.22,
+                324.11
+              ],
+              [
+                769.3,
+                292.8
+              ]
+            ],
+            "measurement_type": "curve_3d",
+            "z_constant_m": null,
+            "total_length_m": 1.5652082250281318,
+            "segment_lengths_m": [
+              0.4868863419503925,
+              0.37098485084329913,
+              0.3636133290003031,
+              0.34372370323413703
+            ],
+            "display_color": "#BE2C5D",
+            "rejection_reason": "",
+            "created_at": "2026-10-11T15:29:58+00:00",
+            "order": 8,
+            "note": "the same control points as #8",
+            "targets": [
+              "camel",
+              "camel",
+              "camel",
+              "camel",
+              "camel"
+            ],
+            "points_3d": [
+              [
+                -0.9290259317667136,
+                -0.02949910500398437,
+                2.3420000076293945
+              ],
+              [
+                -0.5474436271232042,
+                -0.2025577688061037,
+                2.0940001010894775
+              ],
+              [
+                -0.22183564606018746,
+                -0.059823002384920616,
+                2.200000047683716
+              ],
+              [
+                0.10125639801518115,
+                -0.15353629345568193,
+                2.3380000591278076
+              ],
+              [
+                0.4241573013867801,
+                -0.2624215787700217,
+                2.2930002212524414
+              ]
+            ],
+            "point_depth": [
+              {
+                "source": "window_median",
+                "depth_m": 2.3420000076293945,
+                "target": "camel",
+                "inside_mask": true,
+                "inside_depth_bbox": true,
+                "window_n_total": 25,
+                "window_n_valid": 25,
+                "window_n_in_mask": 25,
+                "window_restricted_to_mask": true,
+                "window_median_m": 2.3420000076293945,
+                "window_spread_m": 0.012000083923339844,
+                "knn_depth_m": 2.3420000076293945,
+                "nn_depth_mean_m": 2.3415556218889026,
+                "k_requested": 9,
+                "k_used": 9,
+                "nn_dist_px_max": 1.6597891432347447,
+                "nn_dist_m_max": 0.006046378042339344,
+                "nn_centroid_px": [
+                  395.3333333333333,
+                  358.1111111111111
+                ],
+                "nn_depth_spread_m": 0.00800013542175293,
+                "direct_depth_m": 2.3420000076293945,
+                "flags": [],
+                "reason": ""
+              },
+              {
+                "source": "window_median",
+                "depth_m": 2.0940001010894775,
+                "target": "camel",
+                "inside_mask": true,
+                "inside_depth_bbox": true,
+                "window_n_total": 25,
+                "window_n_valid": 25,
+                "window_n_in_mask": 25,
+                "window_restricted_to_mask": true,
+                "window_median_m": 2.0940001010894775,
+                "window_spread_m": 0.006999969482421875,
+                "knn_depth_m": 2.0940001010894775,
+                "nn_depth_mean_m": 2.095000081592136,
+                "k_requested": 9,
+                "k_used": 9,
+                "nn_dist_px_max": 1.7084788555905417,
+                "nn_dist_m_max": 0.0055647004662583,
+                "nn_centroid_px": [
+                  482.3333333333333,
+                  304.1111111111111
+                ],
+                "nn_depth_spread_m": 0.006999969482421875,
+                "direct_depth_m": 2.0940001010894775,
+                "flags": [],
+                "reason": ""
+              },
+              {
+                "source": "window_median",
+                "depth_m": 2.200000047683716,
+                "target": "camel",
+                "inside_mask": true,
+                "inside_depth_bbox": true,
+                "window_n_total": 25,
+                "window_n_valid": 25,
+                "window_n_in_mask": 25,
+                "window_restricted_to_mask": true,
+                "window_median_m": 2.200000047683716,
+                "window_spread_m": 0.01399993896484375,
+                "knn_depth_m": 2.200000047683716,
+                "nn_depth_mean_m": 2.19866673151652,
+                "k_requested": 9,
+                "k_used": 9,
+                "nn_dist_px_max": 1.6609033686521728,
+                "nn_dist_m_max": 0.005683587388565273,
+                "nn_centroid_px": [
+                  585.6666666666666,
+                  348.8888888888889
+                ],
+                "nn_depth_spread_m": 0.003999948501586914,
+                "direct_depth_m": 2.200000047683716,
+                "flags": [],
+                "reason": ""
+              },
+              {
+                "source": "window_median",
+                "depth_m": 2.3380000591278076,
+                "target": "camel",
+                "inside_mask": true,
+                "inside_depth_bbox": true,
+                "window_n_total": 25,
+                "window_n_valid": 25,
+                "window_n_in_mask": 25,
+                "window_restricted_to_mask": true,
+                "window_median_m": 2.3380000591278076,
+                "window_spread_m": 0.013000011444091797,
+                "knn_depth_m": 2.3380000591278076,
+                "nn_depth_mean_m": 2.336666742960612,
+                "k_requested": 9,
+                "k_used": 9,
+                "nn_dist_px_max": 1.6493938280471698,
+                "nn_dist_m_max": 0.005998247320508191,
+                "nn_centroid_px": [
+                  678,
+                  324
+                ],
+                "nn_depth_spread_m": 0.003999948501586914,
+                "direct_depth_m": 2.3380000591278076,
+                "flags": [],
+                "reason": ""
+              },
+              {
+                "source": "window_median",
+                "depth_m": 2.2930002212524414,
+                "target": "camel",
+                "inside_mask": true,
+                "inside_depth_bbox": true,
+                "window_n_total": 25,
+                "window_n_valid": 25,
+                "window_n_in_mask": 25,
+                "window_restricted_to_mask": true,
+                "window_median_m": 2.2930002212524414,
+                "window_spread_m": 0,
+                "knn_depth_m": 2.2930002212524414,
+                "nn_depth_mean_m": 2.2930002212524414,
+                "k_requested": 9,
+                "k_used": 9,
+                "nn_dist_px_max": 1.7117242768624128,
+                "nn_dist_m_max": 0.006105108583349699,
+                "nn_centroid_px": [
+                  769.3333333333334,
+                  292.8888888888889
+                ],
+                "nn_depth_spread_m": 0,
+                "direct_depth_m": 2.2930002212524414,
+                "flags": [],
+                "reason": ""
+              }
+            ],
+            "point_dz_frac": [],
+            "segment_dz_m": [
+              -0.247999906539917,
+              0.10599994659423828,
+              0.1380000114440918,
+              -0.04499983787536621
+            ],
+            "segment_flags": [
+              [
+                "segment_depth_jump"
+              ],
+              [],
+              [],
+              []
+            ],
+            "cross_check_2d_m": 1.4749844312144784,
+            "uncertainty_m": 0.027142802842559606,
+            "n_points": 5,
+            "n_direct": 5,
+            "n_knn": 0,
+            "n_flagged": 1,
+            "flags": [
+              "segment_depth_jump"
+            ],
+            "confidence": "low",
+            "shape_note": "polyline",
+            "uncertainty_basis": "sigma_d_1pct",
+            "kind": "curve_3d",
+            "family": "curves",
+            "input_kind": "curve_3d",
+            "input": {
+              "id": 9,
+              "kind": "curve_3d",
+              "name": "منحنى ثلاثي الأبعاد 1",
+              "points": [
+                [
+                  395.35,
+                  358.18
+                ],
+                [
+                  482.3,
+                  304.17
+                ],
+                [
+                  585.55,
+                  348.81
+                ],
+                [
+                  678.22,
+                  324.11
+                ],
+                [
+                  769.3,
+                  292.8
+                ]
+              ],
+              "targets": [
+                "camel",
+                "camel",
+                "camel",
+                "camel",
+                "camel"
+              ],
+              "line_a_id": null,
+              "line_b_id": null,
+              "color": "#BE2C5D",
+              "note": "the same control points as #8"
+            },
+            "presentation": {
+              "kind_label": {
+                "ar": "طول خط منكسر ثلاثي الأبعاد",
+                "en": "3D polyline length"
+              },
+              "value": 1.5652082250281318,
+              "unit": "m",
+              "value_text": {
+                "ar": "1.565 م",
+                "en": "1.565 m"
+              },
+              "uncertainty_text": {
+                "ar": "± 2.7 سم",
+                "en": "± 2.7 cm"
+              },
+              "depth_basis": [
+                {
+                  "point": 1,
+                  "ar": "مباشر 2.342 م",
+                  "en": "direct 2.342 m"
+                },
+                {
+                  "point": 2,
+                  "ar": "مباشر 2.094 م",
+                  "en": "direct 2.094 m"
+                },
+                {
+                  "point": 3,
+                  "ar": "مباشر 2.200 م",
+                  "en": "direct 2.200 m"
+                },
+                {
+                  "point": 4,
+                  "ar": "مباشر 2.338 م",
+                  "en": "direct 2.338 m"
+                },
+                {
+                  "point": 5,
+                  "ar": "مباشر 2.293 م",
+                  "en": "direct 2.293 m"
+                }
+              ],
+              "flags": [
+                {
+                  "code": "segment_depth_jump",
+                  "ar": "قفزة عمق في مقطع",
+                  "en": "depth jump in a segment",
+                  "severity": "warn"
+                }
+              ],
+              "confidence": {
+                "code": "low",
+                "ar": "منخفضة",
+                "en": "low"
+              },
+              "rejected": false,
+              "rejection": [],
+              "n_points": 5,
+              "n_points_knn": 0
+            }
+          }
+        ],
+        "summary": {
+          "n_measurements": 9,
+          "n_rejected": 0,
+          "n_low_confidence": 3,
+          "n_points": 13,
+          "n_points_knn": 1,
+          "snapped_text": {
+            "ar": "1 من 13 نقطة قُرِّبت إلى الجمل (KNN)",
+            "en": "1 of 13 points snapped to the camel (KNN)"
+          }
+        },
+        "frame": {
+          "width": 1280,
+          "height": 720,
+          "z_ref": {
+            "statistic": "median",
+            "z_ref_m": 2.3289999961853027,
+            "z_mean_m": 2.3369474045915912,
+            "z_median_m": 2.3289999961853027,
+            "z_mad_mean_abs_dev_m": 0.10395469842480061,
+            "z_mad_robust_m": 0.0690000057220459,
+            "z_var": 0.023065668552373096,
+            "z_std": 0.15187385736976952,
+            "z_min_m": 2.058000087738037,
+            "z_max_m": 3.0390000343322754,
+            "rel_disp": 0.044634907082468554,
+            "n_total": 189733,
+            "n_valid": 182862,
+            "valid_fraction": 0.9637859518375823,
+            "band": [
+              0.3,
+              5
+            ],
+            "erosion_px": 2,
+            "n_mask_raw": 200704,
+            "erosion_fallback": false,
+            "rejection_reason": "ok"
+          },
+          "ground": {
+            "raw_row": 691,
+            "near_plane_row": 691,
+            "drawn_row": 691,
+            "n_columns": 970,
+            "n_columns_near": 669,
+            "differs_px": 0,
+            "badge": null,
+            "x_min": 271,
+            "x_max": 1240,
+            "z_ref_m": 2.3289999961853027,
+            "tol_frac": 0.12,
+            "band_px": 8,
+            "badge_px": 8
+          },
+          "depth_valid_bbox": [
+            29,
+            107,
+            1273,
+            719
+          ],
+          "knn": {
+            "n_points": 182862,
+            "source": "eroded",
+            "sparse": false,
+            "k": 9,
+            "erosion_px": 2,
+            "built_ms": 1235.7534000184387
+          },
+          "intrinsics": {
+            "fx": 642.901611328125,
+            "fy": 641.9310302734375,
+            "cx": 650.3765869140625,
+            "cy": 366.26556396484375,
+            "width": 1280,
+            "height": 720,
+            "model": "distortion.inverse_brown_conrady",
+            "coeffs": [
+              -0.053556252270936966,
+              0.06357665359973907,
+              -0.001115115825086832,
+              0.0009918295545503497,
+              -0.020360177382826805
+            ],
+            "depth_units_m": 0.0010000000474974513,
+            "depth_valid_bbox": [
+              29,
+              107,
+              1273,
+              719
+            ],
+            "distortion_note": "recorded; ignored by the pinhole math"
+          },
+          "candidate": {
+            "candidate_id": "c06_001340",
+            "rank": 6,
+            "n_candidates": 12,
+            "z_var": 0.023065668552373096,
+            "rel_disp": 0.044634907082468554,
+            "valid_fraction": 0.9637859518375823,
+            "params_hash": "a6fef1d525ce8ba2",
+            "sample_every": 5
+          },
+          "model": {
+            "file": "best.pt",
+            "sha256": "0e9ee2baada7c70531b66e0b98f7e1cf4dcf3ce7971c55bce69a7270ec3a4320",
+            "stub": false
+          },
+          "bag": {
+            "name": "20260414_175757-006.bag",
+            "path": "E:\\camel_beauty\\nazeer-desktop\\data\\.bag\\20260414_175757-006.bag",
+            "fingerprint": "99e5714e12ad1374fb2e1174565f292642d978af8c667994945726c63a1e6beb",
+            "read_index": 1340,
+            "frame_number_color": 10848,
+            "frame_number_depth": 10698,
+            "bag_time_s": 44.68663256835937,
+            "bucket": "SIDE"
+          },
+          "assets": {
+            "rgb": "/sessions/20261011_152956_e20a7c/assets/rgb.png",
+            "mask": "/sessions/20261011_152956_e20a7c/assets/mask.png",
+            "thumb": "/sessions/20261011_152956_e20a7c/assets/thumb.jpg",
+            "depth": "/sessions/20261011_152956_e20a7c/assets/depth.npy"
+          }
+        },
+        "outputs": {
+          "overlay": {
+            "version": 1,
+            "file": "overlay_v1.png",
+            "sha256": "914513bd5ca5ac7ed81253ec87cae4f992d9e882c92061a7d7eab9317ea475f7",
+            "width": 1280,
+            "height": 840,
+            "url": "/sessions/20261011_152956_e20a7c/assets/overlay_v1.png?v=1"
+          },
+          "report_model": {
+            "version": 1,
+            "file": "report_model_v1.json",
+            "sha256": "b58607b1d27a9447bff210eed36172dd2391a6e758db25ad10462b9d16cbeb0c",
+            "url": "/sessions/20261011_152956_e20a7c/assets/report_model_v1.json"
+          },
+          "report": {
+            "version": 1,
+            "file": "report_v1.pdf",
+            "sha256": "85c9876b9437cfd8a543d6ce25f1eb6c139c88918a02c85d89955afe50b73237",
+            "url": "/sessions/20261011_152956_e20a7c/report?v=1",
+            "overlay_version": 1,
+            "report_model_version": 1,
+            "stale": false
+          },
+          "manifest_url": "/sessions/20261011_152956_e20a7c/assets/report.manifest.json"
+        },
+        "report_inputs": {
+          "language": "both",
+          "rubric_variant": "mjaheem",
+          "names": {
+            "judge": "حكم الاختبار",
+            "council": "مجلس حكام الاختبار",
+            "event": "مزاين الإبل - تشغيل تجريبي"
+          },
+          "observations": {
+            "manual": "تشغيل تجريبي: القياسات عشوائية وليست قياسات حكم."
+          }
+        },
+        "required_report_texts": [
+          "مسافة ثنائية الأبعاد 1",
+          "Random 2D distance 2",
+          "مسافة ثنائية الأبعاد 3",
+          "Random 3D distance 1",
+          "مسافة ثلاثية الأبعاد 2",
+          "Random 3D distance 3",
+          "من الخف إلى الأرض",
+          "Random 2D curve 1",
+          "منحنى ثلاثي الأبعاد 1",
+          "حكم الاختبار",
+          "مجلس حكام الاختبار",
+          "مزاين الإبل - تشغيل تجريبي",
+          "جمل-تجربة-1"
+        ],
+        "library_versions": {
+          "python": "3.11.9",
+          "platform": "Windows 10",
+          "engine_version": "0.1.0",
+          "numpy": "2.4.6",
+          "opencv_python": "5.0.0.93",
+          "scipy": "1.17.1",
+          "ultralytics": "8.4.47",
+          "pyrealsense2": "2.57.7.10387",
+          "torch": "2.14.1",
+          "matplotlib": "3.11.2",
+          "pillow": "12.3.0",
+          "arabic_reshaper": "3.0.1",
+          "python_bidi": "0.6.11",
+          "pypdf": "6.20.0",
+          "fastapi": "0.143.0",
+          "starlette": "1.7.0",
+          "uvicorn": "0.54.0",
+          "pydantic": "2.14.0",
+          "model_file": "best.pt",
+          "model_sha256": "0e9ee2baada7c70531b66e0b98f7e1cf4dcf3ce7971c55bce69a7270ec3a4320",
+          "data_root": "E:\\camel_beauty\\nazeer-desktop\\runs\\real_run_20261011_152911Z\\data_root",
+          "app_version": "real_run/1",
+          "electron": null,
+          "chromium": "155.0.4283.45 (Microsoft Edge headless)"
+        },
+        "index_state": null
+      }
+    }
+  }
+}

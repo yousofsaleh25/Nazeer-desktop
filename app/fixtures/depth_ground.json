@@ -1,0 +1,33 @@
+{
+  "source": "direct_off_mask",
+  "depth_m": 2.1670000553131104,
+  "target": "ground",
+  "inside_mask": false,
+  "inside_depth_bbox": true,
+  "window_n_total": 25,
+  "window_n_valid": 20,
+  "window_n_in_mask": 0,
+  "window_restricted_to_mask": false,
+  "window_median_m": 2.1670000553131104,
+  "window_spread_m": 0.04700016975402832,
+  "knn_depth_m": 2.3630001544952393,
+  "nn_depth_mean_m": 2.3650001419915094,
+  "k_requested": 9,
+  "k_used": 9,
+  "nn_dist_px_max": 53.13328617731076,
+  "nn_dist_m_max": 0.1952926563466718,
+  "nn_centroid_px": [
+    784.4444444444445,
+    681.3333333333334
+  ],
+  "nn_depth_spread_m": 0.02500009536743164,
+  "direct_depth_m": 2.1670000553131104,
+  "flags": [],
+  "reason": "",
+  "seq": 3,
+  "ok": true,
+  "basis": {
+    "ar": "أرض (مباشر) 2.167 م",
+    "en": "ground (direct) 2.167 m"
+  }
+}

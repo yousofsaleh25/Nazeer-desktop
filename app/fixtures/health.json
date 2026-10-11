@@ -1,0 +1,23 @@
+{
+  "status": "ok",
+  "engine_version": "0.1.0",
+  "pid": 36760,
+  "run_id": "7c74626dc98f49628cbd6503576712fc",
+  "started_at": "2026-10-11T19:18:34+00:00",
+  "uptime_s": 1.0929999999934807,
+  "data_root": "E:\\camel_beauty\\nazeer-desktop\\runs\\dev_root",
+  "model": {
+    "file": "stub",
+    "sha256": "stub",
+    "stub": true
+  },
+  "warmup_ms": null,
+  "arabic_stack": {
+    "ok": true,
+    "reason": "",
+    "font_sha256": "8e0f1046c736bf939d4939ee3ae0116acf61cbcd6592deae7656761627080981",
+    "font_pinned": true,
+    "native_layout": true
+  },
+  "job": null
+}

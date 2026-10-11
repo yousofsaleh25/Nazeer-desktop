@@ -1,0 +1,9 @@
+{
+  "error": {
+    "code": "session_not_found",
+    "message": "session not found",
+    "details": {
+      "session_id": "20000101_000000_abcdef"
+    }
+  }
+}

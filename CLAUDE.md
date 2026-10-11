@@ -43,7 +43,7 @@ history (Phases 1–21, ADR-001 honesty contract, audit disciplines D7/D8/D9); r
 
 | Path | What is there |
 |---|---|
-| `app/` | **empty** — Electron + Vite + React + TypeScript + Tailwind CSS is the chosen stack; nothing scaffolded |
+| `app/` | **Stage 3 of 9 (component library)** — Electron 44 + electron-vite 5 (vite 7) + React 19 + Redux Toolkit + Tailwind v4 + TypeScript 5.9, exact pins (D9 "App implementation decisions"): security baseline (sandbox, context isolation, CSP header, `app://nazeer` privileged scheme, navigation/permission guards), `window.nazeer` bridge (engine connection only), generated API types `src/shared/api.d.ts` and engine error codes `src/shared/engine-codes.json`, engine payload fixtures in `app/fixtures/`; design tokens (light/dark, WCAG AA-checked), bundled Plex 400–700, RTL-first foundations (`Bi`, `Num`, `Ltr`, `DirectionalIcon`, Latin-run isolation), ar/en i18n, the `ui` slice; the component library (`components/ui/`: Radix-based primitives; `components/domain/`: bag picker, frame-search progress, candidate grid, measuring toolbar + render-only measuring canvas, measurement list, hover readout, Z_ref card, overlay approval, report inputs, probe report, pdf.js viewer, History table, app shell), all rendering the engine's `presentation` and `/meta/labels` from the fixtures; a dev-only gallery `#/design`, `#/design/components`, `#/design/domain` (the last on the dev data root's real frame, overlay and PDF; `app/src/renderer/design/README.md`). No engine supervisor, store wiring, screens or print page yet. Plan: `~/.claude/plans/pasted-content-id-80b5-role-you-swirling-brook.md` |
 | `engine/nazeer_engine/` | **the engine** (≈ 10.5 k lines): FastAPI sidecar, 31 HTTP operations, everything in contracts C1–C3 + ADR-D7's engine half. Integration-tested on real bags with the real model and headless Edge; not production-validated (no app, no field capture) |
 | `engine/tests/` | ≈ 430 default tests (synthetic frames, fake RealSense, stub model) + 6 opt-in real-resource tests (`realbag`, `realmodel`, `realpdf`) |
 | `engine/tools/real_run.py` | the real-bag check (the gate before the app): spawns the sidecar, walks a bag, picks a frame, places seeded random distances, prints with headless Edge, seals the PDF; **34/34 checks passed on bag 006 (2026-10-11)** |
@@ -55,8 +55,9 @@ history (Phases 1–21, ADR-001 honesty contract, audit disciplines D7/D8/D9); r
 | `fixtures/golden_frame.json` | the golden-frame oracle regenerated from bag 006 by the engine's reader (tracked) |
 | `engine/wheels/` | intended offline wheelhouse for the pinned Python deps (not created; see Decisions) |
 
-When `app/package.json` lands, replace the "intended" app commands below with the real
-ones in the same commit.
+`runs\dev_root` is the app's dev data root (a copy of a `real_run` data root: one exported bag-006
+session and its candidate set); it is gitignored with the rest of `runs/`. As later app stages land,
+replace the remaining "intended" app commands below with the real ones in the same change.
 
 ## Commands
 
@@ -96,13 +97,26 @@ Get-FileHash models\best.pt -Algorithm SHA256
 #   → 0E9EE2BAADA7C70531B66E0B98F7E1CF4DCF3CE7971C55BCE69A7270EC3A4320
 cd ..
 
-# --- Intended, once app/ is scaffolded (Electron + Vite + React + TS + Tailwind via @tailwindcss/vite; Node 24 / npm 11)
-cd app; npm install
-npm run dev            # Electron + Vite dev loop, spawns the engine sidecar with --data-root
-npm run build          # packaged app (electron-builder) with the engine as extraResources
-npm test               # renderer/unit tests (print-page composition, hashing)
-npm run e2e            # one Playwright-Electron export test (golden session → PDF → probe)
-npm run export -- <session_dir>   # headless re-export (hidden window), no interactive UI
+# --- App (Electron 44 + electron-vite 5 / vite 7 + React 19 + RTK + Tailwind v4; Node 24 / npm 11), run in app\
+cd app
+npm install                 # exact pins; postinstall `install-electron` fetches the checksum-pinned Electron binary
+npm run dev                 # electron-vite dev: main + preloads rebuilt on change, renderer HMR (Stage 1: empty window)
+npm run dev -- --remoteDebuggingPort 9333   # same, inspectable from Playwright (chromium.connectOverCDP)
+npm run typecheck           # tsc over three projects: node (main/preload/shared), web (renderer/print), e2e
+npm run lint ; npm run format:check         # ESLint (type-aware) ; Prettier (line width 100)
+npm test                    # Vitest: node project (CSP, app:// paths, API drift) + jsdom project (React)
+npm run build               # electron-vite build → out\main, out\preload, out\renderer\{renderer,print}
+npm run e2e                 # build + Playwright-Electron specs in e2e\ (Stage 1: built-app smoke)
+npm run gen:api             # src\shared\api.d.ts from ..\engine\openapi.json (a test fails when it drifts)
+npm run gen:codes           # src\shared\engine-codes.json: every error code in the engine source (a test fails on drift;
+                            #   the i18n test fails when one has no Arabic + English label)
+npm run fixtures            # spawn the engine (stub model) on ..\runs\dev_root, write app\fixtures\*.json
+npm run snap -- [--routes /,/design,/design/components,/design/domain] [--themes light,dark] [--langs ar,en]
+                 [--label x] [--wait ms]
+                            # dev app over CDP → full-page PNGs in ..\runs\app_snaps\<label>\ + renderer console errors
+                            #   (from Git Bash set MSYS_NO_PATHCONV=1: it rewrites "/design" into a Windows path)
+#   intended (later stages): engine supervisor in dev (Stage 4); npm run export -- <session_dir>, a headless
+#   re-export (Stage 7); packaged build with electron-builder + the engine as extraResources (packaging stage)
 
 # --- Re-run the evidence probes behind MODEL_CARD.md (parent repo, parent GPU venv)
 cd E:\camel_beauty
@@ -112,7 +126,7 @@ cd E:\camel_beauty
 .venv-cuda\Scripts\python.exe runs\electron_mvp_probe\probe_bag_timing.py
 ```
 
-## Architecture (engine implemented 2026-10-11; app not yet)
+## Architecture (engine implemented 2026-10-11; app in progress — Stage 3 component library)
 
 - **`app/` — Electron + Vite + React + TypeScript + Tailwind CSS.** Owns the operator UI:
   bag discovery (OS file dialog filtered to `.bag`, a recent list, an optional bounded
@@ -527,8 +541,20 @@ load-bearing. The model card, `metrics.json` and `results.csv` stay tracked.
   Bidi on the page (measured in the real-run PDF): give each half of a bilingual label its
   own isolate (`dir="rtl"` / `dir="ltr"`), operator text `dir="auto"` / `<bdi>` (an English
   note starting with a digit is reordered otherwise); engine Arabic labels ending in a Latin
-  fragment (`… Z_ref (> 10 %)`) still lose their closing parenthesis in an RTL line until
-  `labels.py` wraps such fragments in LRI…PDI (build them with `chr()`).
+  fragment (`… Z_ref (> 10 %)`) lose their closing parenthesis in an RTL line unless that
+  fragment is isolated: the app wraps every Latin run of an Arabic string in an LTR `<bdi>` at
+  render time (`app/src/renderer/lib/bidi.tsx`, characters unchanged; verified in the UI,
+  2026-10-11). An engine-side LRI…PDI in `labels.py` (built with `chr()`) would no longer be
+  needed for the app, only for other consumers of the label strings.
+- **App source never contains invisible characters** (bidi controls, zero-width marks,
+  no-break spaces): build them with `String.fromCharCode`; `app/src/shared/no-invisible-chars.test.ts`
+  fails otherwise. Tailwind v4's built-in `rtl:` variant also matches LTR islands inside an
+  RTL page; the app redefines `rtl:`/`ltr:` from `:dir()` (`design/tokens.css`).
+- **Right-to-left pages and image space:** pdf.js draws glyphs with canvas text, whose direction is
+  inherited from the `<canvas>`; inside the Arabic page every glyph shifted by its own width
+  (garbled PDF) until the canvas got `dir="ltr"` (D9, Stage 3). A Windows path with an Arabic
+  folder name is reordered even inside an LTR isolate (the digits after the Arabic name join its
+  run); `PathText` isolates each segment.
 - **Arabic in the overlay:** matplotlib 3.11 already shapes and reorders with libraqm;
   feeding it `arabic_reshaper` + `get_display` output reverses the text (double bidi).
 - **Sidecar PID:** a venv `python.exe` on Windows is a launcher that runs the real

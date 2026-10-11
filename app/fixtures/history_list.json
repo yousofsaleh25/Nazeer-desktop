@@ -1,0 +1,36 @@
+{
+  "items": [
+    {
+      "session_id": "20261011_152956_e20a7c",
+      "camel_id": "جمل-تجربة-1",
+      "operator": "المشغل",
+      "status": "exported",
+      "revision": 9,
+      "created_at": "2026-10-11T15:29:57+00:00",
+      "updated_at": "2026-10-11T15:30:05+00:00",
+      "bag_name": "20260414_175757-006.bag",
+      "bag_path": "E:\\camel_beauty\\nazeer-desktop\\data\\.bag\\20260414_175757-006.bag",
+      "bag_fingerprint": "99e5714e12ad1374fb2e1174565f292642d978af8c667994945726c63a1e6beb",
+      "read_index": 1340,
+      "n_measurements": 9,
+      "n_rejected": 0,
+      "outputs_stale": false,
+      "report_stale": false,
+      "overlay_version": 1,
+      "report_version": 1,
+      "index_state": "ok",
+      "index_error": "",
+      "session_url": "/sessions/20261011_152956_e20a7c",
+      "thumb_url": "/sessions/20261011_152956_e20a7c/assets/thumb.jpg"
+    }
+  ],
+  "total": 1,
+  "reconciled": {
+    "unindexed": 0,
+    "refreshed": 0,
+    "missing_files": 0,
+    "corrupt": 0,
+    "unchanged": 1,
+    "busy": 0
+  }
+}

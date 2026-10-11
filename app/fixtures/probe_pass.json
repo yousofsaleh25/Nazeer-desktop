@@ -1,0 +1,370 @@
+{
+  "verdict": "PASS",
+  "hard_failures": [],
+  "soft_failures": [],
+  "hints": [],
+  "pixel": {
+    "ok": true,
+    "reason": "",
+    "expected_shape": [
+      840,
+      1280,
+      3
+    ],
+    "tolerance": 0,
+    "match": {
+      "page": 2,
+      "xobject": "/X10",
+      "shape": [
+        840,
+        1280,
+        3
+      ],
+      "same_shape": true,
+      "max_abs_diff": 0,
+      "pixel_equal": true
+    },
+    "candidates": [
+      {
+        "page": 1,
+        "xobject": "/X4",
+        "shape": [
+          64,
+          64,
+          3
+        ],
+        "same_shape": false
+      },
+      {
+        "page": 2,
+        "xobject": "/X10",
+        "shape": [
+          840,
+          1280,
+          3
+        ],
+        "same_shape": true,
+        "max_abs_diff": 0,
+        "pixel_equal": true
+      }
+    ],
+    "min_abs_diff": 0,
+    "errors": []
+  },
+  "text": {
+    "ok": true,
+    "names": [
+      {
+        "name": "مسافة ثنائية الأبعاد 1",
+        "runs": [
+          {
+            "text": "مسافة",
+            "found": true
+          },
+          {
+            "text": "ثنائية",
+            "found": true
+          },
+          {
+            "text": "الأبعاد",
+            "found": true
+          },
+          {
+            "text": "1",
+            "found": true
+          }
+        ],
+        "ok": true
+      },
+      {
+        "name": "Random 2D distance 2",
+        "runs": [
+          {
+            "text": "Random",
+            "found": true
+          },
+          {
+            "text": "2D",
+            "found": true
+          },
+          {
+            "text": "distance",
+            "found": true
+          },
+          {
+            "text": "2",
+            "found": true
+          }
+        ],
+        "ok": true
+      },
+      {
+        "name": "مسافة ثنائية الأبعاد 3",
+        "runs": [
+          {
+            "text": "مسافة",
+            "found": true
+          },
+          {
+            "text": "ثنائية",
+            "found": true
+          },
+          {
+            "text": "الأبعاد",
+            "found": true
+          },
+          {
+            "text": "3",
+            "found": true
+          }
+        ],
+        "ok": true
+      },
+      {
+        "name": "Random 3D distance 1",
+        "runs": [
+          {
+            "text": "Random",
+            "found": true
+          },
+          {
+            "text": "3D",
+            "found": true
+          },
+          {
+            "text": "distance",
+            "found": true
+          },
+          {
+            "text": "1",
+            "found": true
+          }
+        ],
+        "ok": true
+      },
+      {
+        "name": "مسافة ثلاثية الأبعاد 2",
+        "runs": [
+          {
+            "text": "مسافة",
+            "found": true
+          },
+          {
+            "text": "ثلاثية",
+            "found": true
+          },
+          {
+            "text": "الأبعاد",
+            "found": true
+          },
+          {
+            "text": "2",
+            "found": true
+          }
+        ],
+        "ok": true
+      },
+      {
+        "name": "Random 3D distance 3",
+        "runs": [
+          {
+            "text": "Random",
+            "found": true
+          },
+          {
+            "text": "3D",
+            "found": true
+          },
+          {
+            "text": "distance",
+            "found": true
+          },
+          {
+            "text": "3",
+            "found": true
+          }
+        ],
+        "ok": true
+      },
+      {
+        "name": "من الخف إلى الأرض",
+        "runs": [
+          {
+            "text": "من",
+            "found": true
+          },
+          {
+            "text": "الخف",
+            "found": true
+          },
+          {
+            "text": "إلى",
+            "found": true
+          },
+          {
+            "text": "الأرض",
+            "found": true
+          }
+        ],
+        "ok": true
+      },
+      {
+        "name": "Random 2D curve 1",
+        "runs": [
+          {
+            "text": "Random",
+            "found": true
+          },
+          {
+            "text": "2D",
+            "found": true
+          },
+          {
+            "text": "curve",
+            "found": true
+          },
+          {
+            "text": "1",
+            "found": true
+          }
+        ],
+        "ok": true
+      },
+      {
+        "name": "منحنى ثلاثي الأبعاد 1",
+        "runs": [
+          {
+            "text": "منحنى",
+            "found": true
+          },
+          {
+            "text": "ثلاثي",
+            "found": true
+          },
+          {
+            "text": "الأبعاد",
+            "found": true
+          },
+          {
+            "text": "1",
+            "found": true
+          }
+        ],
+        "ok": true
+      },
+      {
+        "name": "حكم الاختبار",
+        "runs": [
+          {
+            "text": "حكم",
+            "found": true
+          },
+          {
+            "text": "الاختبار",
+            "found": true
+          }
+        ],
+        "ok": true
+      },
+      {
+        "name": "مجلس حكام الاختبار",
+        "runs": [
+          {
+            "text": "مجلس",
+            "found": true
+          },
+          {
+            "text": "حكام",
+            "found": true
+          },
+          {
+            "text": "الاختبار",
+            "found": true
+          }
+        ],
+        "ok": true
+      },
+      {
+        "name": "مزاين الإبل - تشغيل تجريبي",
+        "runs": [
+          {
+            "text": "مزاين",
+            "found": true
+          },
+          {
+            "text": "الإبل",
+            "found": true
+          },
+          {
+            "text": "تشغيل",
+            "found": true
+          },
+          {
+            "text": "تجريبي",
+            "found": true
+          }
+        ],
+        "ok": true
+      },
+      {
+        "name": "جمل-تجربة-1",
+        "runs": [
+          {
+            "text": "جمل",
+            "found": true
+          },
+          {
+            "text": "تجربة",
+            "found": true
+          },
+          {
+            "text": "1",
+            "found": true
+          }
+        ],
+        "ok": true
+      }
+    ],
+    "n_missing": 0,
+    "text_chars": 6025,
+    "errors": []
+  },
+  "fonts": {
+    "ok": true,
+    "fonts": [
+      "/AAAAAA+IBMPlexSansArabic"
+    ],
+    "required_token": "IBMPlexSansArabic",
+    "type3_present": false,
+    "errors": []
+  },
+  "attachments": {
+    "ok": true,
+    "reason": "",
+    "files": {
+      "overlay_v1.png": {
+        "sha256": "914513bd5ca5ac7ed81253ec87cae4f992d9e882c92061a7d7eab9317ea475f7",
+        "bytes": 1170670,
+        "matches": true
+      },
+      "session.json": {
+        "sha256": "515e02af4dedc4f567c903598288390d4a679b4ca98ab534deee29b3d10f9574",
+        "bytes": 41082,
+        "matches": true
+      },
+      "report_model.json": {
+        "sha256": "b58607b1d27a9447bff210eed36172dd2391a6e758db25ad10462b9d16cbeb0c",
+        "bytes": 37231,
+        "matches": true
+      }
+    }
+  },
+  "attachments_ok": true,
+  "require_text": true,
+  "require_font": true,
+  "n_pages": 5,
+  "bytes_in": 1591413,
+  "sha256_in": "de0a7b0ac005291481c0a4a1afc787d947d79ae7b184edabf08afb826238ac1a",
+  "bytes_out": 2849106,
+  "sha256_out": "85c9876b9437cfd8a543d6ce25f1eb6c139c88918a02c85d89955afe50b73237"
+}

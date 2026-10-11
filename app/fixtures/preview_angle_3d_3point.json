@@ -1,0 +1,206 @@
+{
+  "seq": 6,
+  "row": {
+    "id": 10,
+    "name": "3D angle",
+    "line_a_id": null,
+    "line_b_id": null,
+    "angle_deg": 155.73650651406055,
+    "rejection_reason": "",
+    "created_at": "2026-10-11T19:18:38+00:00",
+    "measurement_type": "angle_3d_3point",
+    "view": "frame",
+    "vertex_px": [
+      585.55,
+      348.81
+    ],
+    "endpoint_a_px": [
+      395.35,
+      358.18
+    ],
+    "endpoint_b_px": [
+      769.3,
+      292.8
+    ],
+    "vertex_3d": [
+      -0.22183564606018746,
+      -0.059823002384920616,
+      2.200000047683716
+    ],
+    "endpoint_a_3d": [
+      -0.9290259317667136,
+      -0.02949910500398437,
+      2.3420000076293945
+    ],
+    "endpoint_b_3d": [
+      0.4241573013867801,
+      -0.2624215787700217,
+      2.2930002212524414
+    ],
+    "order": 9,
+    "display_color": "#2C87BE",
+    "note": "",
+    "targets": [
+      "camel",
+      "camel",
+      "camel"
+    ],
+    "vertex_depth": {
+      "source": "window_median",
+      "depth_m": 2.200000047683716,
+      "target": "camel",
+      "inside_mask": true,
+      "inside_depth_bbox": true,
+      "window_n_total": 25,
+      "window_n_valid": 25,
+      "window_n_in_mask": 25,
+      "window_restricted_to_mask": true,
+      "window_median_m": 2.200000047683716,
+      "window_spread_m": 0.01399993896484375,
+      "knn_depth_m": 2.200000047683716,
+      "nn_depth_mean_m": 2.19866673151652,
+      "k_requested": 9,
+      "k_used": 9,
+      "nn_dist_px_max": 1.6609033686521728,
+      "nn_dist_m_max": 0.005683587388565273,
+      "nn_centroid_px": [
+        585.6666666666666,
+        348.8888888888889
+      ],
+      "nn_depth_spread_m": 0.003999948501586914,
+      "direct_depth_m": 2.200000047683716,
+      "flags": [],
+      "reason": ""
+    },
+    "endpoint_a_depth": {
+      "source": "window_median",
+      "depth_m": 2.3420000076293945,
+      "target": "camel",
+      "inside_mask": true,
+      "inside_depth_bbox": true,
+      "window_n_total": 25,
+      "window_n_valid": 25,
+      "window_n_in_mask": 25,
+      "window_restricted_to_mask": true,
+      "window_median_m": 2.3420000076293945,
+      "window_spread_m": 0.012000083923339844,
+      "knn_depth_m": 2.3420000076293945,
+      "nn_depth_mean_m": 2.3415556218889026,
+      "k_requested": 9,
+      "k_used": 9,
+      "nn_dist_px_max": 1.6597891432347447,
+      "nn_dist_m_max": 0.006046378042339344,
+      "nn_centroid_px": [
+        395.3333333333333,
+        358.1111111111111
+      ],
+      "nn_depth_spread_m": 0.00800013542175293,
+      "direct_depth_m": 2.3420000076293945,
+      "flags": [],
+      "reason": ""
+    },
+    "endpoint_b_depth": {
+      "source": "window_median",
+      "depth_m": 2.2930002212524414,
+      "target": "camel",
+      "inside_mask": true,
+      "inside_depth_bbox": true,
+      "window_n_total": 25,
+      "window_n_valid": 25,
+      "window_n_in_mask": 25,
+      "window_restricted_to_mask": true,
+      "window_median_m": 2.2930002212524414,
+      "window_spread_m": 0,
+      "knn_depth_m": 2.2930002212524414,
+      "nn_depth_mean_m": 2.2930002212524414,
+      "k_requested": 9,
+      "k_used": 9,
+      "nn_dist_px_max": 1.7117242768624128,
+      "nn_dist_m_max": 0.006105108583349699,
+      "nn_centroid_px": [
+        769.3333333333334,
+        292.8888888888889
+      ],
+      "nn_depth_spread_m": 0,
+      "direct_depth_m": 2.2930002212524414,
+      "flags": [],
+      "reason": ""
+    },
+    "flags": [],
+    "confidence": "high",
+    "kind": "angle_3d_3point",
+    "family": "angles",
+    "input_kind": "angle_3d_3point",
+    "input": {
+      "id": 10,
+      "kind": "angle_3d_3point",
+      "name": "3D angle",
+      "points": [
+        [
+          585.55,
+          348.81
+        ],
+        [
+          395.35,
+          358.18
+        ],
+        [
+          769.3,
+          292.8
+        ]
+      ],
+      "targets": [
+        "camel",
+        "camel",
+        "camel"
+      ],
+      "line_a_id": null,
+      "line_b_id": null,
+      "color": "#2C87BE",
+      "note": ""
+    },
+    "presentation": {
+      "kind_label": {
+        "ar": "زاوية بثلاث نقاط (ثلاثية الأبعاد)",
+        "en": "3-point angle (3D)"
+      },
+      "value": 155.73650651406055,
+      "unit": "deg",
+      "value_text": {
+        "ar": "+155.7°",
+        "en": "+155.7°"
+      },
+      "uncertainty_text": {
+        "ar": "",
+        "en": ""
+      },
+      "depth_basis": [
+        {
+          "point": 1,
+          "ar": "مباشر 2.200 م",
+          "en": "direct 2.200 m"
+        },
+        {
+          "point": 2,
+          "ar": "مباشر 2.342 م",
+          "en": "direct 2.342 m"
+        },
+        {
+          "point": 3,
+          "ar": "مباشر 2.293 م",
+          "en": "direct 2.293 m"
+        }
+      ],
+      "flags": [],
+      "confidence": {
+        "code": "high",
+        "ar": "عالية",
+        "en": "high"
+      },
+      "rejected": false,
+      "rejection": [],
+      "n_points": 3,
+      "n_points_knn": 0
+    }
+  }
+}

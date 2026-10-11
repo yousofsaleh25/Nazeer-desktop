@@ -1,0 +1,33 @@
+{
+  "source": "window_median",
+  "depth_m": 2.1530001163482666,
+  "target": "camel",
+  "inside_mask": true,
+  "inside_depth_bbox": true,
+  "window_n_total": 25,
+  "window_n_valid": 25,
+  "window_n_in_mask": 25,
+  "window_restricted_to_mask": true,
+  "window_median_m": 2.1530001163482666,
+  "window_spread_m": 0.01399993896484375,
+  "knn_depth_m": 2.1530001163482666,
+  "nn_depth_mean_m": 2.1528890132904053,
+  "k_requested": 9,
+  "k_used": 9,
+  "nn_dist_px_max": 1.6876018487783226,
+  "nn_dist_m_max": 0.00565157547087692,
+  "nn_centroid_px": [
+    564.1111111111111,
+    218.66666666666666
+  ],
+  "nn_depth_spread_m": 0.009999990463256836,
+  "direct_depth_m": 2.1530001163482666,
+  "flags": [],
+  "reason": "",
+  "seq": 1,
+  "ok": true,
+  "basis": {
+    "ar": "مباشر 2.153 م",
+    "en": "direct 2.153 m"
+  }
+}

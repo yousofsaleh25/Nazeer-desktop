@@ -1,0 +1,1490 @@
+{
+  "report_model_version": "1.0",
+  "engine_version": "0.1.0",
+  "generated_at": "2026-10-11T15:30:00+00:00",
+  "inputs": {
+    "language": "both",
+    "rubric_variant": "mjaheem",
+    "names": {
+      "judge": "حكم الاختبار",
+      "council": "مجلس حكام الاختبار",
+      "event": "مزاين الإبل - تشغيل تجريبي"
+    },
+    "observations": {
+      "manual": "تشغيل تجريبي: القياسات عشوائية وليست قياسات حكم."
+    }
+  },
+  "session": {
+    "session_id": "20261011_152956_e20a7c",
+    "camel_id": "جمل-تجربة-1",
+    "operator": "المشغل",
+    "notes": "real-bag check (real_run/1): random measurements, seed 20261011",
+    "status": "finalized",
+    "revision": 9,
+    "created_at": "2026-10-11T15:29:57+00:00",
+    "updated_at": "2026-10-11T15:30:00+00:00"
+  },
+  "frame": {
+    "width": 1280,
+    "height": 720,
+    "bag_name": "20260414_175757-006.bag",
+    "bag_path": "E:\\camel_beauty\\nazeer-desktop\\data\\.bag\\20260414_175757-006.bag",
+    "bag_fingerprint": "99e5714e12ad1374fb2e1174565f292642d978af8c667994945726c63a1e6beb",
+    "read_index": 1340,
+    "frame_number_color": 10848,
+    "frame_number_depth": 10698,
+    "color_timestamp_ms": 1776178725227.5444,
+    "bag_time_s": 44.68663256835937,
+    "bucket": "SIDE",
+    "z_ref": {
+      "statistic": "median",
+      "z_ref_m": 2.3289999961853027,
+      "z_mean_m": 2.3369474045915912,
+      "z_median_m": 2.3289999961853027,
+      "z_mad_mean_abs_dev_m": 0.10395469842480061,
+      "z_mad_robust_m": 0.0690000057220459,
+      "z_var": 0.023065668552373096,
+      "z_std": 0.15187385736976952,
+      "z_min_m": 2.058000087738037,
+      "z_max_m": 3.0390000343322754,
+      "rel_disp": 0.044634907082468554,
+      "n_total": 189733,
+      "n_valid": 182862,
+      "valid_fraction": 0.9637859518375823,
+      "band": [
+        0.3,
+        5
+      ],
+      "erosion_px": 2,
+      "n_mask_raw": 200704,
+      "erosion_fallback": false,
+      "rejection_reason": "ok"
+    },
+    "ground": {
+      "raw_row": 691,
+      "near_plane_row": 691,
+      "drawn_row": 691,
+      "n_columns": 970,
+      "n_columns_near": 669,
+      "differs_px": 0,
+      "badge": null,
+      "x_min": 271,
+      "x_max": 1240,
+      "z_ref_m": 2.3289999961853027,
+      "tol_frac": 0.12,
+      "band_px": 8,
+      "badge_px": 8
+    },
+    "depth_valid_bbox": [
+      29,
+      107,
+      1273,
+      719
+    ],
+    "intrinsics": {
+      "fx": 642.901611328125,
+      "fy": 641.9310302734375,
+      "cx": 650.3765869140625,
+      "cy": 366.26556396484375,
+      "width": 1280,
+      "height": 720,
+      "model": "distortion.inverse_brown_conrady",
+      "coeffs": [
+        -0.053556252270936966,
+        0.06357665359973907,
+        -0.001115115825086832,
+        0.0009918295545503497,
+        -0.020360177382826805
+      ],
+      "depth_units_m": 0.0010000000474974513,
+      "depth_valid_bbox": [
+        29,
+        107,
+        1273,
+        719
+      ],
+      "distortion_note": "recorded; ignored by the pinhole math"
+    },
+    "knn": {
+      "n_points": 182862,
+      "source": "eroded",
+      "sparse": false,
+      "k": 9,
+      "erosion_px": 2,
+      "built_ms": 1235.7534000184387
+    },
+    "model": {
+      "file": "best.pt",
+      "sha256": "0e9ee2baada7c70531b66e0b98f7e1cf4dcf3ce7971c55bce69a7270ec3a4320",
+      "stub": false
+    },
+    "candidate": {
+      "candidate_id": "c06_001340",
+      "rank": 6,
+      "n_candidates": 12,
+      "z_var": 0.023065668552373096,
+      "rel_disp": 0.044634907082468554,
+      "valid_fraction": 0.9637859518375823,
+      "params_hash": "a6fef1d525ce8ba2",
+      "sample_every": 5
+    }
+  },
+  "overlay": {
+    "file": "overlay_v1.png",
+    "version": 1,
+    "sha256": "914513bd5ca5ac7ed81253ec87cae4f992d9e882c92061a7d7eab9317ea475f7",
+    "width": 1280,
+    "height": 840,
+    "frame_height": 720,
+    "footer_px": 120
+  },
+  "measurements": [
+    {
+      "id": 1,
+      "order": 0,
+      "kind": "distance_2d",
+      "input_kind": "distance_2d",
+      "name": "مسافة ثنائية الأبعاد 1",
+      "note": "random clicks, both inside the camel",
+      "display_color": "#BE2C2C",
+      "targets": [
+        "camel",
+        "camel"
+      ],
+      "rejection_reason": "",
+      "confidence": "low",
+      "uncertainty_m": 0.058886106167952416,
+      "uncertainty_basis": "z_mad_over_z_median",
+      "family": "lines",
+      "kind_label": {
+        "ar": "مسافة ثنائية الأبعاد (مستوى Z_ref)",
+        "en": "2D distance (Z_ref plane)"
+      },
+      "value": 1.319283717991235,
+      "unit": "m",
+      "value_text": {
+        "ar": "1.319 م",
+        "en": "1.319 m"
+      },
+      "uncertainty_text": {
+        "ar": "± 5.9 سم",
+        "en": "± 5.9 cm"
+      },
+      "depth_basis": [
+        {
+          "point": 1,
+          "ar": "مستوى Z_ref 2.329 م",
+          "en": "Z_ref 2.329 m"
+        },
+        {
+          "point": 2,
+          "ar": "مستوى Z_ref 2.329 م",
+          "en": "Z_ref 2.329 m"
+        }
+      ],
+      "flags": [
+        {
+          "code": "endpoint_dz",
+          "ar": "نقطة بعيدة عن مستوى Z_ref (> 10 %)",
+          "en": "point off the Z_ref plane (> 10 %)",
+          "severity": "warn"
+        }
+      ],
+      "confidence_label": {
+        "code": "low",
+        "ar": "منخفضة",
+        "en": "low"
+      },
+      "rejected": false,
+      "rejection": [],
+      "n_points": 2,
+      "n_points_knn": 0
+    },
+    {
+      "id": 2,
+      "order": 1,
+      "kind": "distance_2d",
+      "input_kind": "distance_2d",
+      "name": "Random 2D distance 2",
+      "note": "random clicks, both inside the camel",
+      "display_color": "#2C57BE",
+      "targets": [
+        "camel",
+        "camel"
+      ],
+      "rejection_reason": "",
+      "confidence": "high",
+      "uncertainty_m": 0.02647085613793192,
+      "uncertainty_basis": "z_mad_over_z_median",
+      "family": "lines",
+      "kind_label": {
+        "ar": "مسافة ثنائية الأبعاد (مستوى Z_ref)",
+        "en": "2D distance (Z_ref plane)"
+      },
+      "value": 0.5930527891325889,
+      "unit": "m",
+      "value_text": {
+        "ar": "0.593 م",
+        "en": "0.593 m"
+      },
+      "uncertainty_text": {
+        "ar": "± 2.6 سم",
+        "en": "± 2.6 cm"
+      },
+      "depth_basis": [
+        {
+          "point": 1,
+          "ar": "مستوى Z_ref 2.329 م",
+          "en": "Z_ref 2.329 m"
+        },
+        {
+          "point": 2,
+          "ar": "مستوى Z_ref 2.329 م",
+          "en": "Z_ref 2.329 m"
+        }
+      ],
+      "flags": [],
+      "confidence_label": {
+        "code": "high",
+        "ar": "عالية",
+        "en": "high"
+      },
+      "rejected": false,
+      "rejection": [],
+      "n_points": 2,
+      "n_points_knn": 0
+    },
+    {
+      "id": 3,
+      "order": 2,
+      "kind": "distance_2d",
+      "input_kind": "distance_2d",
+      "name": "مسافة ثنائية الأبعاد 3",
+      "note": "random clicks, both inside the camel",
+      "display_color": "#81BE2C",
+      "targets": [
+        "camel",
+        "camel"
+      ],
+      "rejection_reason": "",
+      "confidence": "high",
+      "uncertainty_m": 0.04813698977831955,
+      "uncertainty_basis": "z_mad_over_z_median",
+      "family": "lines",
+      "kind_label": {
+        "ar": "مسافة ثنائية الأبعاد (مستوى Z_ref)",
+        "en": "2D distance (Z_ref plane)"
+      },
+      "value": 1.0784606247612538,
+      "unit": "m",
+      "value_text": {
+        "ar": "1.078 م",
+        "en": "1.078 m"
+      },
+      "uncertainty_text": {
+        "ar": "± 4.8 سم",
+        "en": "± 4.8 cm"
+      },
+      "depth_basis": [
+        {
+          "point": 1,
+          "ar": "مستوى Z_ref 2.329 م",
+          "en": "Z_ref 2.329 m"
+        },
+        {
+          "point": 2,
+          "ar": "مستوى Z_ref 2.329 م",
+          "en": "Z_ref 2.329 m"
+        }
+      ],
+      "flags": [],
+      "confidence_label": {
+        "code": "high",
+        "ar": "عالية",
+        "en": "high"
+      },
+      "rejected": false,
+      "rejection": [],
+      "n_points": 2,
+      "n_points_knn": 0
+    },
+    {
+      "id": 4,
+      "order": 3,
+      "kind": "distance_3d",
+      "input_kind": "distance_3d",
+      "name": "Random 3D distance 1",
+      "note": "random clicks, both inside the camel",
+      "display_color": "#BE2CAB",
+      "targets": [
+        "camel",
+        "camel"
+      ],
+      "rejection_reason": "",
+      "confidence": "high",
+      "uncertainty_m": 0.012702151226561802,
+      "uncertainty_basis": "sigma_d_1pct",
+      "family": "lines",
+      "kind_label": {
+        "ar": "مسافة ثلاثية الأبعاد",
+        "en": "3D distance"
+      },
+      "value": 0.8212154913972701,
+      "unit": "m",
+      "value_text": {
+        "ar": "0.821 م",
+        "en": "0.821 m"
+      },
+      "uncertainty_text": {
+        "ar": "± 1.3 سم",
+        "en": "± 1.3 cm"
+      },
+      "depth_basis": [
+        {
+          "point": 1,
+          "ar": "مباشر 2.153 م",
+          "en": "direct 2.153 m"
+        },
+        {
+          "point": 2,
+          "ar": "مباشر 2.309 م",
+          "en": "direct 2.309 m"
+        }
+      ],
+      "flags": [],
+      "confidence_label": {
+        "code": "high",
+        "ar": "عالية",
+        "en": "high"
+      },
+      "rejected": false,
+      "rejection": [],
+      "n_points": 2,
+      "n_points_knn": 0
+    },
+    {
+      "id": 5,
+      "order": 4,
+      "kind": "distance_3d",
+      "input_kind": "distance_3d",
+      "name": "مسافة ثلاثية الأبعاد 2",
+      "note": "random clicks, both inside the camel",
+      "display_color": "#2CBEA5",
+      "targets": [
+        "camel",
+        "camel"
+      ],
+      "rejection_reason": "",
+      "confidence": "high",
+      "uncertainty_m": 0.010303911498555314,
+      "uncertainty_basis": "sigma_d_1pct",
+      "family": "lines",
+      "kind_label": {
+        "ar": "مسافة ثلاثية الأبعاد",
+        "en": "3D distance"
+      },
+      "value": 1.4342236929200256,
+      "unit": "m",
+      "value_text": {
+        "ar": "1.434 م",
+        "en": "1.434 m"
+      },
+      "uncertainty_text": {
+        "ar": "± 1.0 سم",
+        "en": "± 1.0 cm"
+      },
+      "depth_basis": [
+        {
+          "point": 1,
+          "ar": "مباشر 2.470 م",
+          "en": "direct 2.470 m"
+        },
+        {
+          "point": 2,
+          "ar": "مباشر 2.289 م",
+          "en": "direct 2.289 m"
+        }
+      ],
+      "flags": [],
+      "confidence_label": {
+        "code": "high",
+        "ar": "عالية",
+        "en": "high"
+      },
+      "rejected": false,
+      "rejection": [],
+      "n_points": 2,
+      "n_points_knn": 0
+    },
+    {
+      "id": 6,
+      "order": 5,
+      "kind": "distance_3d",
+      "input_kind": "distance_3d",
+      "name": "Random 3D distance 3",
+      "note": "random; P2 is 18 px outside the camel (operator rule: KNN depth)",
+      "display_color": "#BE7B2C",
+      "targets": [
+        "camel",
+        "camel"
+      ],
+      "rejection_reason": "",
+      "confidence": "high",
+      "uncertainty_m": 0.09088591206990103,
+      "uncertainty_basis": "sigma_d_1pct+knn_snap",
+      "family": "lines",
+      "kind_label": {
+        "ar": "مسافة ثلاثية الأبعاد",
+        "en": "3D distance"
+      },
+      "value": 1.2869109490656148,
+      "unit": "m",
+      "value_text": {
+        "ar": "1.287 م",
+        "en": "1.287 m"
+      },
+      "uncertainty_text": {
+        "ar": "± 9.1 سم",
+        "en": "± 9.1 cm"
+      },
+      "depth_basis": [
+        {
+          "point": 1,
+          "ar": "مباشر 2.321 م",
+          "en": "direct 2.321 m"
+        },
+        {
+          "point": 2,
+          "ar": "مُقرَّب إلى الجمل 9.0 سم",
+          "en": "snapped to camel 9.0 cm"
+        }
+      ],
+      "flags": [],
+      "confidence_label": {
+        "code": "high",
+        "ar": "عالية",
+        "en": "high"
+      },
+      "rejected": false,
+      "rejection": [],
+      "n_points": 2,
+      "n_points_knn": 1
+    },
+    {
+      "id": 7,
+      "order": 6,
+      "kind": "distance_3d",
+      "input_kind": "distance_3d",
+      "name": "من الخف إلى الأرض",
+      "note": "random hoof point; P2 is a Shift-click ground point 48 px from the camel",
+      "display_color": "#502CBE",
+      "targets": [
+        "camel",
+        "ground"
+      ],
+      "rejection_reason": "",
+      "confidence": "high",
+      "uncertainty_m": 0.018140279419666304,
+      "uncertainty_basis": "sigma_d_1pct",
+      "family": "lines",
+      "kind_label": {
+        "ar": "مسافة ثلاثية الأبعاد",
+        "en": "3D distance"
+      },
+      "value": 0.27491202427794775,
+      "unit": "m",
+      "value_text": {
+        "ar": "0.275 م",
+        "en": "0.275 m"
+      },
+      "uncertainty_text": {
+        "ar": "± 1.8 سم",
+        "en": "± 1.8 cm"
+      },
+      "depth_basis": [
+        {
+          "point": 1,
+          "ar": "مباشر 2.385 م",
+          "en": "direct 2.385 m"
+        },
+        {
+          "point": 2,
+          "ar": "أرض (مباشر) 2.167 م",
+          "en": "ground (direct) 2.167 m"
+        }
+      ],
+      "flags": [],
+      "confidence_label": {
+        "code": "high",
+        "ar": "عالية",
+        "en": "high"
+      },
+      "rejected": false,
+      "rejection": [],
+      "n_points": 2,
+      "n_points_knn": 0
+    },
+    {
+      "id": 8,
+      "order": 7,
+      "kind": "curve_2d",
+      "input_kind": "curve_2d",
+      "name": "Random 2D curve 1",
+      "note": "5 random control points inside the camel",
+      "display_color": "#32BE2C",
+      "targets": [
+        "camel",
+        "camel",
+        "camel",
+        "camel",
+        "camel"
+      ],
+      "rejection_reason": "",
+      "confidence": "low",
+      "uncertainty_m": 0.06583579303534598,
+      "uncertainty_basis": "z_mad_over_z_median",
+      "family": "curves",
+      "kind_label": {
+        "ar": "طول خط منكسر ثنائي الأبعاد (مستوى Z_ref)",
+        "en": "2D polyline length (Z_ref plane)"
+      },
+      "value": 1.4749844312144784,
+      "unit": "m",
+      "value_text": {
+        "ar": "1.475 م",
+        "en": "1.475 m"
+      },
+      "uncertainty_text": {
+        "ar": "± 6.6 سم",
+        "en": "± 6.6 cm"
+      },
+      "depth_basis": [
+        {
+          "point": 1,
+          "ar": "مستوى Z_ref 2.329 م",
+          "en": "Z_ref 2.329 m"
+        },
+        {
+          "point": 2,
+          "ar": "مستوى Z_ref 2.329 م",
+          "en": "Z_ref 2.329 m"
+        },
+        {
+          "point": 3,
+          "ar": "مستوى Z_ref 2.329 م",
+          "en": "Z_ref 2.329 m"
+        },
+        {
+          "point": 4,
+          "ar": "مستوى Z_ref 2.329 م",
+          "en": "Z_ref 2.329 m"
+        },
+        {
+          "point": 5,
+          "ar": "مستوى Z_ref 2.329 م",
+          "en": "Z_ref 2.329 m"
+        }
+      ],
+      "flags": [
+        {
+          "code": "endpoint_dz",
+          "ar": "نقطة بعيدة عن مستوى Z_ref (> 10 %)",
+          "en": "point off the Z_ref plane (> 10 %)",
+          "severity": "warn"
+        }
+      ],
+      "confidence_label": {
+        "code": "low",
+        "ar": "منخفضة",
+        "en": "low"
+      },
+      "rejected": false,
+      "rejection": [],
+      "n_points": 5,
+      "n_points_knn": 0
+    },
+    {
+      "id": 9,
+      "order": 8,
+      "kind": "curve_3d",
+      "input_kind": "curve_3d",
+      "name": "منحنى ثلاثي الأبعاد 1",
+      "note": "the same control points as #8",
+      "display_color": "#BE2C5D",
+      "targets": [
+        "camel",
+        "camel",
+        "camel",
+        "camel",
+        "camel"
+      ],
+      "rejection_reason": "",
+      "confidence": "low",
+      "uncertainty_m": 0.027142802842559606,
+      "uncertainty_basis": "sigma_d_1pct",
+      "family": "curves",
+      "kind_label": {
+        "ar": "طول خط منكسر ثلاثي الأبعاد",
+        "en": "3D polyline length"
+      },
+      "value": 1.5652082250281318,
+      "unit": "m",
+      "value_text": {
+        "ar": "1.565 م",
+        "en": "1.565 m"
+      },
+      "uncertainty_text": {
+        "ar": "± 2.7 سم",
+        "en": "± 2.7 cm"
+      },
+      "depth_basis": [
+        {
+          "point": 1,
+          "ar": "مباشر 2.342 م",
+          "en": "direct 2.342 m"
+        },
+        {
+          "point": 2,
+          "ar": "مباشر 2.094 م",
+          "en": "direct 2.094 m"
+        },
+        {
+          "point": 3,
+          "ar": "مباشر 2.200 م",
+          "en": "direct 2.200 m"
+        },
+        {
+          "point": 4,
+          "ar": "مباشر 2.338 م",
+          "en": "direct 2.338 m"
+        },
+        {
+          "point": 5,
+          "ar": "مباشر 2.293 م",
+          "en": "direct 2.293 m"
+        }
+      ],
+      "flags": [
+        {
+          "code": "segment_depth_jump",
+          "ar": "قفزة عمق في مقطع",
+          "en": "depth jump in a segment",
+          "severity": "warn"
+        }
+      ],
+      "confidence_label": {
+        "code": "low",
+        "ar": "منخفضة",
+        "en": "low"
+      },
+      "rejected": false,
+      "rejection": [],
+      "n_points": 5,
+      "n_points_knn": 0,
+      "curve": {
+        "cross_check_2d_m": 1.4749844312144784,
+        "n_flagged_segments": 1,
+        "segment_lengths_m": [
+          0.4868863419503925,
+          0.37098485084329913,
+          0.3636133290003031,
+          0.34372370323413703
+        ],
+        "segment_dz_m": [
+          -0.247999906539917,
+          0.10599994659423828,
+          0.1380000114440918,
+          -0.04499983787536621
+        ],
+        "segment_flags": [
+          [
+            "segment_depth_jump"
+          ],
+          [],
+          [],
+          []
+        ]
+      }
+    }
+  ],
+  "summary": {
+    "n_measurements": 9,
+    "n_rejected": 0,
+    "n_low_confidence": 3,
+    "n_points": 13,
+    "n_points_knn": 1,
+    "snapped_text": {
+      "ar": "1 من 13 نقطة قُرِّبت إلى الجمل (KNN)",
+      "en": "1 of 13 points snapped to the camel (KNN)"
+    }
+  },
+  "static": {
+    "brand": {
+      "ar": "نظير",
+      "en": "Nazeer"
+    },
+    "title": {
+      "ar": "تقرير قياس جمال الإبل",
+      "en": "Camel Beauty Measurement Report"
+    },
+    "certification": {
+      "ar": [
+        "معتمدة من شركة نظير",
+        "الموسوعة الرقمية للجمال العربية"
+      ],
+      "en": [
+        "Certified by Nazeer Company",
+        "Digital Encyclopedia of Arabian Beauty"
+      ]
+    },
+    "disclaimer": {
+      "ar": "يقيس نظير ما يرسمه الحكم على الصورة ولا يقيّم الجمال.",
+      "en": "Nazeer measures what the judge draws on the frame; it does not score beauty."
+    },
+    "headings": {
+      "session": {
+        "ar": "معلومات الجلسة",
+        "en": "Session Information"
+      },
+      "measurements": {
+        "ar": "القياسات الآلية (الكاميرا)",
+        "en": "Camera-Derived Measurements"
+      },
+      "camel_view": {
+        "ar": "المنظر الجانبي مع القياسات",
+        "en": "Side View with Measurements"
+      },
+      "scoring_form": {
+        "ar": "استمارة تحكيم المجاهيم — للمنافسات",
+        "en": "Mzayen Scoring Form — for Competitions"
+      },
+      "form_variant": {
+        "ar": "نوع الاستمارة:",
+        "en": "Form variant:"
+      },
+      "regions": {
+        "ar": "المناطق التشريحية الـ27 — مرجع",
+        "en": "27 Anatomical Regions — Reference"
+      },
+      "observations": {
+        "ar": "ملاحظات إضافية للحكم",
+        "en": "Judge's External Observations"
+      },
+      "signatures": {
+        "ar": "التوقيعات",
+        "en": "Signatures"
+      },
+      "frame": {
+        "ar": "الإطار المختار",
+        "en": "Selected frame"
+      },
+      "depth": {
+        "ar": "العمق المرجعي وخط الأرض",
+        "en": "Reference depth and ground line"
+      },
+      "provenance": {
+        "ar": "مصدر البيانات والإصدارات",
+        "en": "Provenance and versions"
+      }
+    },
+    "columns": {
+      "color": {
+        "ar": "اللون",
+        "en": "Color"
+      },
+      "measurement": {
+        "ar": "القياس",
+        "en": "Measurement"
+      },
+      "kind": {
+        "ar": "النوع",
+        "en": "Type"
+      },
+      "value": {
+        "ar": "القيمة",
+        "en": "Value"
+      },
+      "uncertainty": {
+        "ar": "الدقة",
+        "en": "Uncertainty"
+      },
+      "depth_basis": {
+        "ar": "أساس العمق",
+        "en": "Depth basis"
+      },
+      "flags": {
+        "ar": "تنبيهات",
+        "en": "Flags"
+      },
+      "region": {
+        "ar": "العضو",
+        "en": "Region"
+      },
+      "weight": {
+        "ar": "الوزن",
+        "en": "Weight"
+      },
+      "judge_score": {
+        "ar": "درجة الحكم",
+        "en": "Judge Score"
+      },
+      "notes": {
+        "ar": "ملاحظات",
+        "en": "Notes"
+      },
+      "total": {
+        "ar": "المجموع",
+        "en": "Total"
+      },
+      "arabic_name": {
+        "ar": "الاسم العربي",
+        "en": "Arabic name"
+      },
+      "english": {
+        "ar": "الترجمة",
+        "en": "English"
+      },
+      "body_part": {
+        "ar": "المنطقة الجسمية",
+        "en": "Body part"
+      }
+    },
+    "session_rows": {
+      "session_id": {
+        "ar": "المعرّف",
+        "en": "Session ID"
+      },
+      "operator": {
+        "ar": "المستخدم",
+        "en": "Operator"
+      },
+      "camel_id": {
+        "ar": "معرّف الجمل",
+        "en": "Camel ID"
+      },
+      "event": {
+        "ar": "الفعالية",
+        "en": "Event"
+      },
+      "n_measurements": {
+        "ar": "عدد القياسات",
+        "en": "Measurements"
+      },
+      "source_frame": {
+        "ar": "المصدر",
+        "en": "Source frame"
+      },
+      "generated": {
+        "ar": "تاريخ التوليد",
+        "en": "Generated"
+      }
+    },
+    "rubric": {
+      "variant": "mjaheem",
+      "variant_label": {
+        "ar": "المجاهيم",
+        "en": "Mjaheem"
+      },
+      "variants": {
+        "mjaheem": {
+          "ar": "المجاهيم",
+          "en": "Mjaheem"
+        },
+        "maghateer": {
+          "ar": "المغاتير",
+          "en": "Maghateer"
+        }
+      },
+      "rows": [
+        {
+          "num": 1,
+          "ar": "الرأس",
+          "en": "Head",
+          "weight": 25
+        },
+        {
+          "num": 2,
+          "ar": "الرقبة",
+          "en": "Neck",
+          "weight": 15
+        },
+        {
+          "num": 3,
+          "ar": "الغارب",
+          "en": "Withers",
+          "weight": 10
+        },
+        {
+          "num": 4,
+          "ar": "الرق والتناسق والتوازن",
+          "en": "Slimness, Harmony, Balance",
+          "weight": 10
+        },
+        {
+          "num": 5,
+          "ar": "الإرتفاع",
+          "en": "Height / Stature",
+          "weight": 10
+        },
+        {
+          "num": 6,
+          "ar": "الجنب",
+          "en": "Flank",
+          "weight": 5
+        },
+        {
+          "num": 7,
+          "ar": "النحر + الشخر",
+          "en": "Chest + Bridle",
+          "weight": 5
+        },
+        {
+          "num": 8,
+          "ar": "الجبار + الخف",
+          "en": "Bone Structure + Hoof",
+          "weight": 5
+        },
+        {
+          "num": 9,
+          "ar": "العرقوب + اليد",
+          "en": "Hock + Foreleg",
+          "weight": 5
+        },
+        {
+          "num": 10,
+          "ar": "اللون + الوبرة + الذيل",
+          "en": "Color + Coat + Tail",
+          "weight": 5
+        },
+        {
+          "num": 11,
+          "ar": "السنام + الفقار + العيز",
+          "en": "Hump + Vertebrae + Tail-base",
+          "weight": 5
+        }
+      ],
+      "mjaheem": [
+        {
+          "num": 1,
+          "ar": "الرأس",
+          "en": "Head",
+          "weight": 25
+        },
+        {
+          "num": 2,
+          "ar": "الرقبة",
+          "en": "Neck",
+          "weight": 15
+        },
+        {
+          "num": 3,
+          "ar": "الغارب",
+          "en": "Withers",
+          "weight": 10
+        },
+        {
+          "num": 4,
+          "ar": "الرق والتناسق والتوازن",
+          "en": "Slimness, Harmony, Balance",
+          "weight": 10
+        },
+        {
+          "num": 5,
+          "ar": "الإرتفاع",
+          "en": "Height / Stature",
+          "weight": 10
+        },
+        {
+          "num": 6,
+          "ar": "الجنب",
+          "en": "Flank",
+          "weight": 5
+        },
+        {
+          "num": 7,
+          "ar": "النحر + الشخر",
+          "en": "Chest + Bridle",
+          "weight": 5
+        },
+        {
+          "num": 8,
+          "ar": "الجبار + الخف",
+          "en": "Bone Structure + Hoof",
+          "weight": 5
+        },
+        {
+          "num": 9,
+          "ar": "العرقوب + اليد",
+          "en": "Hock + Foreleg",
+          "weight": 5
+        },
+        {
+          "num": 10,
+          "ar": "اللون + الوبرة + الذيل",
+          "en": "Color + Coat + Tail",
+          "weight": 5
+        },
+        {
+          "num": 11,
+          "ar": "السنام + الفقار + العيز",
+          "en": "Hump + Vertebrae + Tail-base",
+          "weight": 5
+        }
+      ],
+      "maghateer": [
+        {
+          "num": 1,
+          "ar": "الرأس",
+          "en": "Head",
+          "weight": 25
+        },
+        {
+          "num": 2,
+          "ar": "الرقبة",
+          "en": "Neck",
+          "weight": 15
+        },
+        {
+          "num": 3,
+          "ar": "الغارب",
+          "en": "Withers",
+          "weight": 10
+        },
+        {
+          "num": 4,
+          "ar": "السنام + الفقار + العيز",
+          "en": "Hump + Vertebrae + Tail-base",
+          "weight": 10
+        },
+        {
+          "num": 5,
+          "ar": "الرق والتناسق والتوازن",
+          "en": "Slimness, Harmony, Balance",
+          "weight": 10
+        },
+        {
+          "num": 6,
+          "ar": "الإرتفاع",
+          "en": "Height / Stature",
+          "weight": 5
+        },
+        {
+          "num": 7,
+          "ar": "الجنب",
+          "en": "Flank",
+          "weight": 5
+        },
+        {
+          "num": 8,
+          "ar": "النحر + الشخر",
+          "en": "Chest + Bridle",
+          "weight": 5
+        },
+        {
+          "num": 9,
+          "ar": "الجبار + الخف",
+          "en": "Bone Structure + Hoof",
+          "weight": 5
+        },
+        {
+          "num": 10,
+          "ar": "العرقوب + اليد",
+          "en": "Hock + Foreleg",
+          "weight": 5
+        },
+        {
+          "num": 11,
+          "ar": "اللون + الوبرة + الذيل",
+          "en": "Color + Coat + Tail",
+          "weight": 5
+        }
+      ],
+      "total_weight": 100
+    },
+    "regions_27": [
+      {
+        "num": 1,
+        "ar": "السبال (الشوارب)",
+        "en": "Mustache (whiskers)",
+        "body_part_ar": "الرأس / الفم"
+      },
+      {
+        "num": 2,
+        "ar": "فتحات الأنف",
+        "en": "Nostrils",
+        "body_part_ar": "الرأس / الأنف"
+      },
+      {
+        "num": 3,
+        "ar": "الخشم",
+        "en": "Muzzle / snout",
+        "body_part_ar": "الرأس / الأنف"
+      },
+      {
+        "num": 4,
+        "ar": "العين",
+        "en": "Eye",
+        "body_part_ar": "الرأس"
+      },
+      {
+        "num": 5,
+        "ar": "الأذن",
+        "en": "Ear",
+        "body_part_ar": "الرأس"
+      },
+      {
+        "num": 6,
+        "ar": "المعذر",
+        "en": "Cheek / jaw",
+        "body_part_ar": "الرأس"
+      },
+      {
+        "num": 7,
+        "ar": "المصنة",
+        "en": "Brow ridge area",
+        "body_part_ar": "الرأس"
+      },
+      {
+        "num": 8,
+        "ar": "الكتف",
+        "en": "Shoulder",
+        "body_part_ar": "الجذع الأمامي"
+      },
+      {
+        "num": 9,
+        "ar": "الغارب",
+        "en": "Withers",
+        "body_part_ar": "الظهر الأمامي"
+      },
+      {
+        "num": 10,
+        "ar": "السنام",
+        "en": "Hump",
+        "body_part_ar": "الظهر"
+      },
+      {
+        "num": 11,
+        "ar": "العيز",
+        "en": "Lower-back / coccyx",
+        "body_part_ar": "الظهر الخلفي"
+      },
+      {
+        "num": 12,
+        "ar": "الفقار",
+        "en": "Vertebrae",
+        "body_part_ar": "الظهر"
+      },
+      {
+        "num": 13,
+        "ar": "الذيل",
+        "en": "Tail",
+        "body_part_ar": "المؤخرة"
+      },
+      {
+        "num": 14,
+        "ar": "الفخذ",
+        "en": "Thigh",
+        "body_part_ar": "الرجل الخلفية"
+      },
+      {
+        "num": 15,
+        "ar": "العرقوب",
+        "en": "Hock",
+        "body_part_ar": "الرجل الخلفية"
+      },
+      {
+        "num": 16,
+        "ar": "الساق",
+        "en": "Lower leg",
+        "body_part_ar": "الرجل الخلفية"
+      },
+      {
+        "num": 17,
+        "ar": "الثفنة",
+        "en": "Callus / footpad",
+        "body_part_ar": "الأخفاف"
+      },
+      {
+        "num": 18,
+        "ar": "البركة",
+        "en": "Knee callus (chest)",
+        "body_part_ar": "الصدر السفلي"
+      },
+      {
+        "num": 19,
+        "ar": "الكرسوع",
+        "en": "Wrist (carpal joint)",
+        "body_part_ar": "اليد الأمامية"
+      },
+      {
+        "num": 20,
+        "ar": "الخف",
+        "en": "Hoof / foot",
+        "body_part_ar": "الأخفاف"
+      },
+      {
+        "num": 21,
+        "ar": "الركبة",
+        "en": "Knee",
+        "body_part_ar": "اليد الأمامية"
+      },
+      {
+        "num": 22,
+        "ar": "ساق اليد",
+        "en": "Foreleg shaft",
+        "body_part_ar": "اليد الأمامية"
+      },
+      {
+        "num": 23,
+        "ar": "النحر",
+        "en": "Chest / breastbone",
+        "body_part_ar": "الصدر"
+      },
+      {
+        "num": 24,
+        "ar": "الرقبة",
+        "en": "Neck",
+        "body_part_ar": "الرقبة"
+      },
+      {
+        "num": 25,
+        "ar": "هامة الرأس",
+        "en": "Crown of head",
+        "body_part_ar": "الرأس"
+      },
+      {
+        "num": 26,
+        "ar": "الخد",
+        "en": "Cheek",
+        "body_part_ar": "الرأس"
+      },
+      {
+        "num": 27,
+        "ar": "الشخر",
+        "en": "Bridle area",
+        "body_part_ar": "الصدر / الرقبة"
+      }
+    ],
+    "colour_options": [
+      {
+        "ar": "مجاهيم",
+        "en": "Mjaheem (black)"
+      },
+      {
+        "ar": "وضح",
+        "en": "Wadah (pure white)"
+      },
+      {
+        "ar": "شقح",
+        "en": "Shaqah (off-white/reddish)"
+      },
+      {
+        "ar": "حمر",
+        "en": "Hamr (red)"
+      },
+      {
+        "ar": "شعل",
+        "en": "Sha'l (white with dark spots)"
+      },
+      {
+        "ar": "صفر",
+        "en": "Safar (yellowish)"
+      }
+    ],
+    "observation_fields": [
+      {
+        "key": "colour",
+        "ar": "اللون",
+        "en": "Color",
+        "kind": "select",
+        "placeholder": ""
+      },
+      {
+        "key": "age",
+        "ar": "الفئة العمرية",
+        "en": "Age Class",
+        "kind": "text",
+        "placeholder": "نعش، حق، لقي، ثني، رباع، سداس / from teeth"
+      },
+      {
+        "key": "coat",
+        "ar": "الوبر",
+        "en": "Coat Quality",
+        "kind": "text",
+        "placeholder": "كثيف / متوسط / خفيف"
+      },
+      {
+        "key": "gait",
+        "ar": "حركة المشي",
+        "en": "Gait",
+        "kind": "text",
+        "placeholder": "فجحاء / أعقل / زوحاء / ركزاء"
+      },
+      {
+        "key": "defects",
+        "ar": "العيوب",
+        "en": "Defects observed",
+        "kind": "textarea",
+        "placeholder": ""
+      },
+      {
+        "key": "manual",
+        "ar": "قياسات يدوية",
+        "en": "Manual measurements",
+        "kind": "textarea",
+        "placeholder": "محيط الصدر: ___ cm، عرض الخف: ___ cm، طول الذيل: ___ cm"
+      }
+    ],
+    "signature_fields": {
+      "name": {
+        "ar": "الاسم",
+        "en": "Name"
+      },
+      "date": {
+        "ar": "التاريخ",
+        "en": "Date"
+      }
+    }
+  },
+  "signature_wells": [
+    {
+      "id": "judge",
+      "ar": "امضاء الحكم",
+      "en": "Judge Signature",
+      "name": "حكم الاختبار"
+    },
+    {
+      "id": "council",
+      "ar": "امضاء مجلس الحكام",
+      "en": "Council of Judges Signature",
+      "name": "مجلس حكام الاختبار"
+    }
+  ],
+  "versions": {
+    "python": "3.11.9",
+    "platform": "Windows 10",
+    "engine_version": "0.1.0",
+    "numpy": "2.4.6",
+    "opencv_python": "5.0.0.93",
+    "scipy": "1.17.1",
+    "ultralytics": "8.4.47",
+    "pyrealsense2": "2.57.7.10387",
+    "torch": "2.14.1",
+    "matplotlib": "3.11.2",
+    "pillow": "12.3.0",
+    "arabic_reshaper": "3.0.1",
+    "python_bidi": "0.6.11",
+    "pypdf": "6.20.0",
+    "fastapi": "0.143.0",
+    "starlette": "1.7.0",
+    "uvicorn": "0.54.0",
+    "pydantic": "2.14.0",
+    "model_file": "best.pt",
+    "model_sha256": "0e9ee2baada7c70531b66e0b98f7e1cf4dcf3ce7971c55bce69a7270ec3a4320",
+    "data_root": "E:\\camel_beauty\\nazeer-desktop\\runs\\real_run_20261011_152911Z\\data_root",
+    "app_version": "real_run/1",
+    "electron": null,
+    "chromium": null
+  },
+  "constants": {
+    "AGREE_ABS_M": 0.05,
+    "AGREE_FRAC": 0.03,
+    "ASPECT_END_MAX": 1.3,
+    "ASPECT_SIDE_MIN": 1.6,
+    "AUTOSAVE_RETRY_DELAYS_S": [
+      0.05,
+      0.15,
+      0.45
+    ],
+    "BACKUP_INTERVAL_S": 86400,
+    "BACKUP_KEEP": 5,
+    "BAG_EOF_MIN_POSITION_FRAC": 0.99,
+    "BAG_FRAME_TIMEOUT_MS": 2000,
+    "BAG_STALL_RETRIES": 3,
+    "BIN_SEC": 1.5,
+    "CACHE_MAX_BYTES": 2147483648,
+    "CANDIDATES_M": 12,
+    "CANDIDATES_M_MAX": 48,
+    "CANDIDATES_VERSION": "1.0",
+    "COMPLETENESS_MARGIN_PX": 8,
+    "DEFAULT_CORS_ORIGINS": [
+      "http://localhost:5173",
+      "http://127.0.0.1:5173",
+      "app://nazeer"
+    ],
+    "DEPTH_MAX_M": 5,
+    "DEPTH_MIN_M": 0.3,
+    "DEPTH_VALID_MIN_FRAC": 0.05,
+    "DEPTH_WINDOW": 5,
+    "EDGE_CLUSTER_MIN_FRAC": 0.2,
+    "EDGE_CLUSTER_MIN_PX": 3,
+    "EDGE_SPREAD_ABS_M": 0.1,
+    "EDGE_SPREAD_FRAC": 0.05,
+    "ENDPOINT_DZ_FLAG_FRAC": 0.1,
+    "ENGINE_VERSION": "0.1.0",
+    "FONT_FILE": "IBMPlexSansArabic-Regular.ttf",
+    "FONT_SHA256_PINNED": "8e0f1046c736bf939d4939ee3ae0116acf61cbcd6592deae7656761627080981",
+    "FPS_NOMINAL": 30,
+    "FRAME_CONTEXT_CACHE": 4,
+    "FRAME_MARGIN_PX": 1,
+    "GROUND_BADGE_PX": 8,
+    "GROUND_BAND_PX": 8,
+    "GROUND_TOL_FRAC": 0.12,
+    "HISTORY_INDEX_VERSION": 1,
+    "HOLDER_CAP": 48,
+    "JOB_HISTORY_KEEP": 20,
+    "KNN_AGGREGATE": "median",
+    "KNN_FAR_M": 0.1,
+    "KNN_K": 9,
+    "KNN_MAX_DIST_M": 0.3,
+    "KNN_RING_EXCLUDE_PX": 2,
+    "MAF_HIGH": 0.8,
+    "MAF_LOW": 0.1,
+    "MANIFEST_VERSION": "1.0",
+    "MASK_SPARSE_MIN_FRAC": 0.02,
+    "MAX_SAFE_INT": 9007199254740991,
+    "MINORITY_RESERVE": 2,
+    "MODEL_FILE_DEFAULT": "best.pt",
+    "MODEL_SHA256_PINNED": "0e9ee2baada7c70531b66e0b98f7e1cf4dcf3ce7971c55bce69a7270ec3a4320",
+    "NOISE_FLOOR_FRAC": 0.15,
+    "OVERLAY_DPI": 100,
+    "OVERLAY_FOOTER_PX": 120,
+    "PDF_MAX_BYTES": 67108864,
+    "PDF_PIXEL_MAX_ABS_DIFF": 0,
+    "PIXEL_ROUNDING": "half_up",
+    "RECENT_BAGS_KEEP": 20,
+    "REPORT_MODEL_VERSION": "1.0",
+    "SAMPLE_EVERY_DEFAULT": 5,
+    "SAMPLE_TARGET_FRAMES": 400,
+    "SEGMENT_JUMP_ABS_M": 0.15,
+    "SEGMENT_JUMP_FRAC": 0.5,
+    "SESSION_SCHEMA_VERSION": "2.1",
+    "SIGMA_D_FRAC": 0.01,
+    "SLOW_MEDIA_MB_S": 300,
+    "SLOW_MEDIA_MIN_SAMPLE_BYTES": 33554432,
+    "SLOW_MEDIA_PROBE_BYTES": 209715200,
+    "STRICT_DEPTH_FOV_DEFAULT": false,
+    "TEMP_PURGE_AGE_S": 3600,
+    "THREADPOOL_TOKENS": 8,
+    "THUMB_JPEG_QUALITY": 85,
+    "THUMB_SIZE": [
+      320,
+      180
+    ],
+    "UNCERTAINTY_BASIS": "sigma_d_1pct+knn_snap",
+    "VALID_FRAC_MIN": 0.6,
+    "WARMUP_FRAME_SHAPE": [
+      720,
+      1280
+    ],
+    "WINDOW_MIN_IN_MASK_FRAC": 0.3,
+    "WINDOW_MIN_VALID_FRAC": 0.3,
+    "YOLO_CONF": 0.5,
+    "YOLO_IMGSZ": 640,
+    "YOLO_IOU": 0.7,
+    "YOLO_MASK_THRESHOLD": 0.5,
+    "YOLO_MAX_DET": 300,
+    "Z_MEAN_MIN_M": 1,
+    "Z_MEDIAN_MIN_M_DEFAULT": 1.5
+  }
+}

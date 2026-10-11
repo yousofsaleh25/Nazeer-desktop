@@ -1,0 +1,32 @@
+{
+  "captured_at": "2026-10-11T19:18:38.877Z",
+  "engine_version": "0.1.0",
+  "stub_model": true,
+  "data_root": "E:\\camel_beauty\\nazeer-desktop\\runs\\dev_root",
+  "session_id": "20261011_152956_e20a7c",
+  "session_etag": "\"r9-15cf6c8bb082e38e\"",
+  "files": [
+    "health",
+    "versions",
+    "labels",
+    "recent_bags",
+    "history_list",
+    "session_view",
+    "candidate_set",
+    "report_model",
+    "depth_inside",
+    "depth_outside_knn",
+    "depth_ground",
+    "preview_rejected",
+    "preview_angle_2d_3point",
+    "preview_angle_3d_3point",
+    "preview_angle_2d_from_horizontal",
+    "preview_angle_4point_2d",
+    "preview_angle_4point_mixed",
+    "error_401_unauthorized",
+    "error_404_session",
+    "error_422_validation",
+    "error_409_stale_revision",
+    "probe_pass"
+  ]
+}

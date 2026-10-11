@@ -1,0 +1,33 @@
+{
+  "source": "knn_snapped_to_mask",
+  "depth_m": 2.635000228881836,
+  "target": "camel",
+  "inside_mask": false,
+  "inside_depth_bbox": true,
+  "window_n_total": 25,
+  "window_n_valid": 0,
+  "window_n_in_mask": 0,
+  "window_restricted_to_mask": false,
+  "window_median_m": null,
+  "window_spread_m": null,
+  "knn_depth_m": 2.635000228881836,
+  "nn_depth_mean_m": 2.6406668292151556,
+  "k_requested": 9,
+  "k_used": 9,
+  "nn_dist_px_max": 21.911330402328378,
+  "nn_dist_m_max": 0.08980590436842636,
+  "nn_centroid_px": [
+    448,
+    399.1111111111111
+  ],
+  "nn_depth_spread_m": 0.042999982833862305,
+  "direct_depth_m": null,
+  "flags": [],
+  "reason": "",
+  "seq": 2,
+  "ok": true,
+  "basis": {
+    "ar": "مُقرَّب إلى الجمل 9.0 سم",
+    "en": "snapped to camel 9.0 cm"
+  }
+}
