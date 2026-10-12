@@ -63,7 +63,7 @@ def test_static_content_is_complete():
 
 def test_report_model_sections(model):
     doc, m = model
-    assert m["report_model_version"] == "1.0" and m["generated_at"] == "2026-10-11T10:00:00+00:00"
+    assert m["report_model_version"] == "1.1" and m["generated_at"] == "2026-10-11T10:00:00+00:00"
     assert m["session"]["camel_id"] == "A001" and m["session"]["operator"] == "يوسف"
     assert m["frame"]["read_index"] == 180 and m["frame"]["z_ref"]["statistic"] == "median"
     assert m["frame"]["ground"]["near_plane_row"] == 640 and m["frame"]["candidate"]["rank"] == 1
@@ -91,10 +91,70 @@ def test_report_rows_carry_every_detail(model):
     assert rejected["rejected"] and rejected["rejection"][0]["code"] == "knn_too_far"
     assert rejected["value"] is None and rejected["value_text"]["en"] == "--"
     angle = rows[4]
-    assert angle["kind"] == "angle_2d_4point" and angle["lines"] == {"a": 2, "b": 5}
+    assert angle["kind"] == "angle_2d_4point"
+    assert (angle["lines"]["a"], angle["lines"]["b"]) == (2, 5)
     assert angle["value"] == pytest.approx(90.0, abs=1e-6)
     assert m["summary"]["n_rejected"] == 1
     assert m["summary"]["snapped_text"]["en"].endswith("points snapped to the camel (KNN)")
+
+
+def test_print_texts_v1_1(model):
+    """1.1: the print page composes nothing; every label and number-bearing text is here."""
+    doc, m = model
+    st = m["static"]
+    assert st["rejected"] == {"ar": "مرفوض", "en": "Rejected"}
+    assert set(st["frame_rows"]) == {
+        "z_ref",
+        "ground",
+        "depth_bbox",
+        "model",
+        "intrinsics",
+        "candidate",
+    }
+    assert set(st["provenance_rows"]) == {
+        "engine",
+        "report_model",
+        "overlay",
+        "session",
+        "libraries",
+    }
+    for table in (st["frame_rows"], st["provenance_rows"]):
+        assert all(label["ar"] and label["en"] for label in table.values())
+    texts = m["frame"]["texts"]
+    assert set(texts) == set(st["frame_rows"]) | {"source"}
+    z = m["frame"]["z_ref"]["z_ref_m"]
+    assert texts["z_ref"]["en"].startswith(f"{z:.3f} m: median of ")
+    assert texts["z_ref"]["ar"].startswith(f"{z:.3f} م: وسيط ")
+    assert "near-plane row 640" in texts["ground"]["en"] and "640" in texts["ground"]["ar"]
+    x0, y0, x1, y1 = m["frame"]["depth_valid_bbox"]
+    assert texts["depth_bbox"]["en"] == f"x {x0}–{x1}, y {y0}–{y1} px"
+    assert texts["model"]["en"].startswith(f"{m['frame']['model']['file']} · sha256 ")
+    assert m["frame"]["candidate"]["candidate_id"] in texts["candidate"]["ar"]
+    assert texts["source"]["en"].startswith("read index 180 · t = ")
+    rows = {r["id"]: r for r in m["measurements"]}
+    curve = rows[1]["curve"]
+    check = curve["cross_check_2d_m"]
+    assert curve["cross_check_text"]["en"].startswith(f"2D cross-check {check:.3f} m · 2 segments")
+    assert rows[4]["lines"]["text"] == {"ar": "بين القياسين #2 و#5", "en": "between #2 and #5"}
+    summary = m["summary"]
+    assert summary["counts_text"]["en"] == (
+        f"Measurements: 5 · rejected: 1 · low confidence: {summary['n_low_confidence']}"
+    )
+    assert summary["counts_text"]["ar"].startswith("القياسات: 5 · المرفوضة: 1 · ")
+
+
+def test_missing_frame_values_print_as_dashes():
+    """A missing number is "--", never a made-up 0 (honesty contract)."""
+    from nazeer_engine.report_model import frame_texts
+
+    texts = frame_texts({"z_ref": {"z_ref_m": None, "statistic": "median"}, "ground": {}})
+    assert texts["z_ref"]["en"].startswith("-- m: median of -- valid depths")
+    assert texts["ground"]["en"] == "row -- drawn (near-plane row --, raw lowest row --)"
+    assert texts["depth_bbox"]["ar"] == "x --–--، y --–-- بكسل"
+    assert texts["candidate"]["en"].startswith("-- · -- frames proposed")
+    assert "0.000" not in str(texts) and "nan" not in str(texts).lower()
+    stub = frame_texts({"model": {"file": "best.pt", "sha256": "ab" * 32, "stub": True}})
+    assert stub["model"]["en"].endswith("development stub model")
 
 
 def test_no_beauty_score_and_json_safe(model):

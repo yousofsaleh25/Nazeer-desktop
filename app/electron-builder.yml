@@ -1,0 +1,58 @@
+# Windows installer (D11, Stage B): "Nazeer Desktop Setup <version>.exe", NSIS, x64, unsigned (no
+# code-signing certificate: a non-goal). Built by `npm run dist` (or `npm run dist:dir` for the
+# unpacked folder only): out\ built with NAZEER_DIST=1, the engine staged into dist-engine\ by
+# scripts\stage-engine.mjs, then electron-builder with this file. scripts\dist-checks.mjs refuses
+# to pack without the vendor's licence key, a packaging build of out\ or a staged engine.
+appId: com.nazeer.desktop
+productName: Nazeer Desktop
+directories:
+  output: release
+  buildResources: build
+# out\ holds everything the app needs (Vite bundles the renderer libraries; main and the preloads
+# need no package at runtime): no node_modules in app.asar
+files:
+  - out/**/*
+  - package.json
+  - "!node_modules/**/*"
+asar: true
+npmRebuild: false
+nodeGypRebuild: false
+beforePack: ./scripts/dist-checks.mjs
+extraResources:
+  # <resources>\engine: the embedded CPython, the runtime packages, nazeer_engine, the model
+  - from: dist-engine
+    to: engine
+electronFuses:
+  runAsNode: false
+  enableCookieEncryption: false
+  enableNodeOptionsEnvironmentVariable: false
+  enableNodeCliInspectArguments: false
+  enableEmbeddedAsarIntegrityValidation: true
+  onlyLoadAppFromAsar: true
+  loadBrowserProcessSpecificV8Snapshot: false
+  grantFileProtocolExtraPrivileges: false
+win:
+  target:
+    - target: nsis
+      arch: [x64]
+  icon: build/icon.ico
+nsis:
+  oneClick: false
+  # the installer asks "only for me" (default, no administrator) or "for all users"
+  perMachine: false
+  allowElevation: true
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: Nazeer Desktop
+  artifactName: Nazeer Desktop Setup ${version}.${ext}
+  # Arabic and English pages, chosen in a language dialog that comes first (silent installs skip
+  # it); build/installer.nsh adds Arabic for the strings electron-builder ships only in English
+  installerLanguages: [ar_SA, en_US]
+  displayLanguageSelector: true
+  include: build/installer.nsh
+  # sessions, candidates and the licence live in %APPDATA%\Nazeer Desktop: kept on uninstall
+  deleteAppDataOnUninstall: false
+  differentialPackage: false
+compression: normal
+publish: null

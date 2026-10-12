@@ -184,6 +184,23 @@ SIGNATURE_FIELDS: dict[str, Label] = {
     "name": {"ar": "الاسم", "en": "Name"},
     "date": {"ar": "التاريخ", "en": "Date"},
 }
+# report model 1.1: the print page's remaining labels (the values are in report_model.py)
+REJECTED: Label = {"ar": "مرفوض", "en": "Rejected"}
+FRAME_ROWS: dict[str, Label] = {
+    "z_ref": {"ar": "العمق المرجعي", "en": "Reference depth Z_ref"},
+    "ground": {"ar": "خط الأرض", "en": "Ground line"},
+    "depth_bbox": {"ar": "منطقة العمق الصالح", "en": "Depth-valid region"},
+    "model": {"ar": "النموذج", "en": "Model"},
+    "intrinsics": {"ar": "معاملات الكاميرا", "en": "Camera intrinsics"},
+    "candidate": {"ar": "الإطار المرشح", "en": "Candidate frame"},
+}
+PROVENANCE_ROWS: dict[str, Label] = {
+    "engine": {"ar": "المحرك", "en": "Engine"},
+    "report_model": {"ar": "نموذج التقرير", "en": "Report model"},
+    "overlay": {"ar": "صورة المحرك", "en": "Engine image"},
+    "session": {"ar": "الجلسة", "en": "Session"},
+    "libraries": {"ar": "المكتبات", "en": "Libraries"},
+}
 
 
 def rubric_rows(variant: str) -> list[dict[str, Any]]:
@@ -217,4 +234,7 @@ def static_content(rubric_variant: str) -> dict[str, Any]:
         "colour_options": [{"ar": ar, "en": en} for ar, en in COLOUR_OPTIONS],
         "observation_fields": OBSERVATION_FIELDS,
         "signature_fields": SIGNATURE_FIELDS,
+        "rejected": REJECTED,
+        "frame_rows": FRAME_ROWS,
+        "provenance_rows": PROVENANCE_ROWS,
     }

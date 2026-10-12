@@ -23,7 +23,14 @@ from typing import Any
 
 import numpy as np
 
-from .arabic import display_text, ensure_arabic_stack, font_properties, isolate, ltr
+from .arabic import (
+    display_text,
+    ensure_arabic_stack,
+    font_properties,
+    isolate,
+    ltr,
+    matplotlib_missing,
+)
 from .constants import ENGINE_VERSION, FONT_FILE, OVERLAY_DPI, OVERLAY_FOOTER_PX
 from .session_compute import present_rows, summarize
 from .session_schema import SessionDocument
@@ -202,11 +209,16 @@ def render_overlay_png(
     rendered_at: str | None = None,
 ) -> tuple[bytes, dict[str, Any]]:
     """Render the overlay; returns ``(png_bytes, meta)``. Raises ``ArabicStackMissing``."""
-    from matplotlib.backends.backend_agg import FigureCanvasAgg
-    from matplotlib.figure import Figure
-
+    # the stack first: a matplotlib that cannot load is a typed arabic_stack_missing, never an
+    # untyped ImportError (also when the stack was checked as ok earlier in this process)
     state = ensure_arabic_stack()
-    fp = font_properties()
+    try:
+        from matplotlib.backends.backend_agg import FigureCanvasAgg
+        from matplotlib.figure import Figure
+
+        fp = font_properties()
+    except ImportError as exc:
+        raise matplotlib_missing(f"{type(exc).__name__}: {exc}") from exc
     rendered_at = rendered_at or datetime.now(UTC).replace(microsecond=0).isoformat()
     h, w = int(bgr.shape[0]), int(bgr.shape[1])
     footer = OVERLAY_FOOTER_PX

@@ -10,6 +10,8 @@ export default defineConfig(
       "out/**",
       "dist*/**",
       "release/**",
+      ".cache/**",
+      "build/**",
       "coverage/**",
       "test-results/**",
       "playwright-report/**",

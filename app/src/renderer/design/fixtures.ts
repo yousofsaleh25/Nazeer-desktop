@@ -77,16 +77,24 @@ export const fixtures = {
 /** The session's nine saved rows (2D/3D distances, a KNN point, a ground point, two curves). */
 export const sessionRows: MeasurementRow[] = fixtures.sessionView.measurements;
 
-/** Every kind the engine computes: the session rows plus the preview rows (angles, a rejection). */
+/**
+ * Every kind the engine computes: the session rows plus the preview rows (angles, a rejection),
+ * renumbered 10–15 — the row and its input keep the same id, as the engine's rows do.
+ */
 export function allKindRows(): MeasurementRow[] {
   const p = fixtures.preview;
+  const as = (row: MeasurementRow, id: number): MeasurementRow => ({
+    ...row,
+    id,
+    input: { ...row.input, id },
+  });
   return [
     ...sessionRows,
-    { ...p.angle2d3.row, id: 10 },
-    { ...p.angle3d3.row, id: 11 },
-    { ...p.angleHorizontal.row, id: 12 },
-    { ...p.angle4.row, id: 13 },
-    { ...p.angle4Mixed.row, id: 14 },
-    { ...p.rejected.row, id: 15 },
+    as(p.angle2d3.row, 10),
+    as(p.angle3d3.row, 11),
+    as(p.angleHorizontal.row, 12),
+    as(p.angle4.row, 13),
+    as(p.angle4Mixed.row, 14),
+    as(p.rejected.row, 15),
   ];
 }

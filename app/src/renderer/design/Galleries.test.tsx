@@ -36,7 +36,7 @@ describe("/design/domain", () => {
     renderWithStore(<DomainGallery />, { route: "/design/domain", preloadedState: uiState("en") });
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("Domain components");
     // the gallery sections (cards inside them have their own headings)
-    expect(document.querySelectorAll("main > section > h2")).toHaveLength(13);
+    expect(document.querySelectorAll("main > section > h2")).toHaveLength(14);
     expect(
       screen.getAllByRole("img", { name: "Editing view: this canvas is never used for approval" }),
     ).toHaveLength(1);

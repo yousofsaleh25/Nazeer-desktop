@@ -9,6 +9,9 @@ const shared = resolve(src, "shared");
 export default defineConfig({
   main: {
     resolve: { alias: { "@shared": shared } },
+    // builds made for packaging (`npm run dist` sets NAZEER_DIST=1) are production even when the
+    // executable is renamed: licence required, development switches ignored (runtime.ts, D11)
+    define: { __NAZEER_DIST__: JSON.stringify(process.env["NAZEER_DIST"] === "1") },
     build: {
       rollupOptions: { input: { index: resolve(src, "main/index.ts") } },
     },

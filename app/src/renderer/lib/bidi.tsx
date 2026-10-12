@@ -8,28 +8,45 @@
  */
 import type { ReactNode } from "react";
 
-/** A run starts at a Latin letter or digit and ends at a letter, digit, %, ° or a bracket. */
-const LATIN_RUN = /[A-Za-z0-9](?:[A-Za-z0-9_\s.,:;%+\-–/<>=()[\]°±×#]*[A-Za-z0-9_%)\]°])?/g;
+/**
+ * A run starts at a Latin letter or digit — or at the sign of a number ("+155.7°", "± 5.9"), when
+ * the sign stands at the start, after a space or after "(" (a hyphen inside a word such as
+ * "مرحلة-6" stays outside) — and ends at a letter, digit, %, ° or a bracket. Without its sign in
+ * the run, a right-to-left line moves the sign to the far side of the number ("155.7°+").
+ */
+const LATIN_RUN =
+  /(?:(?<![^\s(])[+\-−±]\s?(?=\d))?[A-Za-z0-9](?:[A-Za-z0-9_\s.,:;%+\-–/<>=()[\]°±×#]*[A-Za-z0-9_%)\]°])?/g;
 
-/** Drop trailing closers that belong to the surrounding Arabic text ("(مستوى Z_ref)"). */
+/**
+ * The run without the closers that belong to the surrounding Arabic text: a run ends before its
+ * first unmatched ")" or "]" ("تباين العمق (MSE) 0.0231" isolates "MSE", not "MSE) 0.0231", whose
+ * stray ")" would leave the "(" outside to pair with nothing), and trailing punctuation goes.
+ */
 function balanced(run: string): string {
-  let text = run;
-  const count = (s: string, ch: string) => s.split(ch).length - 1;
-  while (
-    (text.endsWith(")") && count(text, ")") > count(text, "(")) ||
-    (text.endsWith("]") && count(text, "]") > count(text, "["))
-  ) {
-    text = text.slice(0, -1).replace(/[\s.,:;]+$/, "");
+  let depth = { paren: 0, bracket: 0 };
+  let end = run.length;
+  for (let i = 0; i < run.length; i += 1) {
+    const ch = run[i];
+    if (ch === "(") depth = { ...depth, paren: depth.paren + 1 };
+    else if (ch === "[") depth = { ...depth, bracket: depth.bracket + 1 };
+    else if ((ch === ")" && depth.paren === 0) || (ch === "]" && depth.bracket === 0)) {
+      end = i;
+      break;
+    } else if (ch === ")") depth = { ...depth, paren: depth.paren - 1 };
+    else if (ch === "]") depth = { ...depth, bracket: depth.bracket - 1 };
   }
-  return text;
+  return run.slice(0, end).replace(/[\s.,:;+\-–/<>=([±×#]+$/, "");
 }
 
-/** Latin runs of `text` as [start, end) index pairs (exported for the tests). */
+/** Latin runs of `text` as [start, end) index pairs (exported for the tests). A run cut at a
+ * closer is followed by the next run after it ("MSE", then "0.0231"). */
 export function latinRuns(text: string): [number, number][] {
   const runs: [number, number][] = [];
-  for (const match of text.matchAll(LATIN_RUN)) {
+  const pattern = new RegExp(LATIN_RUN.source, "g");
+  for (let match = pattern.exec(text); match !== null; match = pattern.exec(text)) {
     const run = balanced(match[0]);
     if (run.length > 0) runs.push([match.index, match.index + run.length]);
+    pattern.lastIndex = match.index + Math.max(run.length, 1);
   }
   return runs;
 }

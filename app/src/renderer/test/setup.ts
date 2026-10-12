@@ -30,3 +30,9 @@ for (const [name, stub] of Object.entries(elementStubs)) {
     });
   }
 }
+
+// the approval screen shows the verified overlay bytes through a blob: URL; jsdom has none, and
+// the URL global here is Node's, whose createObjectURL refuses jsdom's Blob objects
+let blobs = 0;
+URL.createObjectURL = () => `blob:test/${(blobs += 1)}`;
+URL.revokeObjectURL = () => undefined;

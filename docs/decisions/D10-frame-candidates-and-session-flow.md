@@ -139,3 +139,87 @@ session.
 **Golden frame.** Regenerated from bag 006 by the engine's reader, bit-identical to the
 parent capture (RGB and depth max |Δ| = 0); `best.pt` gives conf 0.9593, 269,033 px, rows
 9–715; Z_ref 1.930 m; recorded in `fixtures/golden_frame.json` (tracked).
+
+## App side of C3.4 (implemented 2026-10-12, Stage 5)
+
+The renderer's session store (`app/src/renderer/store/`) is the other half of the autosave
+contract. Status: unit-tested against a simulated engine that follows `save_document` and
+`finalize`, and integration-tested against the real engine (stub model, a copy of the dev
+session: `npm run test:store-real`).
+
+- **The document** the app owns and sends is the ordered measurement inputs plus `camel_id`,
+  `operator` and `notes` (`store/session/document.ts`). The engine computes everything else; the app
+  never derives a value. Ids are client-owned; `next_measurement_id` never decreases, undo included.
+  Limits as the engine's: 500 measurements, ids and revisions ≤ 2**53 − 1.
+- **Autosave** (`store/listeners/autosave.ts`): a whole-document `PUT` at `revision = stored + 1`,
+  with `If-Match` when the ETag is known; one save in flight; edits coalesce behind a 250 ms
+  debounce; a flush sends at once (quitting: main waits 3 s and the renderer answers within 2.5 s;
+  leaving the measuring screen; closing the session). After a `200` the draft adopts the engine's
+  echo of everything unchanged since sending (a filled colour, the default targets), so nothing
+  looks unsaved; edits made meanwhile go out next.
+- **409 `stale_revision`** (`store/session/sync.ts`), against `details.current` (or a GET when it is
+  missing):
+  - my save in flight is what the engine holds (its answer was lost) → saved;
+  - same revision and document (only the status, report inputs or ETag moved) → updated, and the
+    save is sent again with the new ETag;
+  - the session is not open any more → `blocked`: nothing is saved, the draft is kept and shown
+    unsaved, and reopening sends it;
+  - otherwise a three-way rebase by measurement id (`store/session/rebase.ts`): base = what the
+    engine held when the draft diverged, mine = the draft, theirs = `current`; a change on one
+    side is taken, the same change on both is fine, two different changes to one measurement
+    (edit/edit, edit/delete, the same new id added differently, different reorders, a text field)
+    are a **conflict**: autosave and edits stop until the operator keeps theirs or mine. Never a
+    silent drop.
+  A 409 carries no ETag: the save after a rebase goes without `If-Match`. The revision check alone
+  keeps it safe, and its answer brings the new ETag.
+- **Failures:** any other 4xx is terminal (`error`): the draft is kept and not sent again, not even
+  by a flush, until it changes. No engine, a network failure, a 5xx or `session_busy` is transient
+  (`offline`): retried after 1, 2, 4, 8, 16, then every 30 s, and at once, after a GET of the
+  session, when the supervisor reports the engine ready on a new connection. A save whose answer
+  was lost is retried as it was and lands once: the engine's identical replay of the stored revision
+  is a 200.
+- **States** the UnsavedBadge shows: `finalizing` › `conflict` › `blocked` › `saving` › `offline` ›
+  `error` › `dirty` › `clean`. Unsaved work, as the quit dialog asks about it, is a draft different
+  from the engine's, a save in flight, or an open conflict.
+- **Finalize** (`store/listeners/finalize.ts`): edits and undo freeze, the debounce is skipped and a
+  save in flight lands first; then one call, `{revision: stored}` when clean or
+  `{revision: stored + 1, document}` when dirty, plus the report inputs when given. On success the
+  session is sealed (no autosave) and the app fetches the overlay, SHA-256es it with WebCrypto and
+  compares with `outputs.overlay.sha256`: a mismatch is `overlay_hash_mismatch`, a hard error, and
+  cannot be approved. The approval is the app's (no engine endpoint, not persisted) and names the
+  overlay version and SHA-256, so a newer overlay is never covered by it. Any finalize failure
+  (`camel_id_required` included) unfreezes, fetches the session and reconciles before autosave
+  resumes.
+- **Hover and drag** (`store/session/probe.ts`, `store/listeners/probes.ts`): one depth and one preview
+  request in flight; the newest pointer state waits and goes out with the answer; an answer counts
+  only for the request in flight of the current generation (pointer-leave, a tool change, Esc and
+  commit start a new one); an error or a 5 s timeout frees the slot. A preview row is kept with the
+  exact input it was computed for and is shown, marked unsaved, until the engine's stored row
+  replaces it.
+
+## App side of C3.5 (implemented 2026-10-12, Stage 6)
+
+The screens over the session's states (D9 "Screens"). Status: unit-tested against the simulated
+engine, and run on the real engine through the UI (D9, "Run on the real engine").
+
+- **Finalize** is its own screen: the camel id is asked for there and the button waits for it (the
+  engine's `camel_id_required` stays the authority); a conflict sends the operator back to measuring.
+  After finalize the overlay is checked as in "App side of C3.4", and approved on the screen that
+  shows the verified bytes.
+- **Sealed sessions** (finalized, exported) open read-only: no tool, no edit, a banner with
+  "Reopen for editing". Reopen (from measuring, approval or History) is `POST …/reopen`: the
+  session is open again and its outputs are stale until it is finalized again.
+- **Delete** (History): after a confirmation, the store forgets the session if it is the open one
+  (nothing of it stays on screen: the PDF viewer lives on the report screen, not History), then
+  `DELETE`; a `session_busy` answer (a save still finishing) is tried again up to 4 times, 500 ms
+  apart; a 404 is what was asked. The engine moves the folder to the trash, as C3.5 says.
+- **Opening another session** while the open one has unsaved work flushes it first; what still
+  cannot be saved is discarded only after the operator confirms.
+- **Unsaved work, confirmed by the operator (2026-10-12):** a renamed (or re-noted, recoloured)
+  measurement keeps the engine's stored value on screen, marked not saved, until the engine stores
+  a revision with exactly that input; a changed geometry shows no value until the engine computes
+  it. Edits made while a save is out are kept and sent next; leaving the measuring screen or the
+  window losing focus sends the save at once; finalize carries what is still unsaved; opening another
+  session or quitting asks before anything the engine does not hold is dropped. Added at the
+  operator's request: the open session's entry in the header shows its save state from every screen
+  (D9 "Printing").

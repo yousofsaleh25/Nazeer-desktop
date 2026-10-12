@@ -1,9 +1,11 @@
 /**
  * The session's measurements in operator order, with the engine's summary ("1 of 13 points
- * snapped to the camel (KNN)") and the counts of low-confidence and rejected rows.
+ * snapped to the camel (KNN)") and the counts of low-confidence and rejected rows. Each item is
+ * the operator's input with the engine's row for it (stored or a preview) and its save status;
+ * an item the engine has not computed yet has no row and shows no value.
  */
 import { Ruler } from "lucide-react";
-import type { MeasurementRow, SessionSummary } from "@/api/types";
+import type { MeasurementInput, MeasurementRow, SessionSummary } from "@/api/types";
 import { Bi } from "@/components/ui/Bi";
 import { Chip } from "@/components/ui/Chip";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -11,17 +13,30 @@ import { Num } from "@/components/ui/Ltr";
 import { messagePair } from "@/i18n/t";
 import { MeasurementItem, type MeasurementActions, type RowStatus } from "./MeasurementItem";
 
+export interface MeasurementListItem {
+  input: MeasurementInput;
+  /** the engine's row for this input (stored, or a preview), or null while none exists */
+  row: MeasurementRow | null;
+  status: RowStatus;
+}
+
+/** Items for rows the engine computed (the /design gallery, read-only views). */
+export function itemsOfRows(
+  rows: readonly MeasurementRow[],
+  statusById: Readonly<Record<number, RowStatus>> = {},
+): MeasurementListItem[] {
+  return rows.map((row) => ({ input: row.input, row, status: statusById[row.id] ?? "saved" }));
+}
+
 export interface MeasurementListProps extends MeasurementActions {
-  rows: readonly MeasurementRow[];
-  statusById?: Readonly<Record<number, RowStatus>>;
+  items: readonly MeasurementListItem[];
   selectedId?: number | null;
   summary?: SessionSummary | null;
   readOnly?: boolean;
 }
 
 export function MeasurementList({
-  rows,
-  statusById = {},
+  items,
   selectedId = null,
   summary = null,
   readOnly = false,
@@ -33,7 +48,7 @@ export function MeasurementList({
         <h3 className="font-semibold">
           <Bi {...messagePair("measure.listTitle")} />{" "}
           <span className="text-ink-secondary">
-            (<Num value={rows.length} />)
+            (<Num value={items.length} />)
           </span>
         </h3>
         {summary && summary.n_low_confidence > 0 ? (
@@ -53,7 +68,7 @@ export function MeasurementList({
           <Bi {...summary.snapped_text} />
         </p>
       ) : null}
-      {rows.length === 0 ? (
+      {items.length === 0 ? (
         <EmptyState
           icon={Ruler}
           title={messagePair("measure.empty")}
@@ -61,15 +76,16 @@ export function MeasurementList({
         />
       ) : (
         <ol className="flex flex-col divide-y divide-border overflow-hidden rounded-md border border-border bg-surface">
-          {rows.map((row, index) => (
+          {items.map((item, index) => (
             <MeasurementItem
-              key={row.id}
-              row={row}
-              status={statusById[row.id] ?? "saved"}
-              selected={row.id === selectedId}
+              key={item.input.id}
+              row={item.row}
+              input={item.input}
+              status={item.status}
+              selected={item.input.id === selectedId}
               readOnly={readOnly}
               first={index === 0}
-              last={index === rows.length - 1}
+              last={index === items.length - 1}
               {...actions}
             />
           ))}

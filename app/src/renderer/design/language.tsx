@@ -1,6 +1,7 @@
 /**
- * Which language the UI speaks and how bilingual labels render. The app feeds it from the `ui`
- * slice; the print page (Stage 7) feeds it from the report model's explicit `language` input.
+ * Which language the UI speaks and how bilingual labels render, fed from the `ui` slice. (The
+ * print page has its own, smaller context: src/print/text.tsx, from the report model's explicit
+ * `language` input.)
  */
 import { createContext, useContext, useMemo, type ReactNode } from "react";
 

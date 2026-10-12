@@ -8,7 +8,9 @@
     "history": "History",
     "about": "About",
     "design": "Design system",
-    "label": "Main sections"
+    "label": "Main sections",
+    "frames": "Proposed frames",
+    "session": "Measuring"
   },
   "prefs": {
     "language": "Language",
@@ -52,7 +54,20 @@
       "fatal": "Engine stopped"
     },
     "restarts": "Restarts",
-    "stubModel": "Stub model (development): no real detection"
+    "stubModel": "Stub model (development): no real detection",
+    "unresponsive": "Engine not answering",
+    "waitStarting": "Starting the engine: opening the data folder and loading the model…",
+    "waitRestarting": "The engine stopped unexpectedly and is being restarted",
+    "waitStopping": "Stopping the engine…",
+    "fatalTitle": "The engine is not running",
+    "fatalHint": "Nothing can be measured until the engine runs. The log folder holds the details.",
+    "orphanHint": "Another engine is still serving this data folder (left by an app that did not close properly). Try again stops it and starts a new one.",
+    "openLogs": "Open the log folder",
+    "quit": "Quit",
+    "bannerUnresponsive": "The engine is not answering its health check. It keeps running; saving may be slow or fail.",
+    "bannerArabicStack": "The engine's Arabic text stack is missing: engine images and reports cannot be produced.",
+    "bannerStubModel": "Development engine with the stub model: the frame search detects nothing.",
+    "labelsFailed": "The engine's labels could not be loaded: codes are shown as they are."
   },
   "save": {
     "clean": "Saved",
@@ -60,9 +75,16 @@
     "saving": "Saving…",
     "error": "Not saved",
     "offline": "Not saved: engine unreachable, retrying",
-    "blocked": "Read-only (session sealed)",
+    "blocked": "Read-only (session finalized)",
     "conflict": "Changed elsewhere: choose a version",
-    "finalizing": "Finalizing…"
+    "finalizing": "Finalizing…",
+    "blockedTitle": "Read-only: the session is finalized",
+    "blockedHint": "Finalized and exported sessions are not edited. Reopen it to change it; its image and report then have to be made again.",
+    "blockedUnsaved": "The session was finalized elsewhere while you edited: your changes stay here but were not saved. Reopen it to save them.",
+    "offlineHint": "Your changes stay here and are sent as soon as the engine answers.",
+    "attempts": "attempts",
+    "errorContext": "Saving failed",
+    "errorHint": "Your changes are kept; the next change is sent again."
   },
   "errorPanel": {
     "engineMessage": "Engine message",
@@ -88,7 +110,19 @@
     "noFolders": "No capture folders configured",
     "noFoldersHint": "Add the folders the camera records into, and their recordings are listed here.",
     "noneFound": "No recordings found in the capture folders",
-    "truncated": "The scan stopped at its limit: not every folder was searched."
+    "truncated": "The scan stopped at its limit: not every folder was searched.",
+    "foldersTitle": "Capture folders to scan",
+    "foldersDescription": "The app lists the .bag recordings it finds in these folders and their subfolders, up to a limit.",
+    "addFolder": "Add a folder…",
+    "removeFolder": "Remove this folder",
+    "openFailed": "Opening the recording failed",
+    "findFrames": "Find the best frames",
+    "showFrames": "Show the proposed frames",
+    "searchAgain": "Search the whole recording again",
+    "findFramesHint": "The engine reads the recording and proposes frames where the whole camel is in view with good depth. It runs in the background; you can stop it and keep what it found.",
+    "nextTitle": "Next",
+    "nextHint": "Open a recording: the engine reads its summary, then you can search it for the best frames to measure.",
+    "scanHint": "Scan lists the .bag recordings in the capture folders."
   },
   "bagInfo": {
     "title": "Recording",
@@ -116,7 +150,14 @@
     "pollingHint": "Live updates stopped; the app now asks the engine every half second.",
     "stop": "Stop and keep",
     "stopHint": "Stop reading the recording and keep the frames found so far",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "none": "No frame search yet",
+    "noneHint": "Open a recording first, then search it for frames.",
+    "starting": "Starting the frame search…",
+    "startFailed": "The frame search could not start",
+    "showFrames": "Show the frames",
+    "again": "Search again",
+    "screenTitle": "Frame search"
   },
   "candidate": {
     "frame": "Frame",
@@ -139,7 +180,9 @@
     "none": "No frame passed the checks",
     "noneHint": "Try another recording, or a part where the whole camel is in view at 1.5 m or more.",
     "rejectedSummary": "Frames not proposed, by reason",
-    "skippedClose": "Too close in time to a proposed frame"
+    "skippedClose": "Too close in time to a proposed frame",
+    "title": "Proposed frames",
+    "loading": "Loading the proposed frames…"
   },
   "session": {
     "startTitle": "Start a measuring session",
@@ -149,7 +192,14 @@
     "camelIdHint": "Required before finalizing (can be added later)",
     "operator": "Operator",
     "notes": "Notes",
-    "start": "Start measuring"
+    "start": "Start measuring",
+    "openFailed": "Opening the session failed",
+    "opening": "Opening the session…",
+    "details": "Session details",
+    "finalize": "Finalize…",
+    "approval": "Approval",
+    "report": "Report",
+    "reopenFailed": "Reopening the session failed"
   },
   "measure": {
     "toolbar": "Measuring tools",
@@ -177,7 +227,37 @@
     "moveDown": "Move down",
     "delete": "Delete",
     "rejected": "Rejected: no value",
-    "name": "Measurement name"
+    "name": "Measurement name",
+    "recolor": "Colour…",
+    "notComputed": "The engine computes the value when it is saved.",
+    "canvasLabel": "Measuring canvas (editing view)",
+    "editingView": "Editing view: approval happens on the engine's image",
+    "full": "This session holds the maximum of 500 measurements",
+    "pointsPlaced": "points placed",
+    "keys": "move the crosshair (Shift: 10 px) · Enter places a point (Shift+Enter: a ground point) · Backspace removes the last · Esc cancels · 1–8 kinds · + − 0 zoom",
+    "renameTitle": "Rename the measurement",
+    "noteTitle": "Note on the measurement",
+    "note": "Note",
+    "recolorTitle": "Colour of the measurement",
+    "recolorHint": "It is drawn in this colour on the canvas, on the engine's image and in the report.",
+    "automaticColour": "Automatic (by position in the list)",
+    "lines": {
+      "title": "Lines of the angle",
+      "hint": "Pick two distances of the same kind (2D or 3D), on the frame or here.",
+      "none": "No distance yet: draw two distances first."
+    },
+    "hints": {
+      "none": "Choose a measurement kind (keys 1–8). Without a kind, a click selects a measurement; drag a point of the selected one to move it.",
+      "readOnly": "Read-only: the session is finalized. Reopen it to edit.",
+      "distance": "click the two ends.",
+      "distance3d": "click the two ends; Shift-click a point on the ground or the background.",
+      "curve": "click points along the curve; click the last point again (or double-click, or Enter) to finish.",
+      "curve3d": "click points along the curve; click the last point again (or double-click, or Enter) to finish. Shift-click marks a ground point.",
+      "angle3": "click the vertex, then one end of each arm.",
+      "angle3d": "click the vertex, then one end of each arm. Shift-click marks a ground point.",
+      "horizontal": "click two points: the angle of the line between them from the horizontal.",
+      "angle4": "pick two distance measurements: the angle between them."
+    }
   },
   "readout": {
     "title": "Under the cursor",
@@ -228,7 +308,37 @@
     "council": "Council of judges",
     "event": "Event",
     "choose": "Choose…",
-    "inputsHint": "These are printed exactly as typed. Changing them after printing means printing again."
+    "inputsHint": "These are printed exactly as typed. Changing them after printing means printing again.",
+    "title": "Report",
+    "inputsTitle": "Report details",
+    "saveInputs": "Save the details",
+    "finalizeFirst": "Finalize the session first: the report form comes with the report model the engine writes then.",
+    "loadingModel": "Loading the report model…",
+    "modelFailed": "The report model could not be loaded",
+    "modelUnreadable": "The report model does not have the expected form",
+    "modelVersion": "Report model",
+    "unsavedInputs": "Changes not saved yet",
+    "saveFailed": "Saving the report details failed",
+    "pdfTitle": "Sealed report",
+    "stale": "This report no longer shows the session",
+    "staleHint": "The session or its report details changed after it was sealed: print it again.",
+    "pdfFailed": "The report could not be downloaded",
+    "pdfMismatch": "The downloaded report does not match the engine's fingerprint",
+    "notFinalized": "This session is not finalized yet",
+    "approveFirst": "Approve the engine's image before printing",
+    "printTitle": "Print and seal",
+    "print": "Print the report",
+    "printExplain": "The report is laid out from its details and the approved image and printed to PDF; the engine then attaches the evidence files and seals it. The sealed report appears beside it for sign-off.",
+    "printAgain": "Print again",
+    "printing": "Printing and sealing…",
+    "sealed": "The report is sealed",
+    "sealedExplain": "Every engine check passed: the image pixels, the names in the file's text, the font, the attached evidence files.",
+    "printFailed": "Printing failed",
+    "printProblems": "What the print page found",
+    "printWarnings": "Some characters printed in a fallback font",
+    "printWarningsHint": "These characters are not in IBM Plex Sans Arabic, so another font drew them. The names the engine checks never print in a fallback font.",
+    "modelOutdated": "This session's report model is older than the print page",
+    "modelOutdatedHint": "Reopen the session and finalize it again: the engine then writes the current report model. Approve the new image, then print."
   },
   "probe": {
     "pass": "The PDF passed every check",
@@ -282,7 +392,27 @@
     "continue": "Continue",
     "inspect": "Open",
     "reopen": "Reopen for editing",
-    "delete": "Delete"
+    "delete": "Delete",
+    "title": "Saved sessions",
+    "search": "Search (camel ID, operator, recording, measurement name)",
+    "allStatuses": "All statuses",
+    "indexState": "Index state",
+    "allIndexStates": "All",
+    "sort": "Order",
+    "sorts": {
+      "updated_desc": "Last changed first",
+      "created_desc": "Newest first",
+      "created_asc": "Oldest first",
+      "camel_asc": "By camel ID"
+    },
+    "actionFailed": "The action on the session failed",
+    "loading": "Loading the sessions…",
+    "empty": "No sessions yet",
+    "noMatch": "No session matches",
+    "previousPage": "Previous page",
+    "nextPage": "Next page",
+    "deleteTitle": "Delete the session?",
+    "deleteDescription": "It moves to the trash and is removed for good at the next start. Changes not saved yet are lost."
   },
   "admin": {
     "title": "Data and maintenance",
@@ -377,6 +507,7 @@
     "d": {
       "shell": "App shell",
       "status": "Engine and save status",
+      "engine": "Engine gate: waiting, stopped, banners",
       "errors": "Errors",
       "bag": "Opening a recording",
       "job": "Frame search",
@@ -405,7 +536,8 @@
       "value": "Value",
       "resize": "Resize the panes",
       "canvasArea": "Screen content",
-      "editingView": "Editing view: this canvas is never used for approval"
+      "editingView": "Editing view: this canvas is never used for approval",
+      "notComputed": "A measurement not computed yet"
     }
   },
   "errors": {
@@ -479,7 +611,35 @@
   "appErrors": {
     "network_error": "The engine could not be reached",
     "invalid_response": "The engine sent an unexpected response",
-    "overlay_hash_mismatch": "The downloaded image does not match the engine's fingerprint"
+    "overlay_hash_mismatch": "The downloaded image does not match the engine's fingerprint",
+    "engine_spawn_failed": "The engine program could not be started",
+    "engine_start_timeout": "The engine took too long to start",
+    "engine_exited": "The engine stopped while starting",
+    "engine_restart_limit": "The engine keeps stopping",
+    "engine_protocol_error": "The engine answered in an unexpected way",
+    "bridge_missing": "This page is not running inside the Nazeer app",
+    "approval_required": "Approve the engine's image first",
+    "approval_outdated": "The session's image changed after it was approved: approve the current one",
+    "export_busy": "Another report is being printed",
+    "overlay_bytes_mismatch": "The image sent for printing is not the approved one",
+    "report_model_hash_mismatch": "The report model does not match the engine's fingerprint",
+    "report_model_outdated": "The report model is older than the print page",
+    "report_model_unreadable": "The print page cannot read the report model",
+    "print_font_missing": "The report's font file is missing from the engine",
+    "print_font_mismatch": "The engine's font is not the one the print page expects",
+    "print_window_failed": "The print page could not be opened",
+    "print_timeout": "The print page took too long",
+    "print_failed": "Printing to PDF failed",
+    "print_page_failed": "The print page could not lay out the report",
+    "print_font_not_loaded": "The report's font did not load",
+    "print_face_mismatch": "Some text is not in the report's font",
+    "print_synthesized_face": "Some text would print in a fake bold or italic",
+    "print_required_text_missing": "A name the engine checks is not on the page as entered",
+    "print_glyph_missing": "A name has a character the report's font cannot draw",
+    "print_glyph_fallback": "Some characters print in a fallback font",
+    "print_image_not_decoded": "An image on the print page did not load",
+    "print_overlay_missing": "The engine's image is missing from the print page",
+    "print_overlay_altered": "The engine's image would not print as approved"
   },
   "indexStates": {
     "ok": "indexed",
@@ -495,5 +655,108 @@
     "ranking": "ranking frames",
     "persisting": "saving candidates",
     "done": "done"
+  },
+  "about": {
+    "title": "About Nazeer",
+    "engine": "Engine",
+    "model": "Model",
+    "arabicStack": "Arabic text stack",
+    "versions": "Library versions",
+    "app": "Application",
+    "engineVersion": "Engine version",
+    "enginePid": "Engine process id",
+    "runId": "Run id",
+    "startedAt": "Started",
+    "uptime": "Running for",
+    "port": "Port",
+    "dataRoot": "Data folder",
+    "logFolder": "Log folder",
+    "modelFile": "Model file",
+    "modelSha": "Model SHA-256",
+    "stub": "Stub model",
+    "warmup": "Warm-up",
+    "stackOk": "Available",
+    "stackReason": "Reason",
+    "fontSha": "Font SHA-256",
+    "fontPinned": "Pinned font",
+    "nativeLayout": "Native text layout (libraqm)",
+    "appVersion": "App version",
+    "electron": "Electron",
+    "chromium": "Chromium",
+    "library": "Library",
+    "version": "Version",
+    "labels": "Bilingual labels",
+    "labelsLoaded": "Codes with labels"
+  },
+  "license": {
+    "title": "Activate Nazeer",
+    "intro": "Paste the licence key you received. It is checked on this computer; no internet connection is needed.",
+    "keyLabel": "Licence key",
+    "keyHint": "It starts with NZL1.",
+    "activate": "Activate",
+    "activated": "Licence activated",
+    "checking": "Checking the licence…",
+    "storedExpired": "The trial has ended. Enter a new key to continue.",
+    "storedInvalid": "The saved licence key is no longer valid. Enter a key to continue.",
+    "notSaved": "The key is valid but could not be saved: it will be asked for again at the next start.",
+    "notConfigured": "This build has no licence public key, so no key can be checked (development: node tools/generate-license.mjs --init).",
+    "expiredOn": "Expired on",
+    "reasons": {
+      "malformed": "This is not a valid licence key. Check that it was copied completely.",
+      "bad_signature": "This key was not issued for Nazeer, or it has been changed.",
+      "expired": "This licence key has expired."
+    },
+    "card": "Licence",
+    "kind": "Type",
+    "kinds": {
+      "trial": "Trial",
+      "permanent": "Permanent"
+    },
+    "customer": "Licensed to",
+    "validUntil": "Valid until",
+    "noExpiry": "No expiry",
+    "fingerprint": "Key reference",
+    "changeKey": "Change key",
+    "notRequired": "No licence needed in this development build"
+  },
+  "unsaved": {
+    "title": "Unsaved changes",
+    "description": "The open session has changes the engine could not save (it cannot be reached, or a conflict waits for your choice). Opening another session discards them.",
+    "discard": "Discard the changes",
+    "keep": "Keep them"
+  },
+  "conflict": {
+    "title": "The session was changed elsewhere",
+    "description": "These were changed both here and elsewhere. Choose which version to keep: nothing is merged without you.",
+    "keepMine": "Keep my version",
+    "takeTheirs": "Take the other version",
+    "kinds": {
+      "both_edited": "changed here and elsewhere",
+      "edited_deleted": "changed here, deleted elsewhere",
+      "deleted_edited": "deleted here, changed elsewhere",
+      "both_added": "added here and elsewhere under the same number",
+      "order": "the order changed here and elsewhere",
+      "field": "changed here and elsewhere"
+    }
+  },
+  "finalize": {
+    "title": "Finalize the session",
+    "approveTitle": "Approve the engine's image",
+    "backToMeasuring": "Back to measuring",
+    "checkTitle": "Before finalizing",
+    "explain": "Finalizing makes the engine draw the measurements once, as one image: you approve on that image, and it is the image the report carries. The session then becomes read-only (it can be reopened).",
+    "camelIdMissing": "Enter the camel ID: it is required to finalize.",
+    "saveState": "Saving",
+    "rejectedWarning": "Some measurements are rejected: they appear without a value, with their reasons.",
+    "conflict": "Resolve the conflict on the measuring screen first",
+    "failed": "Finalizing failed",
+    "rendering": "The engine is drawing the image…",
+    "run": "Finalize: draw the engine's image",
+    "noOverlay": "The engine's image is missing for this finalized session",
+    "toReport": "Continue to the report"
+  },
+  "notFound": {
+    "title": "This page does not exist",
+    "description": "The link may be out of date."
   }
 }

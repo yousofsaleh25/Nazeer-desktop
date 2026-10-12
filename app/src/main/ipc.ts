@@ -1,16 +1,87 @@
-/** IPC handlers. Every channel checks its sender; payloads are validated as channels grow. */
-import { ipcMain } from "electron";
-import { IPC, type EngineConnection } from "@shared/ipc";
+/** IPC handlers. Every channel checks its sender; every payload is validated (ipcValidate). */
+import { ipcMain, shell, type BrowserWindow, type IpcMainInvokeEvent } from "electron";
+import {
+  IPC,
+  type ActivationResult,
+  type CaptureScan,
+  type EngineConnection,
+  type EngineStatusEvent,
+  type ExportRequest,
+  type ExportResult,
+  type LicenseStatus,
+} from "@shared/ipc";
+import {
+  validateCaptureFolders,
+  validateExportRequest,
+  validateLicenseKeyInput,
+  validateQuitAck,
+} from "@shared/ipcValidate";
+import { openBagDialog, pickFolderDialog } from "./dialogs";
+import type { RendererQuitBridge } from "./quit";
+import { scanCaptureFolders } from "./scan";
 import { isTrustedSender, type SecurityContext } from "./security";
+import type { SettingsStore } from "./settings";
 
 export interface IpcDeps {
-  /** The engine connection once the supervisor has a ready engine (Stage 4); null before. */
-  getConnection(): EngineConnection | null;
+  engine: {
+    getConnection(): EngineConnection | null;
+    statusEvent(): EngineStatusEvent;
+    retry(): void;
+  };
+  /** the operator window (dialog parent); null while it is being created or after it closed */
+  window(): BrowserWindow | null;
+  settings: SettingsStore;
+  quitBridge: RendererQuitBridge;
+  logDir: string;
+  license: {
+    status(): LicenseStatus;
+    activate(key: string): ActivationResult;
+  };
+  /** after a key was accepted: start the engine if it is not running yet */
+  onLicenseActivated(): void;
+  /** print and seal a report (print/exportPdf.ts; one at a time) */
+  exportPdf(request: ExportRequest): Promise<ExportResult>;
 }
 
 export function registerIpc(ctx: SecurityContext, deps: IpcDeps): void {
-  ipcMain.handle(IPC.engineGetConnection, (event) => {
-    if (!isTrustedSender(event, ctx)) throw new Error("untrusted sender");
-    return deps.getConnection();
+  const handle = <T>(channel: string, run: (event: IpcMainInvokeEvent, payload: unknown) => T) => {
+    ipcMain.handle(channel, (event, payload: unknown) => {
+      if (!isTrustedSender(event, ctx)) throw new Error("untrusted sender");
+      return run(event, payload);
+    });
+  };
+
+  handle(IPC.engineGetConnection, () => deps.engine.getConnection());
+  handle(IPC.engineGetStatus, () => deps.engine.statusEvent());
+  handle(IPC.engineRetry, () => {
+    deps.engine.retry();
   });
+
+  handle(IPC.dialogOpenBag, () => openBagDialog(deps.window()));
+  handle(IPC.dialogPickFolder, () => pickFolderDialog(deps.window()));
+
+  handle(IPC.scanCaptureFolders, (): Promise<CaptureScan> =>
+    scanCaptureFolders(deps.settings.get().captureFolders),
+  );
+  handle(IPC.scanSetFolders, (_event, payload) =>
+    deps.settings.setCaptureFolders(validateCaptureFolders(payload)),
+  );
+
+  handle(IPC.appQuitAck, (_event, payload) => {
+    const ack = validateQuitAck(payload);
+    deps.quitBridge.acknowledge(ack.requestId, ack.unsaved);
+  });
+  handle(IPC.appOpenLogFolder, async () => {
+    const problem = await shell.openPath(deps.logDir);
+    if (problem !== "") throw new Error(problem);
+  });
+
+  handle(IPC.licenseGetStatus, () => deps.license.status());
+  handle(IPC.licenseActivate, (_event, payload) => {
+    const result = deps.license.activate(validateLicenseKeyInput(payload));
+    if (result.accepted) deps.onLicenseActivated();
+    return result;
+  });
+
+  handle(IPC.printExportPdf, (_event, payload) => deps.exportPdf(validateExportRequest(payload)));
 }

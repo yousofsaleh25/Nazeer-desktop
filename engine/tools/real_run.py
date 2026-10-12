@@ -79,15 +79,7 @@ TEST_BANNER = {
     "ar": "تشغيل تجريبي: قياسات عشوائية على إطار حقيقي، وليس سجل تحكيم.",
     "en": "Test run: random measurements on a real frame. Not a judging record.",
 }
-REJECTED = {"ar": "مرفوض", "en": "Rejected"}
-FRAME_ROWS = {
-    "z_ref": {"ar": "العمق المرجعي", "en": "Reference depth Z_ref"},
-    "ground": {"ar": "خط الأرض", "en": "Ground line"},
-    "depth_bbox": {"ar": "منطقة العمق الصالح", "en": "Depth-valid region"},
-    "model": {"ar": "النموذج", "en": "Model"},
-    "intrinsics": {"ar": "معاملات الكاميرا", "en": "Camera intrinsics"},
-    "candidate": {"ar": "الإطار المرشح", "en": "Candidate frame"},
-}
+REJECTED = {"ar": "مرفوض", "en": "Rejected"}  # console only; the page reads static.rejected
 NAMES = {  # (Arabic, English); odd ids get the Arabic name, even ids the English one
     "distance_2d": ("مسافة ثنائية الأبعاد {n}", "Random 2D distance {n}"),
     "distance_3d": ("مسافة ثلاثية الأبعاد {n}", "Random 3D distance {n}"),
@@ -644,17 +636,14 @@ class PrintPage:
     def session_table(self) -> str:
         s, f, st = self.m["session"], self.m["frame"], self.st
         labels = st["session_rows"]
-        source = (
-            f"{f.get('bag_name')} - read index {f.get('read_index')} - "
-            f"t = {num(f.get('bag_time_s'), '.2f')} s - {f.get('bucket')}"
-        )
+        source = f"{self.auto(f.get('bag_name'))}{self.esc(' · ')}{self.bi(f['texts']['source'])}"
         rows = [
             ("session_id", self.ltr(s["session_id"])),
             ("operator", self.auto(s.get("operator"), block=True)),
             ("camel_id", self.auto(s.get("camel_id"), block=True)),
             ("event", self.auto(self.m["inputs"]["names"].get("event"), block=True)),
             ("n_measurements", self.ltr(self.m["summary"]["n_measurements"])),
-            ("source_frame", self.ltr(source)),
+            ("source_frame", source),
             ("generated", self.ltr(self.m["generated_at"])),
         ]
         body = "".join(f"<tr><th>{self.bi(labels[k])}</th><td>{v}</td></tr>" for k, v in rows)
@@ -664,42 +653,11 @@ class PrintPage:
         return f'<h2>{self.bi(st["headings"]["session"])}</h2><table class="kv">{body}</table>'
 
     def frame_table(self) -> str:
-        f = self.m["frame"]
-        z, g = f.get("z_ref") or {}, f.get("ground") or {}
-        model, cand, k = f.get("model") or {}, f.get("candidate") or {}, f.get("intrinsics") or {}
-        bbox = f.get("depth_valid_bbox") or [None] * 4
-        badge = f" - badge: {g['badge']}" if g.get("badge") else ""
-        rows = [
-            (
-                "z_ref",
-                f"{num(z.get('z_ref_m'), '.3f')} m ({z.get('statistic')} of "
-                f"{num(z.get('n_valid'), ',')} valid depths in the {z.get('erosion_px')}-px-eroded "
-                f"mask, {num(z.get('valid_fraction'), '.1%')} of {num(z.get('n_total'), ',')} px; "
-                f"MAD {num(z.get('z_mad_robust_m'), '.3f')} m)",
-            ),
-            (
-                "ground",
-                f"row {g.get('drawn_row')} drawn (near-plane {g.get('near_plane_row')}, "
-                f"raw lowest {g.get('raw_row')}){badge}",
-            ),
-            ("depth_bbox", f"x {bbox[0]}-{bbox[2]}, y {bbox[1]}-{bbox[3]} px"),
-            ("model", f"{model.get('file')} - sha256 {str(model.get('sha256'))[:16]}..."),
-            (
-                "intrinsics",
-                f"fx {num(k.get('fx'), '.1f')}, fy {num(k.get('fy'), '.1f')}, "
-                f"cx {num(k.get('cx'), '.1f')}, cy {num(k.get('cy'), '.1f')} px; distortion "
-                "recorded, not applied (pinhole)",
-            ),
-            (
-                "candidate",
-                f"{cand.get('candidate_id')} of {cand.get('n_candidates')} - depth MSE "
-                f"{num(cand.get('z_var'), '.4f')} m2 - rel. dispersion "
-                f"{num(cand.get('rel_disp'), '.3f')}",
-            ),
-        ]
+        # report model 1.1: the labels are static content, the texts are formatted by the engine
+        texts = self.m["frame"]["texts"]
         body = "".join(
-            f"<tr><th>{self.bi(FRAME_ROWS[key])}</th><td>{self.ltr(text)}</td></tr>"
-            for key, text in rows
+            f"<tr><th>{self.bi(label)}</th><td>{self.bi(texts[key], block=True)}</td></tr>"
+            for key, label in self.st["frame_rows"].items()
         )
         heading = self.st["headings"]["depth"]
         return f'<h2>{self.bi(heading)}</h2><table class="kv">{body}</table>'
@@ -723,7 +681,7 @@ class PrintPage:
         if r.get("note"):
             name += self.auto(r["note"], block=True, cls="small")
         if r["rejected"]:
-            value = f'<span class="rejected">{self.bi(REJECTED)}</span>' + "".join(
+            value = f'<span class="rejected">{self.bi(self.st["rejected"])}</span>' + "".join(
                 f'<div class="small rejected">{self._point(p.get("point"))}{self.bi(p)}</div>'
                 for p in r["rejection"]
             )
@@ -734,21 +692,10 @@ class PrintPage:
         basis = self._basis(r["depth_basis"])
         curve = r.get("curve")
         if curve and curve.get("cross_check_2d_m") is not None:
-            n_seg = len(curve.get("segment_lengths_m") or [])
-            check = curve["cross_check_2d_m"]
-            flagged = curve.get("n_flagged_segments") or 0
-            label = {
-                "ar": f"تحقق ثنائي الأبعاد {check:.3f} م - {n_seg} مقاطع، {flagged} عليها تنبيه",
-                "en": f"2D cross-check {check:.3f} m - {n_seg} segments, {flagged} flagged",
-            }
-            basis += f'<div class="small">{self.bi(label)}</div>'
+            basis += f'<div class="small">{self.bi(curve["cross_check_text"])}</div>'
         lines = r.get("lines")
         if lines:
-            label = {
-                "ar": f"بين القياسين #{lines['a']} و#{lines['b']}",
-                "en": f"between #{lines['a']} and #{lines['b']}",
-            }
-            basis += f'<div class="small">{self.bi(label)}</div>'
+            basis += f'<div class="small">{self.bi(lines["text"])}</div>'
         flags = "".join(self._chip(c) for c in r["flags"])
         confidence = r.get("confidence_label")
         if confidence and confidence.get("code") != "high":
@@ -762,15 +709,11 @@ class PrintPage:
         head = "".join(f"<th>{self.bi(cols[k], block=True)}</th>" for k in keys)
         rows = "".join(self._row(r) for r in self.m["measurements"])
         summary = self.m["summary"]
-        counts = (
-            f"{summary['n_measurements']} measurements, {summary['n_rejected']} rejected, "
-            f"{summary['n_low_confidence']} low confidence"
-        )
         return (
             f"<h2>{self.bi(self.st['headings']['measurements'])}</h2>"
             f"<table><thead><tr>{head}</tr></thead><tbody>{rows}</tbody></table>"
             f'<p class="small">{self.bi(summary["snapped_text"])}'
-            f"{self.esc(' · ')}{self.ltr(counts)}</p>"
+            f"{self.esc(' · ')}{self.bi(summary['counts_text'])}</p>"
         )
 
     def scoring_form(self) -> str:

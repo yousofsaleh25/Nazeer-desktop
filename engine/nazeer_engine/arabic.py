@@ -9,9 +9,10 @@ LRM) with every Arabic part wrapped in a first-strong isolate (FSI ... PDI), whi
 
 For a matplotlib without libraqm the old path is kept as a fallback: ``arabic_reshaper``
 configured from the TTF (``config_for_true_type_font`` + ``ENABLE_ALL_LIGATURES``) and
-``python-bidi``. A missing font (or, on the fallback path, missing libraries) raises
-``ArabicStackMissing`` (HTTP 500 at finalize); nothing is installed at runtime and there is
-never an Arial fallback.
+``python-bidi``. A missing font, a matplotlib whose compiled modules cannot be loaded (seen
+when Windows Smart App Control blocked ``_c_internal_utils``, 2026-10-12), or, on the fallback
+path, missing libraries raise ``ArabicStackMissing`` (HTTP 500 at finalize); nothing is
+installed at runtime and there is never an Arial fallback.
 """
 
 from __future__ import annotations
@@ -41,11 +42,44 @@ PDI = chr(0x2069)  # pop directional isolate
 _LOCK = threading.Lock()
 _STATE: dict[str, Any] = {}
 
+# The compiled modules the overlay draws with: what Windows Smart App Control (or a broken
+# install) can block. Importing them is cheap: no font_manager, so no system-font scan before
+# the ready line.
+MATPLOTLIB_BINARY_MODULES: tuple[str, ...] = (
+    "matplotlib._c_internal_utils",
+    "matplotlib.ft2font",
+    "matplotlib._path",
+    "matplotlib._image",
+    "matplotlib.backends._backend_agg",
+    "kiwisolver._cext",
+    "contourpy._contourpy",
+    "PIL._imaging",
+)
+
 
 def reset_stack() -> None:
     """Forget the cached stack (tests)."""
     with _LOCK:
         _STATE.clear()
+
+
+def matplotlib_problem() -> str | None:
+    """None when matplotlib's compiled modules import; otherwise which one failed and why."""
+    import importlib
+
+    for name in MATPLOTLIB_BINARY_MODULES:
+        try:
+            importlib.import_module(name)
+        except Exception as exc:  # ImportError, or OSError from a DLL the OS refused to load
+            return f"{name}: {type(exc).__name__}: {exc}"
+    return None
+
+
+def matplotlib_missing(problem: str) -> ArabicStackMissing:
+    return ArabicStackMissing(
+        f"matplotlib cannot be loaded, so the overlay cannot be drawn: {problem}",
+        details={"missing": "matplotlib", "error": problem},
+    )
 
 
 def native_layout() -> bool:
@@ -63,6 +97,11 @@ def ensure_arabic_stack() -> dict[str, Any]:
         if "font_path" in _STATE:
             return _STATE
         path = assets.font_path()  # raises ArabicStackMissing when the TTF is absent
+        # without matplotlib nothing can be drawn, whichever text path would be used: never
+        # report the stack as ok on the reshaper fallback alone
+        problem = matplotlib_problem()
+        if problem is not None:
+            raise matplotlib_missing(problem)
         native = native_layout()
         state: dict[str, Any] = {
             "font_path": path,

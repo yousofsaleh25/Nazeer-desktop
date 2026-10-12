@@ -85,6 +85,7 @@ export function CamelIdDialog({
           <Input
             value={values.camel_id}
             onChange={(event) => set("camel_id")(event.target.value)}
+            maxLength={64}
             autoFocus
             autoComplete="off"
             spellCheck={false}
@@ -94,11 +95,16 @@ export function CamelIdDialog({
           <Input
             value={values.operator}
             onChange={(event) => set("operator")(event.target.value)}
+            maxLength={100}
             autoComplete="off"
           />
         </Field>
         <Field label={messagePair("session.notes")}>
-          <Textarea value={values.notes} onChange={(event) => set("notes")(event.target.value)} />
+          <Textarea
+            value={values.notes}
+            onChange={(event) => set("notes")(event.target.value)}
+            maxLength={4000}
+          />
         </Field>
         {error ? <ErrorPanel error={error} /> : null}
       </form>

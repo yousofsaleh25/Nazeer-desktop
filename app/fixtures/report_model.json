@@ -1,5 +1,5 @@
 {
-  "report_model_version": "1.0",
+  "report_model_version": "1.1",
   "engine_version": "0.1.0",
   "generated_at": "2026-10-11T15:30:00+00:00",
   "inputs": {
@@ -127,6 +127,36 @@
       "valid_fraction": 0.9637859518375823,
       "params_hash": "a6fef1d525ce8ba2",
       "sample_every": 5
+    },
+    "texts": {
+      "z_ref": {
+        "ar": "2.329 م: وسيط 182,862 قيمة عمق صالحة في القناع بعد تقليصه 2 بكسل (96.4% من 189,733 بكسل)، MAD 0.069 م",
+        "en": "2.329 m: median of 182,862 valid depths in the mask eroded by 2 px (96.4% of 189,733 px), robust MAD 0.069 m"
+      },
+      "ground": {
+        "ar": "الصف 691 هو المرسوم (صف المستوى القريب 691، أدنى صف خام 691)",
+        "en": "row 691 drawn (near-plane row 691, raw lowest row 691)"
+      },
+      "depth_bbox": {
+        "ar": "x 29–1273، y 107–719 بكسل",
+        "en": "x 29–1273, y 107–719 px"
+      },
+      "model": {
+        "ar": "best.pt · sha256 0e9ee2baada7c705…",
+        "en": "best.pt · sha256 0e9ee2baada7c705…"
+      },
+      "intrinsics": {
+        "ar": "fx 642.9، fy 641.9، cx 650.4، cy 366.3 بكسل؛ تشوّه العدسة مسجَّل ولا يُطبَّق (نموذج ثقب الإبرة)",
+        "en": "fx 642.9, fy 641.9, cx 650.4, cy 366.3 px; lens distortion recorded, not applied (pinhole model)"
+      },
+      "candidate": {
+        "ar": "c06_001340 · الإطارات المقترحة 12 · تباين العمق (MSE) 0.0231 م² · التشتت النسبي 0.045",
+        "en": "c06_001340 · 12 frames proposed · depth MSE 0.0231 m² · relative dispersion 0.045"
+      },
+      "source": {
+        "ar": "مؤشر القراءة 1340 · t = 44.69 ث · جانبي",
+        "en": "read index 1340 · t = 44.69 s · side"
+      }
     }
   },
   "overlay": {
@@ -703,7 +733,11 @@
           [],
           [],
           []
-        ]
+        ],
+        "cross_check_text": {
+          "ar": "تحقق ثنائي الأبعاد 1.475 م · المقاطع 4، عليها تنبيه 1",
+          "en": "2D cross-check 1.475 m · 4 segments, 1 flagged"
+        }
       }
     }
   ],
@@ -716,6 +750,10 @@
     "snapped_text": {
       "ar": "1 من 13 نقطة قُرِّبت إلى الجمل (KNN)",
       "en": "1 of 13 points snapped to the camel (KNN)"
+    },
+    "counts_text": {
+      "ar": "القياسات: 9 · المرفوضة: 0 · منخفضة الثقة: 3",
+      "en": "Measurements: 9 · rejected: 0 · low confidence: 3"
     }
   },
   "static": {
@@ -1343,6 +1381,58 @@
       "date": {
         "ar": "التاريخ",
         "en": "Date"
+      }
+    },
+    "rejected": {
+      "ar": "مرفوض",
+      "en": "Rejected"
+    },
+    "frame_rows": {
+      "z_ref": {
+        "ar": "العمق المرجعي",
+        "en": "Reference depth Z_ref"
+      },
+      "ground": {
+        "ar": "خط الأرض",
+        "en": "Ground line"
+      },
+      "depth_bbox": {
+        "ar": "منطقة العمق الصالح",
+        "en": "Depth-valid region"
+      },
+      "model": {
+        "ar": "النموذج",
+        "en": "Model"
+      },
+      "intrinsics": {
+        "ar": "معاملات الكاميرا",
+        "en": "Camera intrinsics"
+      },
+      "candidate": {
+        "ar": "الإطار المرشح",
+        "en": "Candidate frame"
+      }
+    },
+    "provenance_rows": {
+      "engine": {
+        "ar": "المحرك",
+        "en": "Engine"
+      },
+      "report_model": {
+        "ar": "نموذج التقرير",
+        "en": "Report model"
+      },
+      "overlay": {
+        "ar": "صورة المحرك",
+        "en": "Engine image"
+      },
+      "session": {
+        "ar": "الجلسة",
+        "en": "Session"
+      },
+      "libraries": {
+        "ar": "المكتبات",
+        "en": "Libraries"
       }
     }
   },

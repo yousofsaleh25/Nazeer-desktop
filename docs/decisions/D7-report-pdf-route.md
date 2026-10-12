@@ -152,3 +152,81 @@ still untested — the app does not exist yet.
   visual order — the names become unsearchable and the probe fails (`text_probe_failed`,
   hint `synthesized_face`, `fonts.type3_present`). Either embed every Plex weight the page
   uses (`@font-face` per weight) or keep those strings in the regular weight.
+
+## Electron side (implemented 2026-10-12, Stage 7)
+
+Status: implemented and **integration-tested** — the dev app with the real model on bag 006,
+driven through its UI, printed three reports (both languages, Arabic, English) that the engine
+sealed with strict probes, and the headless re-export sealed a fourth; the built app does the same
+in `e2e/export.spec.ts` (stub model). Not production-validated: no installer with Stage 7 has been
+install-checked yet, and nothing has been printed in the field. This is the half-day spike of
+Decision step 7, done as the implementation; the route held. **The record stays "proposed" until
+the operator accepts it** (recommended).
+
+- **The print page** (`src/print/`, React + Tailwind v4, its own Vite entry `print.html`): laid
+  out from the report model (version 1.1 only: `print/model.ts` checks every field it prints and
+  names the first wrong one), the approved overlay bytes (a `blob:` URL, `width: 100%`, no filter,
+  opacity or crop), the engine's logo and the engine's pinned Plex Regular TTF, all handed over by
+  main. Sections: header (logo, brand, title, certification), session, the frame block (Z_ref,
+  ground line, depth-valid region, model, intrinsics, candidate), the camel view
+  (`break-inside: avoid`), the measurements (colour, name and note `dir="auto"`, kind, value,
+  uncertainty, the depth basis grouped over consecutive points, a 3D curve's 2D cross-check, a
+  4-point angle's lines, flags and low confidence), the snapped and count lines, the empty scoring
+  form, observations (given values or the engine's hint and a blank line), the Judge and Council
+  wells, the 27 regions, provenance (engine, report model file and SHA-256, the overlay, the
+  session and revision, library versions). `@page { size: A4; margin: 12mm }`, colours printed
+  exactly, no print-only rules, nothing read from storage (a source scan test).
+- **One face, no synthesis (B38):** every element is weight 400, normal style, `font-synthesis:
+  none`; the TTF is added with `FontFace` from its bytes. Each language half is its own isolate;
+  Latin runs inside Arabic text are isolated (`lib/bidi.tsx`, shared with the UI); operator text is
+  `dir="auto"`; a text identical in both languages (a file name and hash, an angle) prints once, left
+  to right.
+- **The page's own checks** (`print/preflight.ts`, after the face and every image are ready):
+  the face loaded; every text node in that face at weight 400, normal style; every string of
+  `required_report_texts` on the page verbatim and found by the engine's own run matching
+  (`normalize_text` / `name_runs` ported, tested against the engine's cases and outputs); every
+  character in the face's cmap (`plex-cmap.json`) — a required name with a character the face
+  lacks stops the print, anywhere else it is a warning shown to the operator (it prints in a
+  fallback face); the overlay at its natural size (1280 × 840) and untouched. A failed check is not
+  printed, and the operator sees which.
+- **Main's export** (`main/print/exportPdf.ts`, one at a time): read the session from the engine
+  (finalized or exported, outputs current, the approved overlay and the report model are the
+  session's current ones), re-hash the approved bytes, fetch the report model and check its bytes
+  against the engine's stamp and its version (1.1), read the face (SHA-256 = the cmap's) and the
+  logo, lay out and check in the hidden window (D9), `printToPDF({ pageSize: "A4", printBackground:
+  true, preferCSSPageSize: true, margins: 0 })`, and `POST …/report` with `Content-Type:
+  application/pdf`, `X-Overlay-Sha256`, `X-Overlay-Version`, `X-Report-Model-Sha256` and the app
+  versions; strict text and font probes. The engine's answer (session and probe) goes back to the
+  screen, which reads the session again for its ETag. A refusal keeps the engine's code; a DRIFT
+  carries its probe and the file the engine kept.
+- **Report model 1.1** (engine, operator decision 5 of 2026-10-11): the page no longer composes any
+  text. Version 1.1 adds the frame block's labels (`static.frame_rows`), "Rejected", the provenance
+  labels, and engine-formatted bilingual texts for the frame block (`frame.texts`, plus the source
+  frame), a 3D curve's cross-check (`curve.cross_check_text`), a 4-point angle's lines
+  (`lines.text`) and the counts line (`summary.counts_text`); a missing number prints as "--".
+  Finished texts rather than templates, so the app formats no number and translates nothing.
+  `engine/tools/real_run.py` reads them too (34/34 on bag 006 after the change). A session finalized
+  before 1.1 has a 1.0 model: the app refuses to print it (`report_model_outdated`) and says to
+  reopen and finalize again (a changed report detail also writes a 1.1 model).
+- **The printed provenance leaves out the data root** (a folder on the computer; on the field laptop
+  its path names the Windows user); it stays in the attached `session.json` and report model.
+- **Headless re-export** (decision step 6): `npm run export -- <session folder> [--out <file>]`
+  (development), or the installed `Nazeer Desktop.exe --export <session folder> [--out <file>]`.
+  It prints again only what an operator approved: the session must be finalized or exported, its
+  outputs current, and its last sealed report made from the current overlay version
+  (`export_needs_approval` otherwise); the overlay bytes then come from the engine, checked against
+  its stamp. Its own engine on the session's data root (no warm-up), which never stops another one:
+  while the app serves that data root the export ends with `engine_already_running` ("close Nazeer
+  Desktop, then export again"). A throwaway Chromium profile; a licence in production. The result is
+  one JSON object (stdout and `--out`); exit 0 when sealed, 1 refused or failed, 2 usage, 3 no
+  licence, 4 the engine did not start.
+- **Measured** (2026-10-12, this laptop): click to sealed 2.0–2.5 s per report; the bilingual
+  report is 5 A4 pages, Arabic or English 4 (Chromium's A4 is 594.96 × 841.92 pt); 2.65 MB each. For
+  each: verdict PASS with strict probes, the overlay found on its page with max |Δ| 0, all 13
+  required names in the text layer, the only font `AAAAAA+IBMPlexSansArabic`, no Type3, the three
+  attachments read back, the printer Electron 44.4.5 / Chromium 152.0.7977.130 in the manifest. The
+  headless re-export of the closed app's session: PASS (print 0.5 s, seal 1.4 s; 21 s with the
+  build). Rendered pages were reviewed (poppler): right-to-left tables, the halves in their own
+  directions, numbers and units in order.
+- Still open (operator): the questions above (signatures, one bilingual PDF or one per language,
+  PDF/A), and the scoring-form heading's wording.

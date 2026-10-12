@@ -1,33 +1,47 @@
 /**
  * The frame around every operator screen: the brand, the main sections (Open a bag, History,
- * About), the engine's status and the UI preferences; banners (e.g. a missing Arabic text stack)
- * sit under the header, above the screen.
+ * About) and the work in progress (the frame search, the open session), the engine's status and
+ * the UI preferences; banners (e.g. a missing Arabic text stack) sit under the header, above the
+ * screen.
  */
 import { History, Info, FolderOpen } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
 import { NavLink } from "react-router";
 import type { EngineConnection, EngineStatusName } from "@shared/ipc";
-import { Bi } from "@/components/ui/Bi";
-import { messagePair, useT, type MessageKey } from "@/i18n/t";
+import { Bi, type BiText } from "@/components/ui/Bi";
+import { messagePair, useT } from "@/i18n/t";
 import { cn } from "@/lib/cn";
 import { EngineStatusPill } from "./EngineStatusPill";
 import { PrefControls } from "./PrefControls";
 
-const NAV: readonly { to: string; label: MessageKey; icon: LucideIcon; end?: boolean }[] = [
-  { to: "/", label: "nav.home", icon: FolderOpen, end: true },
-  { to: "/history", label: "nav.history", icon: History },
-  { to: "/about", label: "nav.about", icon: Info },
+export interface NavItem {
+  to: string;
+  label: BiText;
+  icon: LucideIcon;
+  end?: boolean;
+  /** operator text after the label (the open session's camel id) */
+  detail?: string;
+  /** a status after the detail (the open session's unsaved work) */
+  status?: ReactNode;
+}
+
+const NAV: readonly NavItem[] = [
+  { to: "/", label: messagePair("nav.home"), icon: FolderOpen, end: true },
+  { to: "/history", label: messagePair("nav.history"), icon: History },
+  { to: "/about", label: messagePair("nav.about"), icon: Info },
 ];
 
 export interface AppShellProps {
   engine: { status: EngineStatusName; connection: EngineConnection | null; restarts: number };
+  /** work in progress, after the main sections */
+  work?: readonly NavItem[];
   banner?: ReactNode;
   children: ReactNode;
   className?: string;
 }
 
-export function AppShell({ engine, banner, children, className }: AppShellProps) {
+export function AppShell({ engine, work = [], banner, children, className }: AppShellProps) {
   const t = useT();
   return (
     <div className={cn("flex min-h-screen flex-col bg-canvas text-ink", className)}>
@@ -37,8 +51,8 @@ export function AppShell({ engine, banner, children, className }: AppShellProps)
             <Bi {...messagePair("app.name")} />
           </p>
           <nav aria-label={t("nav.label")}>
-            <ul className="flex items-center gap-1">
-              {NAV.map(({ to, label, icon: Icon, end }) => (
+            <ul className="flex flex-wrap items-center gap-1">
+              {[...NAV, ...work].map(({ to, label, icon: Icon, end, detail, status }) => (
                 <li key={to}>
                   <NavLink
                     to={to}
@@ -53,7 +67,13 @@ export function AppShell({ engine, banner, children, className }: AppShellProps)
                     }
                   >
                     <Icon aria-hidden="true" className="size-4" />
-                    <Bi {...messagePair(label)} />
+                    <Bi {...label} />
+                    {detail ? (
+                      <bdi dir="auto" className="max-w-32 truncate text-xs opacity-80">
+                        {detail}
+                      </bdi>
+                    ) : null}
+                    {status ?? null}
                   </NavLink>
                 </li>
               ))}

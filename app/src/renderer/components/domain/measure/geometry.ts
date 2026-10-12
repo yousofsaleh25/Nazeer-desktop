@@ -60,6 +60,21 @@ export interface DrawnRow {
   anchor: Point | null;
 }
 
+/** A shape's points in the input's order (vertex first for a 3-point angle). */
+export function shapePoints(shape: Shape): DrawnPoint[] {
+  switch (shape.type) {
+    case "segment":
+    case "horizontal":
+      return [shape.a, shape.b];
+    case "polyline":
+      return shape.points;
+    case "angle":
+      return [shape.vertex, shape.a, shape.b];
+    default:
+      return [];
+  }
+}
+
 /** Kinds whose points carry depth provenance on the overlay (3D kinds). */
 const PROVENANCE_KINDS = new Set<MeasurementRow["kind"]>([
   "distance_3d",

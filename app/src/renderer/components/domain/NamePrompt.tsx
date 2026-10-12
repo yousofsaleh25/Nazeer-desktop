@@ -48,6 +48,7 @@ export function NamePrompt({
         <Input
           value={name}
           onChange={(event) => setName(event.target.value)}
+          maxLength={200}
           autoFocus
           autoComplete="off"
         />

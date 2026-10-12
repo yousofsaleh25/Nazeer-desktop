@@ -10,7 +10,7 @@ from __future__ import annotations
 
 ENGINE_VERSION = "0.1.0"
 SESSION_SCHEMA_VERSION = "2.1"  # C3.6
-REPORT_MODEL_VERSION = "1.0"
+REPORT_MODEL_VERSION = "1.1"  # 1.1: the print page's frame-block, cross-check and count texts
 MANIFEST_VERSION = "1.0"
 CANDIDATES_VERSION = "1.0"
 HISTORY_INDEX_VERSION = 1

@@ -4,7 +4,7 @@ import { renderWithStore, uiState } from "@/test/render";
 import { Field, Input, Textarea } from "./Field";
 
 const label = { ar: "معرّف الجمل", en: "Camel ID" };
-const hint = { ar: "مطلوب قبل الاعتماد", en: "Required before finalizing" };
+const hint = { ar: "مطلوب قبل الإقفال", en: "Required before finalizing" };
 const error = { ar: "قيمة غير صالحة", en: "Not a valid value" };
 
 describe("Field", () => {

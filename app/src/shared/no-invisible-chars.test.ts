@@ -6,7 +6,9 @@ import { describe, expect, it } from "vitest";
 // never contains them literally: build them with String.fromCharCode (CLAUDE.md "Python style"
 // rule, applied to the app; the engine has the same test).
 const APP = resolve(__dirname, "../..");
-const ROOTS = ["src", "scripts", "e2e"].map((dir) => join(APP, dir));
+// the licence generator lives at the repo root (tools/), outside app/, and is checked too; build/
+// holds the installer's Arabic strings (installer.nsh)
+const ROOTS = ["src", "scripts", "e2e", "build", "../tools"].map((dir) => join(APP, dir));
 const FORMAT = /\p{Cf}/u;
 const ODD_SPACES = new Set([
   0xa0, 0x2000, 0x2001, 0x2002, 0x2003, 0x2004, 0x2005, 0x2006, 0x2007, 0x2008, 0x2009, 0x200a,
@@ -17,7 +19,7 @@ function files(dir: string): string[] {
   return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
     const full = join(dir, entry.name);
     if (entry.isDirectory()) return files(full);
-    return /\.(tsx?|mjs|css|html|json|md)$/.test(entry.name) ? [full] : [];
+    return /\.(tsx?|mjs|css|html|json|md|py|nsh)$/.test(entry.name) ? [full] : [];
   });
 }
 

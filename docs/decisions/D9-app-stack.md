@@ -81,7 +81,9 @@ stage; results measured later are appended here.
   openLogFolder}}`. `pickFolder`, `setFolders` and `openLogFolder` go beyond the surface listed in
   the app request; the operator accepted them on 2026-10-11 (they serve the configured capture
   folders and About's log-folder link). App and Chromium versions travel inside `getConnection()`.
-  Every payload is validated in main and accepted only from the app's own frame.
+  Every payload is validated in main and accepted only from the app's own frame. Stage 4 adds
+  `engine.getStatus` and `engine.retry` (see "Engine supervisor and client" below); the licence
+  addition adds `license.getStatus` and `license.activate` (D11).
 - **Security baseline:** every window sandboxed with context isolation and no Node integration;
   the packaged renderer is served from `app://nazeer`, registered privileged (`standard`, `secure`,
   `supportFetchAPI`, `codeCache`) so it is a secure context (`crypto.subtle`) with a real origin for
@@ -169,3 +171,279 @@ stage; results measured later are appended here.
 - Production bundle notes for packaging: the pdf.js worker (1.27 MB) is already emitted as an
   asset although nothing mounts the viewer yet (Vite emits `?url` assets while scanning the module
   graph); the renderer output is not minified with the current electron-vite configuration.
+
+### Engine supervisor and client (Stage 4, 2026-10-12)
+
+- **Data root** (`main/engine/dataRoot.ts`): packaged = `app.getPath("userData")`; dev =
+  `--data-root <dir>` | `NAZEER_DATA_ROOT` | `<repo>\runs\dev_root`. The engine's rules (absolute;
+  no Desktop / Documents / OneDrive segment; not under `%OneDrive%`, `%OneDriveConsumer%`,
+  `%OneDriveCommercial%`) are checked before spawning, so a bad root is a fatal screen with the
+  engine's own code `data_root_invalid`, not an exit 2.
+- **Spawn** (`command.ts`, `process.ts`): dev runs `engine\.venv\Scripts\python.exe -m
+  nazeer_engine` in `engine\`; production runs the installer's embedded CPython,
+  `<resources>\engine\python\python.exe -I -u -B -m nazeer_engine` in `<resources>\engine` (Stage B,
+  D11; it replaced the planned PyInstaller `nazeer-engine.exe`). Arguments: `--data-root`,
+  `--port 0`, `--token=<64 hex>` (new per spawn), one `--cors-origin` per renderer origin
+  (`app://nazeer`, plus the Vite origin in dev; the flag replaces the engine's defaults). Dev-only
+  switches: `NAZEER_STUB_MODEL=1` (adds `--stub-model` and `NAZEER_ENGINE_DEV=1`),
+  `NAZEER_ENGINE_NO_WARMUP=1`, `NAZEER_ENGINE_PYTHON`; dev passes the environment through;
+  production drops `NAZEER_*`, `PYTHON*`, `YOLO_*`, `OTEL_*`, `FASTAPI_OTEL_*` and `MPLCONFIGDIR`,
+  so the engine's own offline defaults always apply. `windowsHide`, stdout read for the whole run
+  (the pipe never fills), exit reported after both pipes drained (`close`, or 1 s after `exit`:
+  the venv launcher's child inherits the pipes).
+- **Identity and states** (`supervisor.ts`): the engine is identified by the ready line's `pid`
+  (in development the spawned process is the venv launcher; in production it is the engine
+  itself, checked by the Stage B staging smoke). `starting → ready`; before ready, exit 2 / 3 / 5 is
+  fatal at once; any other exit, or no ready line within 180 s, gets one retry (1.5 s) and is then
+  fatal (`engine_exited` with the last 20 stderr lines, `engine_start_timeout`); a missing
+  executable is `engine_spawn_failed`; a ready line without `token_required` is refused
+  (`engine_protocol_error`). After ready an exit is a crash: restart after 1 / 2 / 4 / 8 / 16 / 30 s
+  (reset after 5 minutes of stable running); more than 5 restarts within 5 minutes is
+  `engine_restart_limit` (`restartPolicy.ts`). A replacement that dies before ready counts as
+  another crash. These supervisor codes are app codes (i18n `appErrors`; a test scans
+  `supervisor.ts` so each has both labels).
+- **Data root locked (exit 6)** (`orphan.ts`): the fatal line names the lock holder's pid and port;
+  the supervisor asks that port's `/health` (open, no token). When the pid and the data root both
+  match, the holder is an engine left on our data root (typically by an app that was killed). In
+  dev it is stopped and the start continues. A packaged app stops it only when the operator presses
+  "Try again" on the fatal screen, which then explains this, or when it is an engine this app
+  started itself. The plan's text was "stop it and retry / quit"; **the operator confirmed this
+  reading on 2026-10-12** ("Try again" stops a confirmed left-over engine, pid and data folder
+  matching the lock file; no Task Manager step). Re-verification happens on every start cycle. An unidentifiable holder (no port yet, no
+  answer, another pid or data root) gets one retry and is never killed.
+- **Watchdog**: `/health` every 15 s (5 s timeout, the ready pid must answer). Two misses in a row
+  set `unresponsive` (a banner); the engine is kept running, since a long finalize must not be killed.
+- **Logs** (`logs.ts`): `<userData>\logs\app-engine-stderr.log` = the engine's stderr plus the
+  supervisor's lifecycle lines (the token is masked); one rotation to `.1` at 5 MiB. The engine
+  keeps its own `<data root>\logs\engine.log`.
+- **Quit** (`quit.ts`): the window's `close` and the app's `before-quit` first ask the renderer to
+  flush (`app.onBeforeQuit`, answer within 3 s); unsaved changes or no answer → a bilingual
+  "Quit anyway?" dialog (main owns these few strings, Arabic line first). Then `will-quit` is held
+  while the engine is stopped (`POST /system/shutdown`, kill after 8 s: launcher and engine pid)
+  and the HTTP cache (token-bearing asset URLs) is cleared. A renderer that crashes is logged and
+  reloaded.
+- **Preload surface additions:** `engine.getStatus()` (the state at load; every
+  `EngineStatusEvent` carries an increasing `seq`, so a reply older than a pushed event is dropped)
+  and `engine.retry()` (the fatal screen's "Try again"). `print.exportPdf` arrives with the print
+  page in Stage 7; its `ExportRequest` shape and validator are fixed in `shared/ipc.ts`.
+- **Capture-folder scan** (`scan.ts`): paths and stat only; depth ≤ 3, ≤ 2 000 entries, ≤ 200 bags,
+  ≤ 3 s; links and junctions are never followed (tested with a real junction); `truncated` when
+  any bound is hit. The folders are stored in `<userData>\app-settings.json` (atomic write; a
+  damaged file means the defaults and a log line).
+- **Renderer client** (`api/client.ts`, `urls.ts`, `connection.ts`, `engineApi.ts`):
+  openapi-fetch over the generated paths with the `X-Nazeer-Token` header and
+  `cache: "no-store"`; every result is data or a plain `ApiErrorShape` (the engine's envelope kept;
+  `network_error`; a malformed 2xx body is `invalid_response`). The ETag is read only from the six
+  operations whose response is a `SessionView` (`create_session`, `get_session`, `put_document`,
+  `finalize_session`, `reopen_session`, `patch_report_inputs`; a test derives the list from
+  `openapi.json`). URLs for `<img>`, EventSource and pdf.js get the token with
+  `URL.searchParams.set` and are refused when they point anywhere but the engine. RTK Query uses
+  `fakeBaseQuery<ApiErrorShape>()`; a new connection (restart: new port, token, pid) rebuilds the
+  client and resets the API cache. Operator routes render only while the engine is ready (waiting
+  panel, fatal panel with Try again / Open the log folder / Quit); banners for a missing Arabic
+  stack, the stub model, an unresponsive engine and unloadable labels. About shows the connection,
+  `/health`, `/versions` and the labels count.
+- **Connectivity, measured 2026-10-12** (`e2e/connectivity.spec.ts`, production build, its own
+  stub engine). Passed from `app://nazeer`:
+  - a token-header fetch (200), and the same fetch without the token (401 `unauthorized`);
+  - the app's own client rendering `/health` on About;
+  - an `<img crossOrigin ?token>` engine asset drawn into a canvas that stays readable, while the
+    same URL without the token fails;
+  - the WebCrypto SHA-256 of `rgb.png` fetched from the engine equal to Node's SHA-256 of the file;
+  - kill the engine pid → restarted in about 2 s with a new pid, port and token, after which the
+    old token gets 401;
+  - quitting stops the engine by shutdown, not kill.
+
+  Chromium 152's Local Network Access did not block app:// → 127.0.0.1 and showed no prompt
+  (permission handler as above), so the loopback-server contingency is not needed.
+  **EventSource:** blocked at first by Smart App Control (next item); verified later the same day,
+  once the block had lifted: `progress` events from a stub walk on bag 004, then `cancelled`.
+- **Finding (needs operator decision): Windows Smart App Control blocked unsigned engine DLLs —
+  intermittently** (the measurements and their reading are in D11, "Smart App Control").
+  - **Evidence:** this laptop's Smart App Control is in enforcement
+    (`HKLM\SYSTEM\CurrentControlSet\Control\CI\Policy\VerifiedAndReputablePolicyState = 1`; Code
+    Integrity events 3033/3077, policy `{0283ac0f-fff1-49ae-ada1-8a933130cad6}`).
+  - **Blocked 12:40–13:13:** `pyrealsense2.cp311-win_amd64.pyd` (`ImportError: … An Application
+    Control policy has blocked this file`) and matplotlib's `_c_internal_utils`; meanwhile the
+    engine could not open a bag (500 `internal_error`) and could not draw an overlay.
+  - **Allowed again by 14:56** with Smart App Control still enforcing: the engine suite passed
+    (435 tests) and EventSource was verified. The decisions are reputation-based (cloud lookups);
+    an offline field laptop is not measured.
+  - **Not changed by the app:** turning Smart App Control off cannot be undone without resetting
+    Windows; signing the product is the lasting fix (D11).
+  - **Operator, 2026-10-12:** still undecided for the field laptop, and not a blocker for the
+    installer. No Smart App Control setting is changed on any machine; the field laptop is tested
+    once a signed installer exists, not before (D11).
+- **Finding fixed in Stage A1 (operator-approved engine edit, 2026-10-12): `arabic_stack_ok` said
+  true when matplotlib could not load** (`arabic.native_layout()` swallowed the ImportError; the
+  reshaper fallback reported ok, and finalize then failed with an untyped 500). The stack check now
+  imports matplotlib's compiled modules and reports the stack missing when one fails; finalize
+  answers the typed `arabic_stack_missing`.
+
+### Redux store (Stage 5, 2026-10-12)
+
+- **Slices:** `ui`, `engine`, `license` (earlier stages), and new: `bag`, `candidates`, `session`,
+  `report`, `history`. The RTK Query cache holds what is only read: health, versions, labels,
+  recent bags, a candidate set, History's list, stats, backup, rebuild and delete. The open session
+  is not in it: it lives in the `session` slice with its autosave. Nothing non-serialisable is in
+  state; the engine client, the job's EventSource, the timers and the AbortControllers live
+  outside Redux.
+- **Changes from the Stage 0 slice table:**
+  - no `labels` slice: the Stage 4 `getLabels` query already holds them, and a slice would copy the
+    cache;
+  - `ui` keeps the preferences only; toasts and dialogs come with the screens (Stage 6);
+  - `report` holds the overlay check and the approval now; export and the PDF come in Stage 7;
+  - `history` holds the query, and the list is RTK Query's.
+- **Flows** run in the listener middleware, one instance per store: autosave, the hover and preview
+  channels, finalize with the overlay check, and the candidate job (SSE, polling every 500 ms when
+  the stream fails, `job_busy` attaches to the running job, cancel, stop). Thunks: open, create
+  and reopen a session, report inputs, inspect a bag. The rules are in D10, "App side of C3.4".
+- **Session views are checked once** (`api/sessionView.ts`): openapi-fetch's response types widen
+  tuples (`points` arrives as `number[][]`), so the typed client's data is narrowed at one place,
+  with a runtime check, and a body without the fields the store uses is `invalid_response`.
+- **Quitting** now flushes autosave (`app.onBeforeQuit`), and answers whether unsaved work remains.
+- **Tested:** unit tests against a simulated engine that applies the engine's save and finalize
+  rules (`src/renderer/test/sessionEngine.ts`). A mutation run broke six rules one at a time (no
+  debounce, no If-Match, a rebase that drops the engine's side, a terminal error retried, two
+  probes in flight, any overlay hash accepted); each was caught by a test. Also run against the real
+  engine (`npm run test:store-real`: the stub-model engine on a copy of the dev session; reopen,
+  autosave, a concurrent writer's save rebased, report inputs, finalize, the overlay re-hashed).
+
+### Screens (Stage 6, 2026-10-12)
+
+- **Routes** (hash): `#/` open a recording · `#/candidates` the frame search ·
+  `#/candidates/:fp/:ph` the proposed frames · `#/sessions/:id` measuring · `…/finalize` finalize
+  and approve · `…/report` the report details and the sealed PDF · `#/history` · `#/about`; any
+  other route says the page does not exist. The header adds the work in progress: the frame search
+  and the open session (with its camel id).
+- **A session route** loads the session it names unless it is the open one
+  (`screens/session/SessionGate.tsx`). When another session would replace an open one with unsaved
+  work (opening, creating, reopening), its autosave is flushed first; work that still cannot be
+  saved is not dropped silently: the operator confirms (`useUnsavedGuard`).
+- **Measuring** (`screens/measure/`):
+  - the input rules are pure functions (`components/domain/measure/interaction.ts`): 2 clicks for a
+    distance and for the angle from horizontal, 3 for a 3-point angle (vertex first), 2 or more for
+    a curve, two line measurements for a 4-point angle; Shift marks a ground point for the 3D kinds
+    only; a click on the last point finishes a curve (a double-click does that, and so does a second
+    Enter), and is ignored by the fixed-count kinds (a double-click makes no zero-length segment);
+    pointer positions map to image pixels with `getScreenCTM().inverse()`, inside the frame, two
+    decimals;
+  - keyboard: with the canvas focused, arrows move the crosshair 1 px (Shift: 10 px), the first
+    Enter shows it in the middle of the view and the next places a point (Shift+Enter: a ground
+    point), Backspace removes the last point. Outside a text field, dialog or menu: 1–8 choose the
+    kind; Esc cancels the shape, then the kind, then the selection; Ctrl+Z / Ctrl+Y undo and redo
+    (Ctrl+Z while drawing removes the last point); Delete removes the selected measurement; + / − / 0
+    zoom (1–16×). The wheel zooms around the pointer; the middle button, or Space + drag, pans;
+  - a finished shape is named before it enters the draft;
+  - hover and the live preview go out at most once per animation frame, or after 50 ms when
+    Chromium draws no frame: it draws none for a window covered by others, and the Stage 6 run
+    found the hover readout empty that way;
+  - a measurement just added, or a point just dragged, is previewed once with its exact input, so
+    the list shows the engine's value until the autosave lands;
+  - editing: rename, note, colour (the engine's palette, or automatic: by position), reorder,
+    delete and undo, and dragging a point of the selected measurement (no kind chosen);
+  - the 4-point angle tool flushes autosave first (the engine previews it against the stored lines)
+    and lists the session's lines beside the canvas too;
+  - **the rows shown** (decision): a row is always the engine's — the stored row when the draft
+    holds the same input (saved); the stored row or the last preview for the same geometry (kind,
+    points, targets, lines) under the draft's name, note and colour (not saved yet / preview: a
+    rename keeps its value on screen); otherwise no value ("the engine computes the value when it
+    is saved") and its clicks drawn dashed. A 4-point angle waits while one of its lines is changed,
+    added or deleted and not saved (`store/session/selectors.ts`);
+  - leaving the screen, or the window losing focus, flushes autosave;
+  - text fields carry the engine's limits: measurement names 200 characters, their notes 2000, camel
+    id 64, operator 100, session notes 4000.
+- **Finalize and approve** (`screens/FinalizeScreen.tsx`): checks first (the camel id is required
+  and the button waits for it; a conflict sends the operator back; rejected rows are flagged), then
+  finalize and the overlay check. The **verified bytes** stay outside Redux
+  (`store/services/overlayBytes.ts`), kept for exactly one session, overlay version and SHA-256:
+  the approval shows those bytes through a `blob:` URL, not a second download, and the print step
+  (Stage 7) sends those bytes. A sealed session opened later is checked again.
+- **Report** (`screens/ReportScreen.tsx`): the report details form comes from the engine's report
+  model (labels, scoring forms, observation fields), so it waits for finalize; saving sends only
+  what changed, trimmed (`PATCH …/report-inputs`); on a sealed session that writes a new report model
+  version. An exported session's PDF is downloaded and shown only when its SHA-256 matches the
+  engine's, with the checks from its manifest. Printing comes in Stage 7 (the button is there,
+  disabled, saying so).
+- **History** (`screens/HistoryScreen.tsx`): search (300 ms after typing stops; the engine looks in
+  the camel id, operator, recording, session id and measurement names), status, index state, order,
+  pages of 50. Open: every session opens on the measuring screen, read-only when sealed, with links
+  to its approval and report. Reopen: load, then `POST …/reopen`. Delete: after a confirmation; the
+  open session is forgotten first; `session_busy` is tried again up to 4 times, 500 ms apart; a 404
+  counts as done. The maintenance panel: stats, the last reconcile, a backup to the default place,
+  a rebuild.
+- **No toasts** (the Stage 0 component list had them): every notice stays where it happened (the
+  backup's path in the maintenance panel, errors as ErrorPanels); the `ui` slice keeps preferences
+  only.
+- **Fixed on the way:**
+  - in Arabic, a number's sign left its number ("+155.7°" showed as "155.7°+"): `lib/bidi.tsx` now
+    isolates a sign that starts a number (at the start, after a space or after "(") with it; a
+    hyphen inside a word ("مرحلة-6") stays outside;
+  - the probe fallback above.
+- **Tested:** each screen against the simulated engine (`test/sessionEngine.ts`, now with report
+  inputs and the report model) or a scripted one (`connectScriptedEngine`): drawing every rule with
+  the keyboard, naming, autosave, a conflict resolved, read-only and reopen; finalize, the verified
+  image, approval, on to the report; History's search, delete with a busy retry, a failed delete,
+  reopen, backup; Home's inspect and frame search; picking a frame starts a session with the
+  candidate's reference; the report details patch.
+- **Run on the real engine** (2026-10-12; the dev app with `best.pt` on a fresh data root, bag 006,
+  driven over CDP like an operator): 24/24 checks. Frame search 38.7 s (12 frames), a session on the
+  side view; all eight kinds drawn with the mouse and one with the keyboard, a ground point with
+  Shift-click, a curve finished by a click on its last point and one by a double-click, a 4-point
+  angle between the two 3D lines; the hover readout; rename, colour, note, reorder, delete and
+  Ctrl+Z, a dragged point (1.890 m → 1.818 m); finalize, the overlay shown from bytes verified with
+  WebCrypto, approval; report details saved (report model v2); History search by the Arabic camel
+  id, reopen (outputs stale), delete (the folder in the trash, the engine answers 404); About; no
+  renderer console error. Screenshots in `runs\app_snaps\stage6\`, the checks in
+  `runs\stage6_walk_<UTC>\summary.json`. Printing and sealing the PDF are Stage 7.
+
+### Printing (Stage 7, 2026-10-12)
+
+- **Confirmed by the operator (2026-10-12):** the "rows shown" rule of Stage 6, restated to them in
+  full (what a row shows while a rename waits for the debounce or is being saved, editing again before
+  the save lands, leaving the screen, quitting, a failing save). One addition: the open session's
+  entry in the header carries its save state while the engine does not hold everything (unsaved,
+  saving, not saved, offline, conflict, finalizing: `UnsavedBadge`, `screens/OperatorLayout.tsx`),
+  so a save that keeps failing stays visible from Home, History and About as well.
+- **Wording (operator decision, 2026-10-12):** finalizing a session is «إقفال» (إقفال الجلسة،
+  جارٍ الإقفال…، أقفل الجلسة أولًا؛ the state مُقفلة); approving the engine's image keeps «اعتماد»
+  (اعتماد هذه الصورة، معتمدة، الصورة المعتمدة), the sense of the report's own «معتمدة من شركة نظير»
+  (certified). 21 app strings and the engine's `finalized` status label changed; the development
+  gallery's «أعراف الصورة المعتمدة» (a mistranslation of "Overlay conventions") became «اصطلاحات
+  صورة المحرك». In English, "sealed" now names the exported PDF only; the session state says
+  "finalized" (5 strings).
+- **Preload surface:** `print.exportPdf(request) → ExportResult` in the operator window. The hidden
+  print window has its own preload (`preload/print.ts`, `window.nazeerPrint`: `getJob()`,
+  `ready(preflight)`) on its own channels (`shared/printChannels.ts`): the two sandboxed preloads
+  share no runtime module, so neither needs a chunk (e2e smoke). Main answers the print channels only
+  for the window it opened for the job (its webContents id, the main frame, `/print/print.html`).
+- **Validation:** `validateExportRequest` (a session id; the overlay's version, SHA-256 and bytes,
+  1 B to 32 MiB; the report model's version and SHA-256; no other field) and `validatePreflight`
+  (at most 200 problems and 200 warnings, snake_case codes, details up to 64 KiB each).
+- **The print window:** hidden (794 × 1123, A4 at 96 px per inch), sandboxed, context-isolated, no
+  Node, its own in-memory partition (no `persist:`) with the same permission policy and, in built
+  code, the app:// handler; the print preload; background throttling off; DevTools off; destroyed
+  after the job, its storage cleared. The CSP is Stage 1's print policy, unchanged (no network,
+  images from `blob:`/`data:`, fonts from self, `data:`, `blob:`). One export at a time
+  (`export_busy`). The print pipeline itself is in D7 "Electron side".
+- **The face:** only the engine's pinned IBM Plex Sans Arabic Regular, read by main from the
+  engine's assets (`<repo>\engine\nazeer_engine\assets` in development,
+  `<resources>\engine\nazeer_engine\assets` packaged: `engine/command.ts` `engineAssetsDir`),
+  SHA-256 checked against `src/print/plex-cmap.json` (generated from that TTF by `npm run gen:cmap`;
+  a test fails when they disagree) and added with `FontFace` from its bytes as "Nazeer Print Plex":
+  no URL, so no `font-src` change.
+- **App version headers:** the engine client now sends `X-App-Version`, `X-Electron` and
+  `X-Chromium` on every call (finalize and the report-input change lacked them, so the session's
+  library-version stamp missed the app's versions), and main's upload sends them too; the manifest's
+  `printer` block records them.
+- **Errors:** the export's own codes are app codes (`appErrors.*`; `api/errors.ts`
+  `PRINT_ERROR_CODES`, 22 codes), labelled in Arabic and English like the others.
+- **The report screen:** Print (or "Print again"), the progress, the sealed result, the engine's
+  probe of a refused PDF with the file it kept, the print page's own findings, and warnings
+  (characters printed in a fallback face). Two fixes found by the Stage 7 run: the sealed PDF's checks
+  are read again for every sealed version (the manifest keeps its URL, and the read made at finalize
+  time, without probes, stayed on screen: "the check result could not be read"); and in `lib/bidi.tsx`
+  a Latin run now ends at a closing bracket it did not open (the report printed "تباين العمق (MSE)
+  0.0231" as "MSE) 0.0231(": the run had swallowed the ")"; now "MSE" and "0.0231" are isolated
+  separately). Both have tests; the bidi fix applies to the UI too.
+- **npm scripts:** `gen:cmap` (the face's coverage table) and `export` (the headless re-export, D7).

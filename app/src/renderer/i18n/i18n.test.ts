@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import engineCodes from "@shared/engine-codes.json";
-import type { AppErrorCode } from "@/api/errors";
+import { PRINT_ERROR_CODES, type AppErrorCode } from "@/api/errors";
 import ar from "./ar.json";
 import en from "./en.json";
 import { errorLabel, indexStateLabel, jobStageLabel, messagePair, translate } from "./t";
@@ -67,7 +67,18 @@ describe("i18n catalogues", () => {
   });
 
   it("labels the app's own error codes, which never shadow an engine code", () => {
-    const appCodes: AppErrorCode[] = ["network_error", "invalid_response", "overlay_hash_mismatch"];
+    const appCodes: AppErrorCode[] = [
+      "network_error",
+      "invalid_response",
+      "overlay_hash_mismatch",
+      "engine_spawn_failed",
+      "engine_start_timeout",
+      "engine_exited",
+      "engine_restart_limit",
+      "engine_protocol_error",
+      "bridge_missing",
+      ...PRINT_ERROR_CODES,
+    ];
     expect(Object.keys(en.appErrors).sort()).toEqual([...appCodes].sort());
     for (const code of appCodes) expect(errorLabel(code), code).not.toBeNull();
     const engine = new Set(engineCodes.errors);

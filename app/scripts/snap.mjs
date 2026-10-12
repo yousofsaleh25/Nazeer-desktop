@@ -91,6 +91,21 @@ try {
   const mounted = () =>
     page.evaluate(() => (document.getElementById("root")?.childElementCount ?? 0) > 0);
   await waitFor(mounted, "React to mount");
+  // operator routes render behind the engine gate: wait until main's supervisor reports the
+  // engine ready (or fatal) once; it keeps running across the page reloads below. While a
+  // licence is required and not active the engine never starts: the Activate screen is shown.
+  const engineStatus = await waitFor(
+    () =>
+      page.evaluate(async () => {
+        const license = await window.nazeer?.license.getStatus();
+        if (license && license.required && license.state !== "active") return "licence inactive";
+        const event = await window.nazeer?.engine.getStatus();
+        return event && ["ready", "fatal"].includes(event.status) ? event.status : null;
+      }),
+    "the engine (ready or fatal) or the Activate screen",
+    200_000,
+  );
+  console.log(`engine: ${engineStatus}`);
   for (const lang of args.langs) {
     for (const theme of args.themes) {
       for (const route of args.routes) {

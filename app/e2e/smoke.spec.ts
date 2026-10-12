@@ -1,18 +1,9 @@
-// Built-app smoke test (Stage 1): run `npm run build` first (`npm run e2e` does).
-import { mkdtempSync, readdirSync, readFileSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { join, resolve } from "node:path";
-import { _electron as electron, expect, test } from "@playwright/test";
-
-const appDir = resolve(__dirname, "..");
-
-function cleanEnv(extra: Record<string, string>): Record<string, string> {
-  const env: Record<string, string> = {};
-  for (const [key, value] of Object.entries(process.env)) {
-    if (value !== undefined && key !== "ELECTRON_RENDERER_URL") env[key] = value;
-  }
-  return { ...env, ...extra };
-}
+// Built-app smoke test: run `npm run build` first (`npm run e2e` does). The app spawns its own
+// engine (stub model) on a throwaway data root.
+import { readdirSync, readFileSync } from "node:fs";
+import { join } from "node:path";
+import { expect, test } from "@playwright/test";
+import { appDir, launchApp, waitForReady } from "./helpers/app";
 
 test("each sandboxed preload is one self-contained file (no shared chunk)", () => {
   const dir = join(appDir, "out", "preload");
@@ -24,17 +15,19 @@ test("each sandboxed preload is one self-contained file (no shared chunk)", () =
   }
 });
 
-test("the built app loads over app://nazeer with the bridge and a CSP header", async () => {
-  const userData = mkdtempSync(join(tmpdir(), "nazeer-e2e-"));
-  const app = await electron.launch({
-    args: [appDir],
-    cwd: appDir,
-    env: cleanEnv({ NAZEER_USER_DATA_DIR: userData }),
-  });
+test("the built app loads over app://nazeer with the bridge, a CSP header and its engine", async () => {
+  const launched = await launchApp();
   try {
-    const page = await app.firstWindow();
+    const { page } = launched;
     await page.waitForLoadState("domcontentloaded");
     expect(page.url()).toBe("app://nazeer/renderer/index.html");
+
+    const { connection } = await waitForReady(page);
+    expect(connection.baseUrl).toMatch(/^http:\/\/127\.0\.0\.1:\d+$/);
+    expect(connection.token).toMatch(/^[0-9a-f]{64}$/);
+    expect(connection.stubModel).toBe(true);
+    expect(connection.dataRoot.toLowerCase()).toBe(launched.dataRoot.toLowerCase());
+    // the operator screen appears once the engine is ready
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("نظير");
 
     const bridge = await page.evaluate(async () => ({
@@ -43,7 +36,8 @@ test("the built app loads over app://nazeer with the bridge and a CSP header", a
       secure: window.isSecureContext,
       subtle: typeof crypto.subtle?.digest,
     }));
-    expect(bridge).toEqual({ type: "object", connection: null, secure: true, subtle: "function" });
+    expect(bridge).toMatchObject({ type: "object", secure: true, subtle: "function" });
+    expect(bridge.connection).toEqual(connection);
 
     const csp = await page.evaluate(async () =>
       (await fetch(location.href)).headers.get("content-security-policy"),
@@ -58,8 +52,8 @@ test("the built app loads over app://nazeer with the bridge and a CSP header", a
       typeof (globalThis as Record<string, unknown>)["Buffer"],
     ]);
     expect(nodeGlobals).toEqual(["undefined", "undefined", "undefined"]);
+    expect(launched.consoleErrors).toEqual([]);
   } finally {
-    await app.close();
-    rmSync(userData, { recursive: true, force: true });
+    await launched.close();
   }
 });

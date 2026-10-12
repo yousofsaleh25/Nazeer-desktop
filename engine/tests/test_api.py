@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import io
 import json
+import sys
 import time
 from pathlib import Path
 
@@ -13,7 +14,7 @@ from PIL import Image
 from pypdf import PdfReader
 from starlette.testclient import TestClient
 
-from nazeer_engine import fsio
+from nazeer_engine import arabic, fsio
 from nazeer_engine.api import routes_sessions
 from nazeer_engine.api.app import create_app
 from nazeer_engine.api.state import build_state
@@ -87,8 +88,12 @@ def test_health_versions_labels(api):
     assert health.status_code == 200 and health.headers["cache-control"] == "no-store"
     body = health.json()
     assert body["status"] == "ok" and body["model"]["stub"] is True and body["job"] is None
-    assert body["data_root"] == str(state.data_root) and body["arabic_stack"]["ok"]
-    assert body["arabic_stack"]["font_pinned"] is True
+    assert body["data_root"] == str(state.data_root)
+    # the stack is ok exactly when matplotlib's compiled modules load (Windows Smart App Control
+    # can block them; it did on the dev laptop, 2026-10-12)
+    assert body["arabic_stack"]["ok"] == (arabic.matplotlib_problem() is None)
+    if body["arabic_stack"]["ok"]:
+        assert body["arabic_stack"]["font_pinned"] is True
     versions = client.get("/versions").json()
     assert versions["pyrealsense2"] != "NOT INSTALLED" and versions["engine_version"]
     labels = client.get("/meta/labels").json()
@@ -333,6 +338,25 @@ def test_session_measure_autosave_and_rebase(api):
     )
     assert semantic.status_code == 422 and semantic.json()["error"]["code"] == "invalid_measurement"
     assert loads_strict(client.get(f"/sessions/{sid}").content)["revision"] == 1  # no NaN anywhere
+
+
+def test_finalize_without_matplotlib_is_a_typed_missing_stack(api, monkeypatch):
+    client, state, _bag = api
+    sid = _session(client, state)["session_id"]
+    client.put(f"/sessions/{sid}/document", json={"revision": 1, "measurements": MEASUREMENTS})
+    arabic.reset_stack()
+    try:
+        for name in ("matplotlib", *arabic.MATPLOTLIB_BINARY_MODULES):
+            monkeypatch.setitem(sys.modules, name, None)
+        response = client.post(f"/sessions/{sid}/finalize", json={"revision": 1})
+    finally:
+        monkeypatch.undo()
+        arabic.reset_stack()
+    assert response.status_code == 500, response.text
+    error = response.json()["error"]
+    assert error["code"] == "arabic_stack_missing" and error["details"]["missing"] == "matplotlib"
+    view = client.get(f"/sessions/{sid}").json()
+    assert view["status"] == "open" and view["outputs"]["overlay"] is None  # nothing sealed
 
 
 def test_finalize_report_drift_reopen_history_delete(api):

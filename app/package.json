@@ -4,6 +4,7 @@
   "version": "0.1.0",
   "private": true,
   "description": "Nazeer Desktop: non-contact camel body measurement for Mzayen judging (operator app)",
+  "author": "Nazeer",
   "main": "./out/main/index.js",
   "engines": {
     "node": ">=24.15.0"
@@ -15,14 +16,22 @@
     "preview": "electron-vite preview",
     "typecheck": "tsc -p tsconfig.node.json && tsc -p tsconfig.web.json && tsc -p tsconfig.e2e.json",
     "lint": "eslint .",
-    "format": "prettier --write .",
-    "format:check": "prettier --check .",
+    "format": "prettier --write . ../tools --config .prettierrc.json",
+    "format:check": "prettier --check . ../tools --config .prettierrc.json",
     "test": "vitest run",
+    "test:store-real": "node scripts/store-real.mjs",
     "e2e": "electron-vite build && playwright test",
     "gen:api": "node scripts/gen-api.mjs",
     "gen:codes": "node scripts/gen-engine-codes.mjs",
+    "gen:cmap": "node scripts/gen-font-cmap.mjs",
     "fixtures": "node scripts/capture-fixtures.mjs",
-    "snap": "node scripts/snap.mjs"
+    "export": "electron-vite build && electron . --export",
+    "snap": "node scripts/snap.mjs",
+    "stage:engine": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/stage-engine.mjs",
+    "dist": "node scripts/dist-checks.mjs && cross-env NAZEER_DIST=1 electron-vite build && npm run stage:engine && electron-builder --win --x64",
+    "dist:dir": "node scripts/dist-checks.mjs && cross-env NAZEER_DIST=1 electron-vite build && npm run stage:engine && electron-builder --win --x64 --dir",
+    "smoke:packaged": "node scripts/packaged-smoke.mjs",
+    "check:sandbox": "node scripts/sandbox-check.mjs"
   },
   "dependencies": {
     "@fontsource/ibm-plex-sans-arabic": "5.3.0",

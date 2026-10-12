@@ -1,0 +1,134 @@
+/*
+ * The print page (ADR-D7): A4 with 12 mm margins, light colours only, backgrounds printed. One
+ * face, added from the engine's TTF bytes at run time (main.tsx: FontFace "Nazeer Print Plex"),
+ * weight 400 and normal style everywhere with synthesis off: a bold or italic would be
+ * synthesized, and Chromium writes synthesized glyphs as Type3 text in visual order, which the
+ * engine's text probe cannot search (D7 B38). No print-only rules: what is laid out is printed.
+ */
+@import "tailwindcss";
+
+@theme {
+  --color-print-ink: #1f1a17;
+  --color-print-brand: #8a4b12;
+  --color-print-accent: #a8642a;
+  --color-print-muted: #6b5b4b;
+  --color-print-faint: #a08a74;
+  --color-print-en: #5c5047;
+  --color-print-danger: #b3261e;
+  --color-print-danger-soft: #fff4f2;
+  --color-print-rule: #dcc7ab;
+  --color-print-rule-soft: #e6cfb3;
+  --color-print-line: #b9a58e;
+  --color-print-head: #f7eee2;
+  --color-print-head-ink: #4a3b2c;
+}
+
+@page {
+  size: A4;
+  margin: 12mm;
+}
+
+@layer base {
+  :root {
+    color-scheme: light;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  * {
+    font-weight: 400 !important;
+    font-style: normal !important;
+    font-synthesis: none !important;
+    text-transform: none !important;
+    letter-spacing: normal !important;
+    hyphens: manual;
+  }
+
+  html,
+  body {
+    background: #ffffff;
+  }
+
+  body {
+    margin: 0;
+    font-family: "Nazeer Print Plex";
+    font-size: 8.6pt;
+    line-height: 1.45;
+    color: var(--color-print-ink);
+  }
+}
+
+@layer components {
+  .ltr {
+    direction: ltr;
+    unicode-bidi: isolate;
+  }
+
+  .print-h2 {
+    margin: 12px 0 4px;
+    padding-bottom: 2px;
+    border-bottom: 1px solid var(--color-print-rule-soft);
+    font-size: 10.5pt;
+    color: var(--color-print-brand);
+    break-after: avoid;
+  }
+
+  .print-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .print-table th,
+  .print-table td {
+    border: 1px solid var(--color-print-rule);
+    padding: 3px 5px;
+    vertical-align: top;
+    text-align: start;
+  }
+
+  .print-table th {
+    background: var(--color-print-head);
+    color: var(--color-print-head-ink);
+  }
+
+  .print-table tr {
+    break-inside: avoid;
+  }
+
+  .print-kv th {
+    width: 28%;
+  }
+
+  .print-small {
+    font-size: 7.4pt;
+    color: var(--color-print-muted);
+  }
+
+  .print-chip {
+    display: inline-block;
+    margin: 1px 0;
+    padding: 0 4px;
+    border: 1px solid #c58b4a;
+    border-radius: 3px;
+    font-size: 7.2pt;
+    color: var(--color-print-brand);
+  }
+
+  .print-chip-warn {
+    border-color: var(--color-print-danger);
+    color: var(--color-print-danger);
+  }
+
+  .print-swatch {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 2px;
+    vertical-align: middle;
+  }
+
+  .print-blank {
+    height: 15px;
+    border-bottom: 1px solid var(--color-print-line);
+  }
+}

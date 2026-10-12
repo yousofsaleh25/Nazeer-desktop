@@ -1,7 +1,16 @@
 /** Hash routes (the app is served from app://nazeer/renderer/index.html). */
 import { lazy, Suspense, type ComponentType, type LazyExoticComponent } from "react";
 import { createHashRouter, type RouteObject } from "react-router";
+import { About } from "./screens/About";
+import { Candidates } from "./screens/Candidates";
+import { CandidateSet } from "./screens/CandidateSet";
+import { FinalizeScreen } from "./screens/FinalizeScreen";
+import { HistoryScreen } from "./screens/HistoryScreen";
 import { Home } from "./screens/Home";
+import { MeasureScreen } from "./screens/measure/MeasureScreen";
+import { NotFound } from "./screens/NotFound";
+import { OperatorLayout } from "./screens/OperatorLayout";
+import { ReportScreen } from "./screens/ReportScreen";
 
 function page(Component: LazyExoticComponent<ComponentType>) {
   return (
@@ -24,7 +33,24 @@ function devRoutes(): RouteObject[] {
   ];
 }
 
-export const routes: RouteObject[] = [{ path: "/", element: <Home /> }, ...devRoutes()];
+/** Operator screens sit in OperatorLayout (shell + engine gate); the gallery stands alone. */
+export const routes: RouteObject[] = [
+  {
+    element: <OperatorLayout />,
+    children: [
+      { path: "/", element: <Home /> },
+      { path: "/candidates", element: <Candidates /> },
+      { path: "/candidates/:fp/:ph", element: <CandidateSet /> },
+      { path: "/sessions/:id", element: <MeasureScreen /> },
+      { path: "/sessions/:id/finalize", element: <FinalizeScreen /> },
+      { path: "/sessions/:id/report", element: <ReportScreen /> },
+      { path: "/history", element: <HistoryScreen /> },
+      { path: "/about", element: <About /> },
+      { path: "*", element: <NotFound /> },
+    ],
+  },
+  ...devRoutes(),
+];
 
 export function createRouter() {
   return createHashRouter(routes);

@@ -18,11 +18,15 @@ export const sampleConnection: EngineConnection = {
   pid: 36760,
   dataRoot: fixtures.meta.data_root,
   engineVersion: "0.1.0",
+  modelFile: fixtures.health.model.file,
+  modelSha256: fixtures.health.model.sha256,
   stubModel: true,
+  warmupMs: null,
   arabicStackOk: true,
   appVersion: "0.1.0",
   electron: "44.4.5",
   chromium: "152.0.0.0",
+  logDir: String.raw`C:\Users\operator\AppData\Roaming\Nazeer Desktop\logs`,
 };
 
 export const sampleBag: BagInfo = {

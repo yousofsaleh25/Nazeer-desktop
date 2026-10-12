@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import sys
 from pathlib import Path
 
 import numpy as np
@@ -145,6 +146,68 @@ def test_arabic_text_is_passed_logically_to_libraqm_and_missing_font_is_typed(mo
         monkeypatch.undo()
         arabic.reset_stack()
     assert arabic.stack_status()["ok"]
+
+
+def _block_matplotlib(monkeypatch) -> None:
+    # the parent and every compiled module: `from matplotlib import ft2font` returns a cached
+    # attribute and import_module a cached submodule unless each name is blocked
+    for name in ("matplotlib", *arabic.MATPLOTLIB_BINARY_MODULES):
+        monkeypatch.setitem(sys.modules, name, None)
+
+
+def test_a_matplotlib_that_cannot_load_is_a_missing_stack(monkeypatch, session):
+    # Smart App Control blocked matplotlib._c_internal_utils on the dev laptop (2026-10-12) and
+    # the stack still said ok (reshaper fallback): it must say what is missing instead
+    doc, bgr, mask = session
+    arabic.reset_stack()
+    try:
+        _block_matplotlib(monkeypatch)
+        assert arabic.matplotlib_problem() is not None
+        status = arabic.stack_status()
+        assert status["ok"] is False and "matplotlib" in status["reason"]
+        assert status["native_layout"] is None and status["font_sha256"] is None
+        with pytest.raises(ArabicStackMissing) as raised:
+            arabic.ensure_arabic_stack()
+        assert raised.value.code == "arabic_stack_missing"
+        assert raised.value.details["missing"] == "matplotlib"
+        with pytest.raises(ArabicStackMissing):  # typed, never an ImportError
+            render_overlay_png(bgr, doc, mask=mask, rendered_at="x")
+    finally:
+        monkeypatch.undo()
+        arabic.reset_stack()
+    if arabic.matplotlib_problem() is None:  # restored (unprovable where the OS blocks it)
+        assert arabic.stack_status()["ok"]
+
+
+def test_one_blocked_compiled_module_is_enough(monkeypatch):
+    arabic.reset_stack()
+    try:
+        monkeypatch.setitem(sys.modules, "matplotlib.backends._backend_agg", None)
+        problem = arabic.matplotlib_problem()
+        assert problem is not None and problem.startswith("matplotlib.backends._backend_agg: ")
+        assert arabic.stack_status()["ok"] is False
+    finally:
+        monkeypatch.undo()
+        arabic.reset_stack()
+
+
+def test_a_stack_checked_ok_earlier_still_gives_a_typed_error(monkeypatch, session):
+    # the stack is cached once it was ok; a matplotlib module failing later in the process must
+    # still reach finalize as arabic_stack_missing
+    doc, bgr, mask = session
+    arabic.reset_stack()
+    problem = arabic.matplotlib_problem()
+    if problem is not None:
+        pytest.skip(f"matplotlib cannot be imported here: {problem}")
+    arabic.ensure_arabic_stack()
+    try:
+        monkeypatch.setitem(sys.modules, "matplotlib.figure", None)
+        with pytest.raises(ArabicStackMissing) as raised:
+            render_overlay_png(bgr, doc, mask=mask, rendered_at="x")
+        assert raised.value.details["missing"] == "matplotlib"
+    finally:
+        monkeypatch.undo()
+        arabic.reset_stack()
 
 
 def test_overlay_without_measurements_or_mask(tmp_path):

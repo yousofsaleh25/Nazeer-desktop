@@ -1,5 +1,6 @@
 out/
 dist*/
+.cache/
 release/
 coverage/
 test-results/
@@ -8,3 +9,4 @@ fixtures/
 package-lock.json
 src/shared/api.d.ts
 src/shared/engine-codes.json
+src/print/plex-cmap.json

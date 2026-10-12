@@ -1,15 +1,25 @@
 /**
- * The editing canvas (render only; Stage 6 adds the pointer and keyboard input). One SVG in image
- * coordinates holds the frame (`<image>`), the mask tint, the depth-valid box, the ground line,
- * every computed row and the in-progress clicks, so zoom and pan are only the `viewport` (the
- * viewBox) and a pointer maps to image pixels with `getScreenCTM().inverse()`. Strokes and
- * markers keep their size on screen at any zoom; labels are HTML on top (proper bidi isolation),
- * positioned in percent of the viewport and moved apart like the overlay's (placeLabels). The
- * canvas is image space: always left to right.
+ * The editing canvas (render only; the measuring screen adds the pointer and keyboard input). One
+ * SVG in image coordinates holds the frame (`<image>`), the mask tint, the depth-valid box, the
+ * ground line, every computed row, the measurements not computed yet (`ghosts`) and the
+ * in-progress clicks, so zoom and pan are only the `viewport` (the viewBox) and a pointer maps to
+ * image pixels with `getScreenCTM().inverse()`. Strokes and markers keep their size on screen at
+ * any zoom; labels are HTML on top (proper bidi isolation), positioned in percent of the viewport
+ * and moved apart like the overlay's (placeLabels). The canvas is image space: always left to
+ * right.
  *
  * It is never an approval surface: the operator approves the engine's overlay PNG (D7).
  */
-import { useCallback, useId, useLayoutEffect, useMemo, useRef, useState, type Ref } from "react";
+import {
+  useCallback,
+  useId,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+  type Ref,
+} from "react";
 import type { InputKind, MeasurementRow, Target } from "@/api/types";
 import { Bi } from "@/components/ui/Bi";
 import { CANVAS_STYLE, OVERLAY_STYLE } from "@/design";
@@ -17,7 +27,14 @@ import { messagePair } from "@/i18n/t";
 import { cn } from "@/lib/cn";
 import type { Point } from "@/lib/read";
 import type { CanvasLayers } from "../MeasureToolbar";
-import { drawRow, placeLabels, type DrawnPoint, type DrawnRow, type GroundLine } from "./geometry";
+import {
+  drawRow,
+  placeLabels,
+  shapePoints,
+  type DrawnPoint,
+  type DrawnRow,
+  type GroundLine,
+} from "./geometry";
 
 /** The visible part of the frame in image pixels (same aspect ratio as the frame). */
 export interface Viewport {
@@ -55,9 +72,15 @@ export interface MeasureCanvasProps {
   /** accessible name of the canvas, in the UI language */
   label: string;
   selectedId?: number | null;
+  /** rows drawn with the selection halo too (the lines picked for a 4-point angle) */
+  highlightIds?: ReadonlySet<number>;
   hiddenIds?: ReadonlySet<number>;
+  /** measurements in the draft the engine has not computed yet: their clicks, dashed, no value */
+  ghosts?: readonly DraftShape[];
   draft?: DraftShape | null;
   crosshair?: Crosshair | null;
+  /** shown next to the crosshair (the live preview value while drawing) */
+  cursorNote?: ReactNode;
   viewport?: Viewport;
   layers?: CanvasLayers;
   svgRef?: Ref<SVGSVGElement>;
@@ -195,25 +218,15 @@ function Stroke({
   );
 }
 
-function pointsOf(drawn: DrawnRow): DrawnPoint[] {
+/** The stroke through a shape's points (an angle: one ray, the vertex, the other ray). */
+function strokePoints(drawn: DrawnRow): DrawnPoint[] {
   const shape = drawn.shape;
-  switch (shape.type) {
-    case "segment":
-      return [shape.a, shape.b];
-    case "polyline":
-      return shape.points;
-    case "angle":
-      return [shape.a, shape.vertex, shape.b];
-    case "horizontal":
-      return [shape.a, shape.b];
-    default:
-      return [];
-  }
+  return shape.type === "angle" ? [shape.a, shape.vertex, shape.b] : shapePoints(shape);
 }
 
 function RowDrawing({ drawn, selected, k }: { drawn: DrawnRow; selected: boolean; k: number }) {
   const { shape, color, rejected } = drawn;
-  const points = pointsOf(drawn);
+  const points = strokePoints(drawn);
   const main = points.length > 1 ? pathOf(points.map((p) => p.at)) : "";
   const arc =
     shape.type === "angle" ? shape.arc.path : shape.type === "horizontal" ? shape.arc?.path : null;
@@ -253,15 +266,17 @@ function DraftDrawing({
   draft,
   crosshair,
   k,
+  ghost = false,
 }: {
   draft: DraftShape;
   crosshair: Crosshair | null;
   k: number;
+  ghost?: boolean;
 }) {
   const color = draft.color ?? CANVAS_STYLE.draft;
   const points = crosshair ? [...draft.points, crosshair.at] : draft.points;
   return (
-    <g data-draft={draft.kind}>
+    <g {...(ghost ? { "data-ghost": draft.kind } : { "data-draft": draft.kind })}>
       {points.length > 1 ? (
         <>
           <Stroke d={pathOf(points)} color={CANVAS_STYLE.draftShadow} width={LINE_PX + 2} />
@@ -361,14 +376,39 @@ function RowLabel({ row, drawn, view }: { row: MeasurementRow; drawn: DrawnRow; 
   );
 }
 
+/** The live note next to the crosshair, kept inside the canvas. */
+function CursorNote({ at, view, children }: { at: Point; view: Viewport; children: ReactNode }) {
+  const x = ((at[0] - view.x) / view.width) * 100;
+  const y = ((at[1] - view.y) / view.height) * 100;
+  if (x < 0 || x > 100 || y < 0 || y > 100) return null;
+  // beside the crosshair, on the side with more room
+  const position = {
+    left: `${x}%`,
+    top: `${y}%`,
+    translate: `${x > 70 ? "calc(-100% - 14px)" : "14px"} ${y < 15 ? "14px" : "calc(-100% - 14px)"}`,
+  };
+  return (
+    <div
+      data-cursor-note=""
+      className="pointer-events-none absolute rounded-sm bg-black/75 px-2 py-0.5 text-sm font-semibold whitespace-nowrap text-white shadow-sm"
+      style={position}
+    >
+      {children}
+    </div>
+  );
+}
+
 export function MeasureCanvas({
   frame,
   rows,
   label,
   selectedId = null,
+  highlightIds,
   hiddenIds,
+  ghosts = [],
   draft = null,
   crosshair = null,
+  cursorNote,
   viewport,
   layers = { mask: false, depthBox: false, labels: true },
   svgRef,
@@ -511,9 +551,21 @@ export function MeasureCanvas({
         ) : null}
         <g data-layer="rows">
           {drawn.map(({ row, drawn: d }) => (
-            <RowDrawing key={row.id} drawn={d} selected={row.id === selectedId} k={k} />
+            <RowDrawing
+              key={row.id}
+              drawn={d}
+              selected={row.id === selectedId || (highlightIds?.has(row.id) ?? false)}
+              k={k}
+            />
           ))}
         </g>
+        {ghosts.length > 0 ? (
+          <g data-layer="ghosts">
+            {ghosts.map((ghost, i) => (
+              <DraftDrawing key={i} draft={ghost} crosshair={null} k={k} ghost />
+            ))}
+          </g>
+        ) : null}
         {draft ? <DraftDrawing draft={draft} crosshair={crosshair} k={k} /> : null}
         {crosshair ? <CrosshairDrawing crosshair={crosshair} view={view} k={k} /> : null}
       </svg>
@@ -523,6 +575,11 @@ export function MeasureCanvas({
             <RowLabel key={row.id} row={row} drawn={d} view={view} />
           ))}
         </div>
+      ) : null}
+      {crosshair && cursorNote ? (
+        <CursorNote at={crosshair.at} view={view}>
+          {cursorNote}
+        </CursorNote>
       ) : null}
     </div>
   );

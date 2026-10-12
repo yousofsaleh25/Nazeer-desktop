@@ -17,11 +17,34 @@ describe("Latin runs in Arabic text", () => {
     expect(runs("مُقرَّب إلى الجمل (KNN): حلقة مفرغة")).toEqual(["KNN"]);
   });
 
+  it("ends a run at a closer it did not open, and goes on after it (the report's frame block)", () => {
+    // "(MSE) 0.0231" printed as "MSE) 0.0231(" while ")" was inside the run
+    expect(runs("تباين العمق (MSE) 0.0231 م²")).toEqual(["MSE", "0.0231"]);
+    expect(runs("x 29–1273، y 107–719 بكسل")).toEqual(["x 29–1273", "y 107–719"]);
+    expect(runs("ولا يُطبَّق (نموذج ثقب الإبرة) fx 642.9")).toEqual(["fx 642.9"]);
+    expect(runs("2.329 م: وسيط 182,862 قيمة (96.4% من 189,733 بكسل)، MAD 0.069 م")).toEqual([
+      "2.329",
+      "182,862",
+      "96.4%",
+      "189,733",
+      "MAD 0.069",
+    ]);
+  });
+
   it("isolates numbers, acronyms and key names", () => {
     expect(runs("الجيران بعيدون (> 10 سم)")).toEqual(["10"]);
     expect(runs("جميع الأزواج تحقق مستوى WCAG AA في المظهرين.")).toEqual(["WCAG AA"]);
     expect(runs("اضغط Tab: كل عنصر")).toEqual(["Tab"]);
     expect(runs("مباشر 2.153 م")).toEqual(["2.153"]);
+  });
+
+  it("keeps a number's sign with it (angles, uncertainties), not a hyphen inside a word", () => {
+    expect(runs("+155.7°")).toEqual(["+155.7°"]);
+    expect(runs("-12.5°")).toEqual(["-12.5°"]);
+    expect(runs("± 5.9 سم")).toEqual(["± 5.9"]);
+    expect(runs("الزاوية (+9.9°)")).toEqual(["+9.9°"]);
+    expect(runs("جمل-مرحلة-6")).toEqual(["6"]);
+    expect(runs("P1–P2")).toEqual(["P1–P2"]);
   });
 
   it("leaves pure Arabic text untouched", () => {

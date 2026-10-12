@@ -24,6 +24,8 @@ export default defineConfig({
             // renderer/print checks that read files from disk (*.node.test.ts)
             "src/renderer/**/*.node.test.ts",
             "src/print/**/*.node.test.ts",
+            // build and packaging scripts (D11)
+            "scripts/**/*.test.mjs",
           ],
         },
       },

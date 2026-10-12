@@ -4,7 +4,7 @@ import { TooltipProvider } from "@radix-ui/react-tooltip";
 import { render, type RenderOptions } from "@testing-library/react";
 import type { ReactElement, ReactNode } from "react";
 import { Provider } from "react-redux";
-import { MemoryRouter } from "react-router";
+import { createMemoryRouter, MemoryRouter, RouterProvider, type RouteObject } from "react-router";
 import labelsFixture from "../../../fixtures/labels.json";
 import { parseLabels, type EngineLabels } from "@/api/labels";
 import { LabelsProvider } from "@/components/domain/labels";
@@ -61,4 +61,37 @@ export function renderWithStore(
 /** Preloaded `ui` state for a language (and optionally both languages). */
 export function uiState(lang: "ar" | "en", bilingual = false): Partial<RootState> {
   return { ui: { lang, bilingual, theme: "light" } };
+}
+
+/** Where a navigation landed when no test route matched. */
+function Elsewhere() {
+  return <p data-testid="elsewhere" />;
+}
+
+/**
+ * Screens with their routes (useParams, navigate): a memory router at `path`; any route not
+ * listed lands on a stub, so `router.state.location` tells where the screen went.
+ */
+export function renderRoutes(
+  routes: RouteObject[],
+  path: string,
+  { preloadedState, labels = fixtureLabels, ...options }: RenderWithStoreOptions = {},
+) {
+  const store = makeStore(preloadedState);
+  const router = createMemoryRouter([...routes, { path: "*", element: <Elsewhere /> }], {
+    initialEntries: [path],
+  });
+  const view = render(
+    <Provider store={store}>
+      <LanguageBridge>
+        <LabelsProvider labels={labels}>
+          <TooltipProvider delayDuration={0}>
+            <RouterProvider router={router} />
+          </TooltipProvider>
+        </LabelsProvider>
+      </LanguageBridge>
+    </Provider>,
+    options,
+  );
+  return { store, router, ...view };
 }

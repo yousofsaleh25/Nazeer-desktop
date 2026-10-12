@@ -195,6 +195,11 @@ export function BagPicker({
             </>
           }
         >
+          {scan?.state === "idle" && scanResult === null ? (
+            <p className="text-sm text-ink-secondary">
+              <Bi {...messagePair("bag.scanHint")} />
+            </p>
+          ) : null}
           {scan?.state === "scanning" && scanResult === null ? (
             <p className="flex items-center gap-2 text-sm text-ink-secondary">
               <Spinner size="sm" />

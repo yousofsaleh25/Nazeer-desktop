@@ -16,6 +16,7 @@ import { BagPicker } from "@/components/domain/BagPicker";
 import { BagSummaryCard } from "@/components/domain/BagSummaryCard";
 import { CamelIdDialog } from "@/components/domain/CamelIdDialog";
 import { CandidateGrid } from "@/components/domain/CandidateGrid";
+import { EngineFatalPanel, EngineWaiting, engineBanners } from "@/components/domain/EngineGate";
 import { EngineStatusPill } from "@/components/domain/EngineStatusPill";
 import { ErrorPanel } from "@/components/domain/ErrorPanel";
 import { HistoryAdminPanel } from "@/components/domain/HistoryAdminPanel";
@@ -24,7 +25,7 @@ import { HoverReadout } from "@/components/domain/HoverReadout";
 import { JobProgress } from "@/components/domain/JobProgress";
 import { depthBoxOf, groundLineOf } from "@/components/domain/measure/geometry";
 import { MeasureCanvas, type Viewport } from "@/components/domain/measure/MeasureCanvas";
-import { MeasurementList } from "@/components/domain/MeasurementList";
+import { itemsOfRows, MeasurementList } from "@/components/domain/MeasurementList";
 import { MeasureToolbar, type CanvasLayers } from "@/components/domain/MeasureToolbar";
 import { NamePrompt } from "@/components/domain/NamePrompt";
 import { OverlayApproval, type OverlayVerification } from "@/components/domain/OverlayApproval";
@@ -173,6 +174,47 @@ export default function DomainGallery() {
           {SAVE_STATES.map((state) => (
             <UnsavedBadge key={state} state={state} revision={view.revision} />
           ))}
+        </div>
+      </Section>
+
+      <Section title="design.d.engine">
+        <div className="grid gap-3 lg:grid-cols-2">
+          <div className="flex rounded-lg border border-border">
+            <EngineWaiting status="starting" />
+          </div>
+          <div className="flex rounded-lg border border-border">
+            <EngineWaiting status="restarting" restarts={2} />
+          </div>
+        </div>
+        <EngineFatalPanel
+          fatal={{
+            code: "engine_already_running",
+            message: "another engine is serving this data root",
+            details: { pid: 36760, port: 51234, holder: "ours" },
+            exitCode: 6,
+          }}
+          onRetry={() => {}}
+          onOpenLogs={() => {}}
+          onQuit={() => {}}
+        />
+        <EngineFatalPanel
+          fatal={{
+            code: "model_hash_mismatch",
+            message: "model sha256 does not match the pinned hash",
+            details: { model: "best.pt" },
+            exitCode: 3,
+          }}
+          onRetry={() => {}}
+          onOpenLogs={() => {}}
+          onQuit={() => {}}
+        />
+        <div className="flex flex-col gap-2">
+          {engineBanners({
+            connection: { ...sampleConnection, arabicStackOk: false },
+            unresponsive: true,
+            labelsFailed: true,
+            onRetryLabels: () => {},
+          })}
         </div>
       </Section>
 
@@ -332,13 +374,20 @@ export default function DomainGallery() {
               />
             </Card>
             <MeasurementList
-              rows={rows}
+              items={[
+                ...itemsOfRows(rows, { 10: "preview" }),
+                {
+                  input: { ...rows[0]!.input, id: 99, name: t("design.demo.notComputed") },
+                  row: null,
+                  status: "pending",
+                },
+              ]}
               summary={view.summary}
               selectedId={selected}
-              statusById={{ 10: "preview", 15: "pending" }}
               onSelect={setSelected}
               onRename={() => {}}
               onEditNote={() => {}}
+              onRecolor={() => {}}
               onMove={() => {}}
               onDelete={() => {}}
             />

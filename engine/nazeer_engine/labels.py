@@ -183,7 +183,7 @@ CANDIDATE_FLAG_LABELS: dict[str, Label] = {
 
 STATUS_LABELS: dict[str, Label] = {
     "open": {"ar": "مفتوحة", "en": "open"},
-    "finalized": {"ar": "مُعتمدة", "en": "finalized"},
+    "finalized": {"ar": "مُقفلة", "en": "finalized"},
     "exported": {"ar": "مُصدَّرة", "en": "exported"},
 }
 BUCKET_LABELS: dict[str, Label] = {

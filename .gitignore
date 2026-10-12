@@ -5,6 +5,11 @@ app/dist*/
 app/out/
 app/release/
 app/.vite/
+app/.cache/
+# licence signing keys never enter a repository (D11): the generator refuses repo folders,
+# these patterns are defence in depth
+.nazeer-license/
+signing-key*.pem
 # Playwright / Vitest artefacts
 app/test-results/
 app/playwright-report/

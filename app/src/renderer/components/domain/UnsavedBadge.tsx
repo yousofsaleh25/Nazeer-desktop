@@ -29,13 +29,25 @@ export interface UnsavedBadgeProps {
   state: SaveState;
   /** the stored revision (shown when clean) */
   revision?: number | null;
+  /** the smaller chip (the open session's entry in the header) */
+  compact?: boolean;
 }
 
-export function UnsavedBadge({ state, revision = null }: UnsavedBadgeProps) {
+/** States that mean the engine does not hold everything the operator did yet. */
+export const UNSAVED_STATES: ReadonlySet<SaveState> = new Set([
+  "dirty",
+  "saving",
+  "error",
+  "offline",
+  "conflict",
+  "finalizing",
+]);
+
+export function UnsavedBadge({ state, revision = null, compact = false }: UnsavedBadgeProps) {
   const { tone, icon: Icon } = LOOK[state];
   return (
     <span role="status" aria-live="polite" data-state={state} className="inline-flex">
-      <Chip tone={tone} size="md">
+      <Chip tone={tone} size={compact ? "sm" : "md"}>
         <span className="inline-flex items-center gap-1.5">
           {Icon ? <Icon aria-hidden="true" className="size-3.5" /> : <Spinner size="sm" />}
           <Bi {...messagePair(`save.${state}`)} />
