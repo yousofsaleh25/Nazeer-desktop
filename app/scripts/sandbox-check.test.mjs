@@ -1,5 +1,10 @@
+import { readFileSync } from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { ITEMS, asList, summaryMarkdown, verdicts, wsbConfig } from "./sandbox-check.mjs";
+
+const SCRIPTS_DIR = path.dirname(fileURLToPath(import.meta.url));
 
 const base = {
   io: String.raw`E:\repo\runs\sandbox_check_x\full\io`,
@@ -41,6 +46,12 @@ describe("the Windows Sandbox configuration", () => {
   it("escapes what XML would misread in a path", () => {
     const config = wsbConfig({ ...base, mode: "full", io: String.raw`E:\a&b<c>\io` });
     expect(config).toContain(String.raw`E:\a&amp;b&lt;c&gt;\io`);
+  });
+
+  it("runs a script that is ASCII only (Windows PowerShell 5.1 reads one without a BOM as ANSI)", () => {
+    const bytes = readFileSync(path.join(SCRIPTS_DIR, "sandbox", "sandbox-run.ps1"));
+    expect(bytes.length).toBeGreaterThan(0);
+    expect(bytes.findIndex((byte) => byte > 0x7f)).toBe(-1);
   });
 });
 

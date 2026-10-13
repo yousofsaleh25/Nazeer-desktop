@@ -1,6 +1,7 @@
 # D6 — Model licence: Ultralytics AGPL-3.0
 
-Status: open (named in `MODEL_CARD.md` §1 and §9).
+Status: open (named in `MODEL_CARD.md` §1 and §9) · one evaluation delivery to a client under the
+operator's responsibility (2026-10-14, below).
 
 ## Context
 
@@ -23,9 +24,20 @@ the likely product posture but has not been stated.
 
 None yet.
 
+**Operator, 2026-10-14 — one delivery, not the licence decision:** the operator ships release 1.0.0
+(the Windows installer, which carries Ultralytics and `best.pt` inside its engine) with one 7-day
+trial key to one client as an evaluation, under the operator's own responsibility. Before building,
+the operator was shown this record's rule below and chose among: an Enterprise licence in hand,
+compliance with AGPL-3.0 (licence texts and a written source offer in the installer), recording
+the decision as the operator's, or holding the delivery; the operator chose to record it as theirs.
+The options above, the counsel pass and the training-photo provenance stay open. The release is
+recorded in D11 ("Release 1.0.0").
+
 ## Consequences
 
-- Until decided, nothing in nazeer-desktop may be distributed outside the team.
+- Until decided, nothing in nazeer-desktop may be distributed outside the team — except the
+  evaluation delivery of 2026-10-14 above, which the operator took on; any further delivery needs
+  this record decided, or the operator's decision recorded here again.
 - One counsel pass should cover Ultralytics (AGPL), python-bidi (LGPL — acceptable as an
   unmodified, replaceable module), IBM Plex (OFL-1.1 — bundling allowed; do not sell the
   font alone) and the training-photo provenance.

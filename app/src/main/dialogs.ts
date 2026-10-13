@@ -23,7 +23,7 @@ export const MAIN_STRINGS = {
   rendererLostMessage:
     "توقفت نافذة التطبيق ولم تُستعد.\nThe app window stopped and was not restored.",
   rendererLostDetail:
-    "كل ما حُفظ باقٍ لدى المحرك، وتضيع التعديلات التي لم تُحفظ بعد. التفاصيل في مجلد السجلات:\n" +
+    "كل ما حُفظ باقٍ لدى المحرك، وتضيع التعديلات التي لم تُحفظ بعد. التفاصيل في مجلد سجلات التشغيل:\n" +
     "Everything saved is kept by the engine; edits not saved yet are lost. The details are in the log folder:",
   tryAgain: "إعادة المحاولة — Try again",
   quit: "إنهاء — Quit",

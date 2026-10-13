@@ -2,7 +2,9 @@
 
 Status: accepted 2026-10-12 (operator: scope, done before Stage 5, re-check at every start,
 embedded CPython, the install check partly on a machine without Smart App Control) ·
-licence keys implemented in Stage A, the installer in Stage B (results below).
+licence keys implemented in Stage A, the installer in Stage B (results below) · release 1.0.0
+built, checked in Windows Sandbox and delivered with a 7-day trial key on 2026-10-14 ("Release
+1.0.0", at the end).
 
 ## Context
 
@@ -438,7 +440,8 @@ the install-mode page's controls; store the language chosen in the language dial
 uses it; one verb for install throughout the installer and the uninstaller (the installer's own
 strings replace NSIS's «تنصيب» and its «إختر» / «إضغط»; the operator picks the word at that rebuild).
 The installer's wording is handled there, not in the app's batched wording review, which keeps its
-planned slot. The `AllowVGPU = 0` policy stays: Sandbox runs on this laptop need it.
+planned slot. The `AllowVGPU = 0` policy stays: Sandbox runs on this laptop need it. — Done in
+release 1.0.0 with «تثبيت» (operator, 2026-10-14) and verified in the Sandbox: "Release 1.0.0" below.
 
 What the first attempts showed (the tool and this laptop, not the product):
 
@@ -461,3 +464,68 @@ What the first attempts showed (the tool and this laptop, not the product):
 - Closing the Sandbox's window and server by force can leave its virtual machine running for minutes;
   `wsb stop --id <id>` stops it cleanly, and `wsb exec --id <id> -r System` runs a command inside (the
   tool's `C:\nz\io` folder carries the output out).
+
+## Release 1.0.0 (2026-10-14)
+
+The first client release: one client evaluates it for 7 days, a delivery the operator took on while
+the model licence is open (D6). Besides Stages 8 and 9, it differs from the Sandbox-checked build of
+2026-10-13 in:
+
+- **Version 1.0.0** (`app/package.json` and its lock): `release\Nazeer Desktop Setup 1.0.0.exe`;
+  the version is stamped into sessions, report models and PDFs.
+- **The installer rebuild the operator reserved** (2026-10-13), with «تثبيت» as its one word for
+  install (2026-10-14), all in `build/installer.nsh`:
+  - *One word.* 33 of NSIS's own Arabic strings are replaced on every page the installer and the
+    uninstaller show (12 built-in strings from `Arabic.nlf`; 21 MUI2 page strings, each under its
+    page's guard so no language is left without one); uninstall is «إلغاء التثبيت»; «تنصيب»,
+    «إختر» and «إضغط» are gone (the list: `docs/arabic-wording-backlog.md` "Release 1.0.0").
+  - *The install-mode page mirrored.* electron-builder builds it at run time with nsDialogs, which
+    mirrors controls only after `nsDialogs::SetRTL`; MUI2's own pages call it, that page does not.
+    Its MUI show callback (`MUI_PAGE_CUSTOMFUNCTION_SHOW`, set from the `customWelcomePage` and
+    `customUnWelcomePage` hooks, which electron-builder expands just before it) now mirrors the
+    controls the way makensis mirrors NSIS's own dialogs, only when `$(^RTL)` is 1: radio buttons
+    `BS_LEFTTEXT | BS_RIGHT`, left-aligned labels `SS_RIGHT`, every control `WS_EX_RTLREADING |
+    WS_EX_LEFTSCROLLBAR`, each x flipped inside the page.
+  - *The uninstaller in the install's language.* `customInstall` stores `$LANGUAGE` as
+    `InstallerLanguage` in the install's own key (`Software\<app GUID>` under HKCU or HKLM, which the
+    uninstall deletes); `customUnInit` restores 1025 or 1033 from there before NSIS applies the
+    language. A silent install stores the language Windows gives it.
+  - Checked before the build: a stand-in script with electron-builder's page order, compiled with
+    its makensis flags (`-WX -INPUTCHARSET UTF8`), without a warning; running that executable here
+    was refused by Smart App Control ("An Application Control policy has blocked this file"), so the
+    behaviour was checked in the Sandbox; `scripts/installer-nsh.test.mjs` (the words, Arabic-only
+    overrides under their page guards, the stored language, mirroring only right to left).
+- **The Sandbox tool now checks what the two findings showed only in screenshots:** item 1 "the
+  install-mode page's own controls laid out right to left" (each control's styles and placement);
+  items 1 and 8 "one word for install / uninstall on every page" (the page texts searched for the
+  three words, built from code points); item 8 "the install stored the language chosen in its
+  language dialog" and "the uninstaller's pages in the language chosen at install (Arabic), right to
+  left". The "only for me" radio button is found by the start of its label (electron-builder adds
+  the user name); a test keeps `sandbox-run.ps1` ASCII.
+- **Wording** (operator, 2026-10-14): the app's decisions 1 (b) and 2 (b), and the engine's printed
+  labels (D7 "Printed wording").
+
+| Check (2026-10-14) | Result |
+|---|---|
+| engine | pytest 438 passed, 6 opt-in skipped; ruff check and format clean; `openapi.json` unchanged; `tools/real_run.py` on bag 006 34/34 |
+| app | typecheck, lint, format clean; `npm test` 705 passed, 1 skipped; `npm run e2e` 16 passed, 11 opt-in skipped; `NAZEER_REAL=1` flow-real 11/11 (sealed, PASS) |
+| `npm run dist` | 12 min; the engine staged (18,862 files, 1,254.1 MB; imports, `--check` and serve smoke passed); `release\Nazeer Desktop Setup 1.0.0.exe`, 333,586,219 bytes, SHA-256 `df699e1a97337a89994dc6c138b860061be870641f0fca1094db0b7be3dfdcb2`, not signed; the asar's `package.json` says 1.0.0 |
+| `npm run smoke:packaged -- --move-profile-aside` | 24/24 on this laptop: silent per-user install 162 s, 1,645 MB; real-model engine ready 11.4 s after activation; Smart App Control let it run |
+| `npm run check:sandbox` | every D11 item passed, `runs\sandbox_check_20261013T225006Z` (full 15.0 min, offline 6.3 min). New: the install-mode page's radio buttons `0x54002E29` (`BS_LEFTTEXT | BS_RIGHT`), its labels `SS_RIGHT`, the narrower info line 30 px from the page's left edge and 0 px from its right; no NSIS word or misspelling in 32 texts on 3 installer pages and 11 on 2 uninstaller pages; stored language 1025; the uninstaller's pages in Arabic, right to left. As on 2026-10-13: SmartScreen → Run anyway; per-user 166 s through the Arabic pages, silent 174 s; all users 167 s under Program Files; the standard user «مستخدم»; bag 004 searched (7 frames in 21–30 s on CPU), printed and sealed (PASS, 4 pages, Plex only), with and without the network |
+
+Not covered: the "installing" page's two header texts (the driver waits through its progress bar;
+the compile and the unit test cover those strings); an all-users install through the pages (the
+Sandbox installs it silently). There the elevated copy runs `.onInit` again, where electron-builder
+shows the language dialog without checking for the elevated copy, so a second language dialog may
+follow the administrator prompt: untested, electron-builder's behaviour, unchanged here.
+
+**Delivered (operator, 2026-10-14):** the installer above and one trial key for 7 days — fingerprint
+`98750e58f70cb3b5`, issued 2026-10-13 23:12:21 UTC, ending 2026-10-20 23:12:21 UTC (2026-10-21 02:12
+at UTC+3), no customer name — checked with the app's own `verifyLicenseKey` and the baked public key
+(valid now and one second before its end; one second after: `expired`). The key's days run from its
+issue, not from activation. The handover folder `runs\release_1.0.0\` (gitignored) holds a copy of
+the installer (same SHA-256) and the key. On the client's PC: SmartScreen warns about the unsigned
+installer (More info → Run anyway); Smart App Control, on by default on a freshly installed Windows
+11, may refuse it (this record's Smart App Control section; a signing certificate is the fix);
+Windows N needs the Media Feature Pack; the program takes about 1.6 GB. Production validation starts
+with this delivery: no field capture has been measured yet.

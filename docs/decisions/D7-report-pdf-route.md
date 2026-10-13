@@ -263,3 +263,17 @@ evidence.
   directions, numbers and units in order.
 - Still open (operator; kept open on 2026-10-13, none blocking): the questions above (signatures,
   one bilingual PDF or one per language, PDF/A), and the scoring-form heading's wording.
+
+## Printed wording (operator, 2026-10-14)
+
+The engine's printed labels in `report_content.py` follow the app's words since release 1.0.0, a
+values-only engine edit approved with the batched wording review (`docs/arabic-wording-backlog.md`):
+the signature wells «توقيع الحكم», «توقيع مجلس الحكام» (were «امضاء …», misspelled); the frame
+block's «الإطار المقترح» / "Proposed frame" (were «الإطار المرشح» / "Candidate frame"); the session
+row «المشغّل» (was «المستخدم»); the provenance row «بيانات التقرير» (was «نموذج التقرير»; English
+"Report model" kept). No key, field or schema changed: `REPORT_MODEL_VERSION` stays 1.1, the print
+page checks fields, not wording, `openapi.json` is unchanged. Report models written from now on
+(finalize, a report-details change) carry the new wording; sealed PDFs keep theirs. Checked: engine
+pytest 438 passed (6 opt-in skipped), ruff clean, `--dump-openapi` without a diff; `real_run.py` on
+bag 006 34/34 with the new labels in its report model; the app's real flow (`flow-real`) 11/11,
+sealed with verdict PASS. Every code point of the new labels is in the pinned Plex face.

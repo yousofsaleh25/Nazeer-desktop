@@ -1,7 +1,7 @@
 {
   "name": "nazeer-desktop",
   "productName": "Nazeer Desktop",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
   "description": "Nazeer Desktop: non-contact camel body measurement for Mzayen judging (operator app)",
   "author": "Nazeer",

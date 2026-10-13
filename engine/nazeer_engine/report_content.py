@@ -169,7 +169,7 @@ COLUMNS: dict[str, Label] = {
 }
 SESSION_ROWS: dict[str, Label] = {
     "session_id": {"ar": "المعرّف", "en": "Session ID"},
-    "operator": {"ar": "المستخدم", "en": "Operator"},
+    "operator": {"ar": "المشغّل", "en": "Operator"},
     "camel_id": {"ar": "معرّف الجمل", "en": "Camel ID"},
     "event": {"ar": "الفعالية", "en": "Event"},
     "n_measurements": {"ar": "عدد القياسات", "en": "Measurements"},
@@ -177,8 +177,8 @@ SESSION_ROWS: dict[str, Label] = {
     "generated": {"ar": "تاريخ التوليد", "en": "Generated"},
 }
 SIGNATURE_WELLS: list[dict[str, str]] = [
-    {"id": "judge", "ar": "امضاء الحكم", "en": "Judge Signature"},
-    {"id": "council", "ar": "امضاء مجلس الحكام", "en": "Council of Judges Signature"},
+    {"id": "judge", "ar": "توقيع الحكم", "en": "Judge Signature"},
+    {"id": "council", "ar": "توقيع مجلس الحكام", "en": "Council of Judges Signature"},
 ]
 SIGNATURE_FIELDS: dict[str, Label] = {
     "name": {"ar": "الاسم", "en": "Name"},
@@ -192,11 +192,11 @@ FRAME_ROWS: dict[str, Label] = {
     "depth_bbox": {"ar": "منطقة العمق الصالح", "en": "Depth-valid region"},
     "model": {"ar": "النموذج", "en": "Model"},
     "intrinsics": {"ar": "معاملات الكاميرا", "en": "Camera intrinsics"},
-    "candidate": {"ar": "الإطار المرشح", "en": "Candidate frame"},
+    "candidate": {"ar": "الإطار المقترح", "en": "Proposed frame"},
 }
 PROVENANCE_ROWS: dict[str, Label] = {
     "engine": {"ar": "المحرك", "en": "Engine"},
-    "report_model": {"ar": "نموذج التقرير", "en": "Report model"},
+    "report_model": {"ar": "بيانات التقرير", "en": "Report model"},
     "overlay": {"ar": "صورة المحرك", "en": "Engine image"},
     "session": {"ar": "الجلسة", "en": "Session"},
     "libraries": {"ar": "المكتبات", "en": "Libraries"},

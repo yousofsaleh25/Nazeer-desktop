@@ -47,7 +47,9 @@ nsis:
   shortcutName: Nazeer Desktop
   artifactName: Nazeer Desktop Setup ${version}.${ext}
   # Arabic and English pages, chosen in a language dialog that comes first (silent installs skip
-  # it); build/installer.nsh adds Arabic for the strings electron-builder ships only in English
+  # it); build/installer.nsh adds Arabic for the strings electron-builder ships only in English,
+  # gives NSIS's own Arabic one word for install (تثبيت), mirrors electron-builder's install-mode
+  # page for Arabic, and stores the chosen language so the uninstaller speaks it
   installerLanguages: [ar_SA, en_US]
   displayLanguageSelector: true
   include: build/installer.nsh

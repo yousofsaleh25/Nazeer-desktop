@@ -127,6 +127,7 @@ public static class NzWin {
     return s.ToString();
   }
   public static int Left(IntPtr h) { RECT r; return GetWindowRect(h, out r) ? r.Left : int.MinValue; }
+  public static int Right(IntPtr h) { RECT r; return GetWindowRect(h, out r) ? r.Right : int.MinValue; }
   // what a click does in a dialog: WM_COMMAND with the control id (BN_CLICKED) to the control's parent
   public static void Command(IntPtr control) { Post(GetParent(control), 0x0111, new IntPtr(GetDlgCtrlID(control) & 0xFFFF), control); }
   public static void SetCheck(IntPtr button, bool on) { Send(button, 0x00F1, new IntPtr(on ? 1 : 0), IntPtr.Zero); }   // BM_SETCHECK
@@ -248,6 +249,48 @@ function Page-Layout([IntPtr]$win) {
   $reading = ($ex -band 0x402000) -ne 0
   [ordered]@{ rtl = ($reading -and ($mirrored -ne $false)); exStyle = ("0x{0:X}" -f $ex); mirrored = $mirrored }
 }
+function Mode-PageLayout([IntPtr]$radio) {
+  # electron-builder's install-mode page is built at run time; build/installer.nsh mirrors it the way
+  # makensis mirrors NSIS's own dialogs: radio buttons with the circle on the right and the text
+  # right-aligned (BS_LEFTTEXT, BS_RIGHT), labels right-aligned (SS_RIGHT), every control in
+  # right-to-left reading order (WS_EX_RTLREADING), and a control narrower than the page nearer its
+  # right edge than its left (the radio buttons are centred, so only the labels can show that)
+  $page = [NzWin]::GetParent($radio)
+  $pageLeft = [NzWin]::Left($page)
+  $pageRight = [NzWin]::Right($page)
+  $ok = $true
+  $parts = @()
+  foreach ($c in [NzWin]::Children($page)) {
+    if (-not [NzWin]::IsWindowVisible($c)) { continue }
+    $class = [NzWin]::ClassOf($c)
+    if ($class -ne "Button" -and $class -ne "Static") { continue }
+    if ($class -eq "Static" -and -not [NzWin]::TextOf($c)) { continue }
+    $style = [NzWin]::Style($c)
+    $ex = [NzWin]::ExStyle($c)
+    $gapLeft = [NzWin]::Left($c) - $pageLeft
+    $gapRight = $pageRight - [NzWin]::Right($c)
+    $placed = ([math]::Abs($gapLeft - $gapRight) -le 2) -or ($gapRight -lt $gapLeft)
+    $aligned = (($style -band 0x1F) -eq 2)
+    if ($class -eq "Button") { $aligned = (($style -band 0x20) -ne 0) -and (($style -band 0x300) -eq 0x200) }
+    $mine = $aligned -and $placed -and (($ex -band 0x2000) -ne 0)
+    if (-not $mine) { $ok = $false }
+    $parts += ("{0} style 0x{1:X} ex 0x{2:X} gaps {3}/{4} px: {5}" -f $class, $style, $ex, $gapLeft, $gapRight, $mine)
+  }
+  [ordered]@{ ok = ($ok -and $parts.Count -gt 0); detail = ($parts -join "; ") }
+}
+function Words-Found([string[]]$texts) {
+  # the words the installer must not show (operator, 2026-10-14): NSIS's own word for install, and
+  # "choose" / "press" written with the hamza that hamzat al-wasl does not take
+  $joined = $texts -join " "
+  @($bannedWords | Where-Object { $joined.Contains($_) })
+}
+function Install-Key([string]$hive, [string]$location) {
+  # electron-builder's own key for an install (Software\<app GUID>), found by its install location
+  Get-ChildItem "${hive}:\Software" -ErrorAction SilentlyContinue | ForEach-Object {
+    $p = Get-ItemProperty -LiteralPath $_.PSPath -ErrorAction SilentlyContinue
+    if ($p -and $p.InstallLocation -eq $location) { $p }
+  } | Select-Object -First 1
+}
 function Choose-Arabic([IntPtr]$dlg) {
   Shot "04-language-dialog"
   $title = [NzWin]::TextOf($dlg)
@@ -305,6 +348,12 @@ if ($BagName) {
 }
 # "Only for me" in Arabic (build/installer.nsh onlyForMe), from its code points
 $onlyForMeAr = -join ([char[]](0x0644, 0x064A, 0x0020, 0x0648, 0x062D, 0x062F, 0x064A))
+# NSIS's word for install (tansib), and ikhtar / idghat with a hamza: replaced by build/installer.nsh
+$bannedWords = @(
+  (-join ([char[]](0x062A, 0x0646, 0x0635, 0x064A, 0x0628))),
+  (-join ([char[]](0x0625, 0x062E, 0x062A, 0x0631))),
+  (-join ([char[]](0x0625, 0x0636, 0x063A, 0x0637)))
+)
 $perUserDir = Join-Path $env:LOCALAPPDATA "Programs\$product"
 $perUserExe = Join-Path $perUserDir "$product.exe"
 $profileDir = Join-Path $env:APPDATA $product
@@ -383,6 +432,7 @@ try {
     $pageNo = 0
     $rtl = @()
     $layouts = @()
+    $allTexts = @()
     $installStart = $null
     $finished = $false
     $isPage = { param($h) (Next-Button $h) -ne $Zero }
@@ -394,6 +444,7 @@ try {
       # a language dialog that came late is answered here, not counted as a page
       if (& $isLangDlg $win) { Choose-Arabic $win; $pageNo -= 1; Start-Sleep -Seconds 2; continue }
       $texts = Win-Texts $win
+      $allTexts += $texts
       $layout = Page-Layout $win
       $rtl += [bool]$layout.rtl
       $layouts += ("{0}: {1} mirrored {2}" -f $pageNo, $layout.exStyle, $layout.mirrored)
@@ -402,11 +453,14 @@ try {
       $radios = @(Win-Buttons $win @(4, 9))
       $boxes = @(Win-Buttons $win @(2, 3, 5, 6))
       if ($radios.Count -ge 2) {
-        # electron-builder's install-mode page: choose "only for me" by its label (build/installer.nsh)
-        $onlyForMe = @($radios | Where-Object { $label = [NzWin]::TextOf($_); $label -eq $onlyForMeAr -or $label -match "Only for me" })
+        # electron-builder's install-mode page: choose "only for me" by its label (build/installer.nsh;
+        # electron-builder adds the user name after it)
+        $onlyForMe = @($radios | Where-Object { $label = [NzWin]::TextOf($_); $label.StartsWith($onlyForMeAr) -or $label -match "Only for me" })
         if ($onlyForMe.Count -gt 0) { foreach ($r in $radios) { [NzWin]::SetCheck($r, ($r -eq $onlyForMe[0])) } }
         $selected = @($radios | Where-Object { [NzWin]::GetCheck($_) } | ForEach-Object { [NzWin]::TextOf($_) })
         Note "1" "install-mode page" ("choices: " + (($radios | ForEach-Object { [NzWin]::TextOf($_) }) -join " / ") + "; selected: " + ($selected -join ", "))
+        $modePage = Mode-PageLayout $radios[0]
+        Check "1" "the install-mode page's own controls laid out right to left" $modePage.ok $modePage.detail
       }
       if ($boxes.Count -ge 1 -and $installStart -ne $null) {
         # the finish page: do not start the app from the installer (the driver starts it)
@@ -431,6 +485,8 @@ try {
     $deadline = (Get-Date).AddMinutes(2)
     while ((Installer-Pids $exeName).Count -gt 0 -and (Get-Date) -lt $deadline) { Start-Sleep -Seconds 1 }
     Check "1" "every installer page laid out right to left (RTL reading order, mirrored controls)" (($rtl.Count -gt 0) -and -not ($rtl -contains $false)) ("{0} pages: {1}" -f $rtl.Count, ($layouts -join "; "))
+    $found = @(Words-Found $allTexts)
+    Check "1" "one word for install on every page (none of NSIS's own words or misspellings left)" (($allTexts.Count -gt 0) -and ($found.Count -eq 0)) ("looked for '{0}' in {1} texts; found '{2}'" -f ($bannedWords -join "', '"), $allTexts.Count, ($found -join "', '"))
     if (-not $finished) { Check "2" "per-user install through the Arabic pages" (Test-Path $perUserExe) ("total {0} s" -f (Elapsed $tStart)) }
     $desktopLnk = Join-Path ([Environment]::GetFolderPath("Desktop")) "$product.lnk"
     $startLnk = Join-Path $env:APPDATA "Microsoft\Windows\Start Menu\Programs\$product.lnk"
@@ -460,19 +516,37 @@ try {
   $entry = Uninstall-Entry "HKCU"
   $uninstaller = Join-Path $perUserDir "Uninstall $product.exe"
   if (Test-Path $uninstaller) {
+    # build/installer.nsh stores the language of the language dialog with the install, for the
+    # uninstaller (the full run chose Arabic; a silent install keeps Windows' own language)
+    $stored = (Install-Key "HKCU" $perUserDir).InstallerLanguage
+    if ($Mode -eq "full") {
+      Check "8" "the install stored the language chosen in its language dialog (Arabic, 1025)" ($stored -eq "1025") ("stored '{0}'" -f $stored)
+    } else {
+      Note "8" "the install's stored language" ("stored '{0}' (silent: the language Windows gives the installer)" -f $stored)
+    }
     $t = Get-Date
     if ($Mode -eq "full") {
       Start-Process -FilePath $uninstaller | Out-Null
       # NSIS runs the uninstaller from a temporary copy (Un_A.exe or Au_.exe)
       $unExes = @("Un_A.exe", "Uninstall $product.exe", "Au_.exe")
       $isUnPage = { param($h) ((Next-Button $h) -ne $Zero) -or ((Win-Control $h 6 "Button") -ne $Zero) }
+      $unRtl = @()
+      $unArabic = @()
+      $unLayouts = @()
+      $unTexts = @()
       $n = 0
       while ($n -lt 8) {
         $n += 1
         $w = Wait-AppWindow $unExes $isUnPage 60
         if ($w -eq $Zero) { break }
         Start-Sleep -Milliseconds 800
-        [System.IO.File]::WriteAllText((Join-Path $pages ("uninstall-{0:d2}.txt" -f $n)), ((Win-Texts $w) -join "`r`n"), $utf8)
+        $unText = @(Win-Texts $w)
+        $unTexts += $unText
+        $unLayout = Page-Layout $w
+        $unRtl += [bool]$unLayout.rtl
+        $unArabic += [bool](($unText -join " ") -match "\p{IsArabic}")
+        $unLayouts += ("{0}: {1} mirrored {2}" -f $n, $unLayout.exStyle, $unLayout.mirrored)
+        [System.IO.File]::WriteAllText((Join-Path $pages ("uninstall-{0:d2}.txt" -f $n)), ($unText -join "`r`n"), $utf8)
         Shot ("08-uninstall-{0:d2}" -f $n)
         # the default button (id 1), or Yes (id 6) on a question box
         $b = Next-Button $w
@@ -480,6 +554,9 @@ try {
         if ($b -ne $Zero) { [NzWin]::Command($b) }
         Start-Sleep -Seconds 3
       }
+      Check "8" "the uninstaller's pages in the language chosen at install (Arabic), right to left" (($unRtl.Count -gt 0) -and -not ($unRtl -contains $false) -and -not ($unArabic -contains $false)) ("{0} pages: {1}; Arabic text on each: {2}" -f $unRtl.Count, ($unLayouts -join "; "), ($unArabic -join ", "))
+      $found = @(Words-Found $unTexts)
+      Check "8" "one word for uninstall on every page (none of NSIS's own words or misspellings left)" (($unTexts.Count -gt 0) -and ($found.Count -eq 0)) ("looked for '{0}' in {1} texts; found '{2}'" -f ($bannedWords -join "', '"), $unTexts.Count, ($found -join "', '"))
     } else {
       Start-Process -FilePath $uninstaller -ArgumentList @("/S") -Wait | Out-Null
     }
