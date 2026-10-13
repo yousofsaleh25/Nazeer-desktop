@@ -14,6 +14,7 @@ import { readdirSync, rmSync, statSync } from "node:fs";
 import { basename, dirname, join, resolve, win32 } from "node:path";
 import { SESSION_ID_RE } from "@shared/ids";
 import type { EngineConnection, ExportRequest, ExportResult } from "@shared/ipc";
+import { engineCallUrl } from "./exportPdf";
 
 export interface ExportArgs {
   sessionDir: string;
@@ -184,11 +185,25 @@ export async function runHeadlessExport(
     preflight: null,
     timings_ms: {},
   };
+  // never throws: a result file that cannot be written makes the run fail (exit 1), and that
+  // failure is in the result printed on stdout, so the caller always gets an answer and a code
   const finish = async (code: number): Promise<number> => {
-    const text = `${JSON.stringify(result, null, 2)}\n`;
-    deps.stdout(text);
-    if (!("error" in args) && args.out !== null) await deps.writeOut(args.out, text);
-    return code;
+    let exit = code;
+    if (!("error" in args) && args.out !== null) {
+      try {
+        await deps.writeOut(args.out, `${JSON.stringify(result, null, 2)}\n`);
+      } catch (error) {
+        const message = `--out ${args.out}: ${error instanceof Error ? error.message : String(error)}`;
+        result.ok = false;
+        result.error =
+          result.error === null
+            ? { code: "out_write_failed", message }
+            : { ...result.error, details: { ...result.error.details, out_write_failed: message } };
+        exit = exit === 0 ? 1 : exit;
+      }
+    }
+    deps.stdout(`${JSON.stringify(result, null, 2)}\n`);
+    return exit;
   };
   if ("error" in args) {
     result.error = { code: "usage", message: args.error };
@@ -219,7 +234,10 @@ export async function runHeadlessExport(
   try {
     const conn = started.connection;
     const get = async (path: string) => {
-      const response = await deps.fetch(new URL(path, conn.baseUrl), {
+      // the token goes to the engine only (the view names the overlay's URL)
+      const url = engineCallUrl(path, conn);
+      if (url === null) throw new Error(`a URL outside the engine was named: ${path}`);
+      const response = await deps.fetch(url, {
         headers: { "X-Nazeer-Token": conn.token },
         cache: "no-store",
       });

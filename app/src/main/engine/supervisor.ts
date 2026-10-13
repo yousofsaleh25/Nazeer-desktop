@@ -318,6 +318,11 @@ export class EngineSupervisor {
       return;
     }
     if (this.run !== run) return;
+    if (this.stopRequested) {
+      // a line still buffered when stop() began: the engine is on its way out, never "ready"
+      this.log(`ignored a ${parsed.kind} line from #${run.gen} while stopping`);
+      return;
+    }
     if (parsed.kind === "fatal") {
       run.fatalLine = parsed;
       this.log(`fatal line #${run.gen}: ${parsed.code}: ${parsed.message}`);

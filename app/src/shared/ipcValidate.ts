@@ -193,3 +193,28 @@ export function validatePreflight(value: unknown): PrintPreflight {
   if (result.ok && result.problems.length > 0) throw new Error("preflight ok with problems");
   return result;
 }
+
+/**
+ * The print page's result as main takes it: the validated result, or — when main refuses it (too
+ * many problems, details too large, a malformed object) — a failed result that says why, so the
+ * print stops at once with a coded reason instead of waiting for the print timeout.
+ */
+export function preflightOrRefusal(value: unknown): PrintPreflight {
+  try {
+    return validatePreflight(value);
+  } catch (error) {
+    const reason = error instanceof Error ? error.message : String(error);
+    return {
+      ok: false,
+      problems: [
+        {
+          code: "print_page_failed",
+          message: `the print page's result was refused: ${reason}`.slice(0, 4000),
+          details: {},
+        },
+      ],
+      warnings: [],
+      checked: { requiredTexts: 0, textNodes: 0, characters: 0, images: 0 },
+    };
+  }
+}

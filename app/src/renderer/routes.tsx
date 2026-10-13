@@ -11,6 +11,7 @@ import { MeasureScreen } from "./screens/measure/MeasureScreen";
 import { NotFound } from "./screens/NotFound";
 import { OperatorLayout } from "./screens/OperatorLayout";
 import { ReportScreen } from "./screens/ReportScreen";
+import { ScreenError } from "./screens/ScreenError";
 
 function page(Component: LazyExoticComponent<ComponentType>) {
   return (
@@ -33,20 +34,30 @@ function devRoutes(): RouteObject[] {
   ];
 }
 
-/** Operator screens sit in OperatorLayout (shell + engine gate); the gallery stands alone. */
+/**
+ * Operator screens sit in OperatorLayout (shell + engine gate); the gallery stands alone. A screen
+ * that throws while rendering shows ScreenError in place of the screen, inside the shell (the
+ * pathless route); the layout's own error element is the last resort, without the shell.
+ */
 export const routes: RouteObject[] = [
   {
     element: <OperatorLayout />,
+    errorElement: <ScreenError />,
     children: [
-      { path: "/", element: <Home /> },
-      { path: "/candidates", element: <Candidates /> },
-      { path: "/candidates/:fp/:ph", element: <CandidateSet /> },
-      { path: "/sessions/:id", element: <MeasureScreen /> },
-      { path: "/sessions/:id/finalize", element: <FinalizeScreen /> },
-      { path: "/sessions/:id/report", element: <ReportScreen /> },
-      { path: "/history", element: <HistoryScreen /> },
-      { path: "/about", element: <About /> },
-      { path: "*", element: <NotFound /> },
+      {
+        errorElement: <ScreenError />,
+        children: [
+          { path: "/", element: <Home /> },
+          { path: "/candidates", element: <Candidates /> },
+          { path: "/candidates/:fp/:ph", element: <CandidateSet /> },
+          { path: "/sessions/:id", element: <MeasureScreen /> },
+          { path: "/sessions/:id/finalize", element: <FinalizeScreen /> },
+          { path: "/sessions/:id/report", element: <ReportScreen /> },
+          { path: "/history", element: <HistoryScreen /> },
+          { path: "/about", element: <About /> },
+          { path: "*", element: <NotFound /> },
+        ],
+      },
     ],
   },
   ...devRoutes(),

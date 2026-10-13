@@ -80,6 +80,19 @@ export function engineError(status: number, body: unknown): ExportError {
 
 type Fetched = { ok: true; status: number; bytes: Uint8Array } | { ok: false; error: ExportError };
 
+/**
+ * An engine path (or a URL an engine answer named) on the engine's own origin; null for anything
+ * that resolves elsewhere, so the token never leaves the engine (as the renderer's engineUrl).
+ */
+export function engineCallUrl(path: string, conn: Pick<EngineConnection, "baseUrl">): URL | null {
+  try {
+    const url = new URL(path, conn.baseUrl);
+    return url.origin === new URL(conn.baseUrl).origin ? url : null;
+  } catch {
+    return null;
+  }
+}
+
 async function call(
   deps: ExportDeps,
   conn: EngineConnection,
@@ -87,9 +100,17 @@ async function call(
   init: RequestInit & { timeoutMs?: number } = {},
 ): Promise<Fetched> {
   const { timeoutMs = ENGINE_CALL_TIMEOUT_MS, headers, ...rest } = init;
+  // the token goes to the engine only: a URL in an answer that names another origin is refused
+  const url = engineCallUrl(path, conn);
+  if (url === null) {
+    return {
+      ok: false,
+      error: appError("invalid_response", `a URL outside the engine was named: ${path}`),
+    };
+  }
   let response: Response;
   try {
-    response = await deps.fetch(new URL(path, conn.baseUrl), {
+    response = await deps.fetch(url, {
       ...rest,
       headers: { ...(headers as Record<string, string> | undefined), "X-Nazeer-Token": conn.token },
       signal: AbortSignal.timeout(timeoutMs),
@@ -101,9 +122,38 @@ async function call(
       error: appError("network_error", error instanceof Error ? error.message : String(error)),
     };
   }
-  const bytes = new Uint8Array(await response.arrayBuffer());
+  let bytes: Uint8Array;
+  try {
+    bytes = new Uint8Array(await response.arrayBuffer());
+  } catch (error) {
+    // the engine answered (its status is known) but the body was cut off, e.g. by the timeout:
+    // what it did is unknown, so the status stays and the app reads the session again
+    return {
+      ok: false,
+      error: {
+        status: response.status,
+        code: "network_error",
+        message: `the engine's answer was cut off: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+        details: {},
+      },
+    };
+  }
   if (response.ok) return { ok: true, status: response.status, bytes };
   return { ok: false, error: engineError(response.status, json(bytes) ?? null) };
+}
+
+/** An engine asset's bytes; null when it does not exist; an error when it cannot be read. */
+async function readAsset(
+  deps: ExportDeps,
+  name: "font" | "logo",
+): Promise<Uint8Array | null | { error: string }> {
+  try {
+    return await deps.readAsset(name);
+  } catch (error) {
+    return { error: error instanceof Error ? error.message : String(error) };
+  }
 }
 
 function json(bytes: Uint8Array): unknown {
@@ -297,10 +347,18 @@ export async function exportPdf(request: ExportRequest, deps: ExportDeps): Promi
   lap("fetch");
 
   // 4. the face (the engine's pinned TTF) and the logo
-  const font = await deps.readAsset("font");
+  const font = await readAsset(deps, "font");
   if (font === null) {
     return fail(
       appError("print_font_missing", "the engine's IBM Plex Sans Arabic file is missing"),
+    );
+  }
+  if ("error" in font) {
+    return fail(
+      appError(
+        "print_font_unreadable",
+        `the engine's IBM Plex Sans Arabic file cannot be read: ${font.error}`,
+      ),
     );
   }
   const fontSha = sha256Hex(font);
@@ -316,7 +374,12 @@ export async function exportPdf(request: ExportRequest, deps: ExportDeps): Promi
       ),
     );
   }
-  const logo = await deps.readAsset("logo");
+  // the logo is decoration: an unreadable one is logged and the page prints without it
+  const logoRead = await readAsset(deps, "logo");
+  const logo = logoRead !== null && "error" in logoRead ? null : logoRead;
+  if (logoRead !== null && "error" in logoRead) {
+    deps.log?.(`export ${request.sessionId}: the logo cannot be read (${logoRead.error})`);
+  }
 
   // 5. lay out, check, print
   const job: PrintJob = {

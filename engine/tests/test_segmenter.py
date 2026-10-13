@@ -139,6 +139,26 @@ def test_stub_segmenter_and_detection_from_mask():
     assert det.summary()["n_detections"] == 1
 
 
+def test_stub_ellipse_is_the_same_centred_detection_in_every_frame():
+    black = np.zeros((720, 1280, 3), dtype=np.uint8)
+    det = seg.stub_ellipse_detection(black)
+    assert det.ok and det.conf == seg.STUB_ELLIPSE_CONF and det.n_detections == 1
+    assert det.mask.shape == (720, 1280) and det.mask.dtype == np.uint8
+    assert set(np.unique(det.mask).tolist()) == {0, 255}
+    frac = float((det.mask != 0).mean())
+    assert abs(frac - np.pi * 0.30 * 0.35) < 0.005  # inside the C2.4 area bounds [0.10, 0.80]
+    x0, y0, x1, y1 = det.bbox_xyxy
+    assert abs((x0 + x1) / 2 - 640) <= 1 and abs((y0 + y1) / 2 - 360) <= 1
+    assert x0 > 1 and y0 > 1 and x1 < 1279 and y1 < 719  # never cut off by the image border
+    busy = np.random.default_rng(0).integers(0, 256, size=(720, 1280, 3), dtype=np.uint8)
+    assert np.array_equal(seg.stub_ellipse_detection(busy).mask, det.mask)  # content ignored
+    assert seg.stub_ellipse_detection(np.zeros((120, 200, 3), np.uint8)).mask.shape == (120, 200)
+    stub = seg.StubSegmenter(seg.stub_ellipse_detection, name="stub-ellipse")
+    assert stub.is_stub and stub.sha256 == "stub-ellipse" and stub.weights_name == "stub-ellipse"
+    assert np.array_equal(stub.predict(black).mask, det.mask)
+    assert seg.StubSegmenter().sha256 == "stub"  # the plain stub keeps its identity
+
+
 @pytest.mark.realmodel
 def test_real_model_reproduces_golden_frame(real_model_path: Path):
     golden = Path(r"E:\camel_beauty\reference\notebooks\data\rgbd_20260514_145407\rgb.png")

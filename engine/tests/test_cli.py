@@ -73,6 +73,20 @@ def test_bad_data_root_model_and_stub_rules(tmp_path: Path):
     assert no_dev.returncode == 2 and _lines(no_dev.stdout)[0]["code"] == "stub_model_not_allowed"
 
 
+def test_stub_mask_needs_the_stub_model_and_dev_mode(tmp_path: Path):
+    alone = _run(["--data-root", str(tmp_path / "r1"), "--stub-mask", "ellipse", "--check"])
+    assert alone.returncode == 2
+    assert _lines(alone.stdout)[0]["code"] == "stub_mask_needs_stub_model"
+    args = ["--stub-model", "--stub-mask", "ellipse", "--check"]
+    no_dev = _run(["--data-root", str(tmp_path / "r2"), *args], dev=False)
+    assert no_dev.returncode == 2 and _lines(no_dev.stdout)[0]["code"] == "stub_model_not_allowed"
+    ok = _run(["--data-root", str(tmp_path / "r3"), *args])
+    assert ok.returncode == 0, ok.stderr[-2000:]
+    ready = _lines(ok.stdout)[0]
+    assert ready["event"] == "ready" and ready["stub_model"] is True
+    assert ready["model_file"] == "stub-ellipse" and ready["model_sha256"] == "stub-ellipse"
+
+
 def test_serve_health_lock_and_graceful_shutdown(tmp_path: Path):
     root = tmp_path / "root"
     err_path = tmp_path / "engine.stderr"

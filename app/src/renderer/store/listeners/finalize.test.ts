@@ -4,9 +4,13 @@ import type { MeasurementInput } from "@/api/types";
 import { setEngineConnection } from "@/api/connection";
 import { engineState } from "@/test/engine";
 import { OVERLAY_BYTES, SessionEngine, sha256Hex } from "@/test/sessionEngine";
-import { forgetVerifiedOverlay, verifiedOverlay } from "../services/overlayBytes";
+import {
+  forgetVerifiedOverlay,
+  keepVerifiedOverlay,
+  verifiedOverlay,
+} from "../services/overlayBytes";
 import { saveStateOf } from "../session/selectors";
-import { approvalHolds, overlayApproved } from "../slices/report";
+import { approvalHolds, overlayApproved, overlayCheckStarted } from "../slices/report";
 import { measurementAdded, textEdited } from "../slices/session";
 import { makeStore, type RootState } from "../store";
 import { openSession } from "../thunks/session";
@@ -136,6 +140,39 @@ describe("finalize", () => {
     store.dispatch(finalizeRequested());
     await tick();
     expect(state().session.view?.status).toBe("finalized");
+  });
+
+  it("a slow check of one session never touches another session's check or kept bytes", async () => {
+    const { engine, store, state } = await setup();
+    store.dispatch(finalizeRequested());
+    await tick();
+    await until(checked(state));
+    expect(state().report.overlay?.state).toBe("ok");
+    // this session's overlay is checked again, its answer held at the engine...
+    engine.pause();
+    store.dispatch(overlayVerifyRequested());
+    await tick();
+    // ...while another session's check takes the slot and its bytes are kept
+    const other = { sessionId: "20261013_120000_bbbbbb", version: 1, sha256: "b".repeat(64) };
+    store.dispatch(overlayCheckStarted({ ...other, url: "/sessions/other/overlay_v1.png" }));
+    keepVerifiedOverlay({ ...other, bytes: new Uint8Array([1, 2, 3]) });
+    let digests = 0;
+    const digest = crypto.subtle.digest.bind(crypto.subtle);
+    const spy = vi.spyOn(crypto.subtle, "digest").mockImplementation(async (...args) => {
+      const out = await digest(...args);
+      digests += 1;
+      return out;
+    });
+    try {
+      engine.resume();
+      await until(() => digests === 1);
+      await tick();
+    } finally {
+      spy.mockRestore();
+    }
+    expect(digests).toBe(1);
+    expect(state().report.overlay).toMatchObject({ ...other, state: "checking" });
+    expect(verifiedOverlay(other.sessionId, other.version, other.sha256)).not.toBeNull();
   });
 
   it("the overlay of an already finalized session can be checked on request", async () => {

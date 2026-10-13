@@ -443,6 +443,32 @@ def test_run_candidate_walk_persists_ranked_candidates(bag: Path, tmp_path: Path
     assert cd.load_candidates(root, "nope", params.hash()) is None
 
 
+def test_a_walk_with_the_ellipse_stub_proposes_frames_under_its_own_identity(bag, tmp_path):
+    from nazeer_engine.segmenter import stub_ellipse_detection
+
+    scenario = Scenario(1200, 20, all_pass=True)  # depth 2 m everywhere but the dead top band
+    root = tmp_path / "root"
+    stub = StubSegmenter(stub_ellipse_detection, name="stub-ellipse")
+    params = cd.CandidateParams(sample_every=20, model_sha256=stub.sha256)
+    assert params.hash() != cd.CandidateParams(sample_every=20, model_sha256="stub").hash()
+    result = cd.run_candidate_walk(
+        bag,
+        params,
+        segmenter=stub,
+        cache_root=root,
+        job_id="job1",
+        bag_iter=_bag_iter_factory(scenario),
+        bag_info=_info(bag, 1200),
+        progress=lambda _e: None,
+        library_versions={"numpy": "x"},
+    )
+    cj = result.candidates_json
+    assert cj["model"] == {"file": "stub-ellipse", "sha256": "stub-ellipse", "stub": True}
+    assert cj["walk"]["n_sampled"] == 60 and sum(cj["rejected_by_reason"].values()) == 0
+    assert cj["n_candidates"] == 12 and stub.calls == 60
+    assert all(c["bucket"] == "QUARTER" for c in cj["candidates"])  # 120 x 84 px: aspect 1.43
+
+
 def test_walk_stop_persists_best_so_far_and_cancel_leaves_nothing(bag: Path, tmp_path: Path):
     scenario = Scenario(1200, 20)
     root = tmp_path / "root"

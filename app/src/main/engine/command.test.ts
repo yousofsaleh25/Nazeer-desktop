@@ -51,6 +51,24 @@ describe("buildEngineCommand", () => {
     expect(cmd.stubModel).toBe(true);
   });
 
+  it("dev: NAZEER_STUB_MASK passes --stub-mask (the engine refuses it without the stub)", () => {
+    const withStub = buildEngineCommand({
+      ...base,
+      production: false,
+      env: { NAZEER_STUB_MODEL: "1", NAZEER_STUB_MASK: "ellipse" },
+    });
+    expect(withStub.args.slice(-3)).toEqual(["--stub-model", "--stub-mask", "ellipse"]);
+    const alone = buildEngineCommand({
+      ...base,
+      production: false,
+      env: { NAZEER_STUB_MASK: "ellipse" },
+    });
+    expect(alone.args.slice(-2)).toEqual(["--stub-mask", "ellipse"]);
+    expect(alone.stubModel).toBe(false);
+    const empty = buildEngineCommand({ ...base, production: false, env: { NAZEER_STUB_MASK: "" } });
+    expect(empty.args).not.toContain("--stub-mask");
+  });
+
   it("dev passes the environment through, NAZEER_ENGINE_DEV included", () => {
     const cmd = buildEngineCommand({ ...base, production: false, env: { NAZEER_ENGINE_DEV: "1" } });
     expect(cmd.env["NAZEER_ENGINE_DEV"]).toBe("1");
@@ -88,6 +106,7 @@ describe("buildEngineCommand", () => {
       production: true,
       env: {
         NAZEER_STUB_MODEL: "1",
+        NAZEER_STUB_MASK: "ellipse",
         NAZEER_ENGINE_DEV: "1",
         NAZEER_ENGINE_NO_WARMUP: "1",
         nazeer_engine_python: "D:\\py\\python.exe",
@@ -106,6 +125,7 @@ describe("buildEngineCommand", () => {
     });
     expect(cmd.command.endsWith(String.raw`\engine\python\python.exe`)).toBe(true);
     expect(cmd.args).not.toContain("--stub-model");
+    expect(cmd.args).not.toContain("--stub-mask");
     expect(cmd.args).not.toContain("--no-warmup");
     expect(cmd.stubModel).toBe(false);
     expect(cmd.env).toEqual({ PATH: "x", TEMP: "C:\\t", MPLBACKEND: "Agg" });

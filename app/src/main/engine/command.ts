@@ -8,7 +8,9 @@
  * Production = a packaged app or a bundle built for packaging (runtime.ts, D11). Arguments:
  * --data-root, --port 0, --token=<hex>, one --cors-origin per allowed renderer origin (it replaces
  * the engine's defaults). Development only: NAZEER_STUB_MODEL=1 adds --stub-model with
- * NAZEER_ENGINE_DEV=1; NAZEER_ENGINE_NO_WARMUP=1 adds --no-warmup; NAZEER_ENGINE_PYTHON replaces
+ * NAZEER_ENGINE_DEV=1; NAZEER_STUB_MASK=<mode> adds --stub-mask <mode> (ellipse: the stub finds the
+ * same centred ellipse in every frame; the engine refuses it without the stub model);
+ * NAZEER_ENGINE_NO_WARMUP=1 adds --no-warmup; NAZEER_ENGINE_PYTHON replaces
  * the venv interpreter. Development passes the environment through. Production runs the
  * interpreter isolated (-I: no PYTHON* variables, no user site-packages, no current folder on
  * the path), unbuffered (-u, which -I would otherwise drop with PYTHONUNBUFFERED) and without
@@ -79,6 +81,8 @@ export function buildEngineCommand(inputs: EngineCommandInputs): EngineCommand {
     engineArgs.push("--stub-model");
     childEnv["NAZEER_ENGINE_DEV"] = "1";
   }
+  const stubMask = env["NAZEER_STUB_MASK"];
+  if (stubMask !== undefined && stubMask !== "") engineArgs.push("--stub-mask", stubMask);
 
   const engineDir = path.win32.join(path.win32.resolve(appDir, ".."), "engine");
   const python =

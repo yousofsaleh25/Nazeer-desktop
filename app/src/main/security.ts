@@ -4,7 +4,7 @@
  * the production menu and the IPC sender check.
  */
 import { app, Menu, type IpcMainInvokeEvent, type Session } from "electron";
-import { APP_ORIGIN } from "./appPath";
+import { APP_ORIGIN, isOperatorPage } from "./appPath";
 import { buildCsp, cspPageFor } from "./csp";
 
 export interface SecurityContext {
@@ -90,8 +90,16 @@ export function installProductionMenu(ctx: SecurityContext): void {
   }
 }
 
-/** IPC is answered only for the main frame of an app page. */
+/**
+ * The operator channels are answered only for the main frame of the operator page: the hidden
+ * print page is an app page too, but it gets only its own two channels (print/printWindow.ts).
+ */
 export function isTrustedSender(event: IpcMainInvokeEvent, ctx: SecurityContext): boolean {
   const frame = event.senderFrame;
-  return frame !== null && frame === event.sender.mainFrame && isAppUrl(frame.url, ctx);
+  return (
+    frame !== null &&
+    frame === event.sender.mainFrame &&
+    isAppUrl(frame.url, ctx) &&
+    isOperatorPage(frame.url)
+  );
 }

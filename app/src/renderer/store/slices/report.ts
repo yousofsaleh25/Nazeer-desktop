@@ -44,6 +44,17 @@ export interface ReportState {
 
 export const REPORT_INITIAL: ReportState = { overlay: null, approved: null, export: null };
 
+/**
+ * A check's result applies only to the check still shown: the same session and overlay version
+ * (a slow answer for another session, or an older version, is dropped).
+ */
+export function isCheckOf(
+  check: OverlayCheck | null,
+  result: { sessionId: string; version: number },
+): check is OverlayCheck {
+  return check !== null && check.sessionId === result.sessionId && check.version === result.version;
+}
+
 const reportSlice = createSlice({
   name: "report",
   initialState: REPORT_INITIAL,
@@ -54,9 +65,12 @@ const reportSlice = createSlice({
     ) {
       state.overlay = { ...action.payload, state: "checking", computed: null, error: null };
     },
-    overlayChecked(state, action: PayloadAction<{ version: number; computed: string }>) {
+    overlayChecked(
+      state,
+      action: PayloadAction<{ sessionId: string; version: number; computed: string }>,
+    ) {
       const check = state.overlay;
-      if (check === null || check.version !== action.payload.version) return;
+      if (!isCheckOf(check, action.payload)) return;
       check.computed = action.payload.computed;
       if (action.payload.computed === check.sha256) {
         check.state = "ok";
@@ -69,9 +83,12 @@ const reportSlice = createSlice({
         );
       }
     },
-    overlayCheckFailed(state, action: PayloadAction<{ version: number; error: ApiErrorShape }>) {
+    overlayCheckFailed(
+      state,
+      action: PayloadAction<{ sessionId: string; version: number; error: ApiErrorShape }>,
+    ) {
       const check = state.overlay;
-      if (check === null || check.version !== action.payload.version) return;
+      if (!isCheckOf(check, action.payload)) return;
       check.state = "error";
       check.error = action.payload.error;
     },

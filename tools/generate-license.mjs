@@ -248,9 +248,29 @@ function init(opts) {
   process.stdout.write(`${keyId}\n`);
 }
 
+const ISO_INSTANT =
+  /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2})(?:\.\d{1,3})?)?(?:Z|[+-]\d{2}:\d{2})$/;
+
+/** Date.parse rolls an impossible date over (2026-02-30 becomes 2026-03-02): refuse those. */
+function realDateTime([year, month, day, hour, minute, second]) {
+  const date = new Date(Date.UTC(year, month - 1, day));
+  return (
+    date.getUTCFullYear() === year &&
+    date.getUTCMonth() === month - 1 &&
+    date.getUTCDate() === day &&
+    hour <= 23 &&
+    minute <= 59 &&
+    second <= 59
+  );
+}
+
 function parseExpires(text) {
   if (!/(Z|[+-]\d{2}:\d{2})$/.test(text)) {
     throw new Refusal(`--expires needs a time zone (Z or +hh:mm): ${text}`);
+  }
+  const parts = ISO_INSTANT.exec(text);
+  if (parts === null || !realDateTime(parts.slice(1, 7).map((part) => Number(part ?? "0")))) {
+    throw new Refusal(`--expires is not a real date and time (YYYY-MM-DDThh:mm[:ss]): ${text}`);
   }
   const ms = Date.parse(text);
   if (!Number.isFinite(ms)) throw new Refusal(`--expires is not a date: ${text}`);

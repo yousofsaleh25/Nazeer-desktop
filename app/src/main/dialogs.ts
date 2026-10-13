@@ -9,17 +9,24 @@ const TITLE = "نظير — Nazeer";
 export const MAIN_STRINGS = {
   openBagTitle: "اختر ملف تسجيل — Choose a .bag recording",
   bagFilter: "تسجيل RealSense — RealSense recording (.bag)",
-  pickFolderTitle: "اختر مجلد التسجيلات — Choose a capture folder",
+  pickFolderTitle: "اختر مجلد تسجيل — Choose a capture folder",
   quitAnyway: "إغلاق دون حفظ — Quit anyway",
   cancel: "إلغاء — Cancel",
   unsavedMessage: "توجد تغييرات غير محفوظة.\nThere are unsaved changes.",
   unsavedDetail:
-    "تعذّر حفظ آخر التعديلات في المحرك. إن أغلقت الآن ستُفقد.\n" +
+    "تعذّر حفظ آخر التعديلات في المحرك. إن أغلقت الآن فستُفقد.\n" +
     "The latest edits could not be saved to the engine. Quitting now loses them.",
   noAnswerMessage: "تعذّر التأكد من حفظ العمل.\nThe app could not confirm that your work is saved.",
   noAnswerDetail:
-    "لم تستجب نافذة التطبيق. إن أغلقت الآن قد تُفقد آخر التعديلات.\n" +
+    "لم تستجب نافذة التطبيق. إن أغلقت الآن فقد تُفقد آخر التعديلات.\n" +
     "The app window did not answer. Quitting now may lose the latest edits.",
+  rendererLostMessage:
+    "توقفت نافذة التطبيق ولم تُستعد.\nThe app window stopped and was not restored.",
+  rendererLostDetail:
+    "كل ما حُفظ باقٍ لدى المحرك، وتضيع التعديلات التي لم تُحفظ بعد. التفاصيل في مجلد السجلات:\n" +
+    "Everything saved is kept by the engine; edits not saved yet are lost. The details are in the log folder:",
+  tryAgain: "إعادة المحاولة — Try again",
+  quit: "إنهاء — Quit",
 } as const;
 
 export async function openBagDialog(win: BrowserWindow | null): Promise<string | null> {
@@ -62,6 +69,32 @@ export async function confirmQuitDialog(
   };
   const { response } =
     win && !win.isDestroyed()
+      ? await dialog.showMessageBox(win, options)
+      : await dialog.showMessageBox(options);
+  return response === 0;
+}
+
+/**
+ * The operator window's renderer keeps failing or cannot start (windows.ts): try again, or quit.
+ * The window may never have shown, so the box only attaches to a visible one.
+ */
+export async function rendererLostDialog(
+  win: BrowserWindow | null,
+  logDir: string,
+  reason: string,
+): Promise<boolean> {
+  const options: Electron.MessageBoxOptions = {
+    type: "error",
+    title: TITLE,
+    message: MAIN_STRINGS.rendererLostMessage,
+    detail: `${MAIN_STRINGS.rendererLostDetail}\n${logDir}\n(${reason})`,
+    buttons: [MAIN_STRINGS.tryAgain, MAIN_STRINGS.quit],
+    defaultId: 0,
+    cancelId: 1,
+    noLink: true,
+  };
+  const { response } =
+    win && !win.isDestroyed() && win.isVisible()
       ? await dialog.showMessageBox(win, options)
       : await dialog.showMessageBox(options);
   return response === 0;

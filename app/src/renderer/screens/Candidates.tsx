@@ -1,10 +1,11 @@
 /**
  * The frame search (#/candidates): the engine walks the bag as a background job (C2.8) — one at a
- * time, engine-wide; a job already running is followed instead of refused. Progress arrives over
- * SSE (polling when the stream fails); Stop keeps the frames found so far, Cancel discards. When
- * the job yields a candidate set, the grid opens.
+ * time, engine-wide; a job already running on this recording is followed instead of refused, and
+ * one running on another recording is named, with a Cancel for it, never shown as this one's.
+ * Progress arrives over SSE (polling when the stream fails); Stop keeps the frames found so far,
+ * Cancel discards. When the job yields a candidate set, the grid opens.
  */
-import { Images, RotateCcw, Search } from "lucide-react";
+import { CircleX, Images, RotateCcw, Search } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router";
 import { ErrorPanel } from "@/components/domain/ErrorPanel";
@@ -30,7 +31,7 @@ export function setPath(set: Pick<CandidateSetRef, "fingerprint" | "paramsHash">
 export function Candidates() {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  const { bagPath, start, job, set } = useAppSelector((state) => state.candidates);
+  const { bagPath, start, job, busyElsewhere, set } = useAppSelector((state) => state.candidates);
   // a set that arrives while this screen is open opens the grid; one found earlier waits for a click
   const setOnArrival = useRef(set);
   useEffect(() => {
@@ -82,7 +83,21 @@ export function Candidates() {
           error={start.error}
           context={messagePair("job.startFailed")}
           onRetry={() => again(false)}
+          actions={
+            busyElsewhere !== null && !busyElsewhere.terminal ? (
+              <Button size="sm" onClick={() => dispatch(candidateJobCancelRequested())}>
+                <CircleX aria-hidden="true" />
+                <Bi {...messagePair("job.cancelOther")} />
+              </Button>
+            ) : null
+          }
         />
+      ) : null}
+      {start.state === "error" && busyElsewhere !== null ? (
+        <div className="flex flex-col gap-1 text-sm" data-testid="busy-elsewhere">
+          <Bi {...messagePair("job.busyElsewhere")} />
+          <PathText path={busyElsewhere.bag_path} className="text-ink-secondary" />
+        </div>
       ) : null}
       {job !== null ? (
         <JobProgress

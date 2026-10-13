@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { setEngineConnection } from "@/api/connection";
+import { sampleConnection } from "@/design/samples";
 import { connectFixtureEngine, engineState } from "@/test/engine";
 import { historyPageChanged, historyParams, historyQueryChanged } from "../slices/history";
 import { makeStore } from "../store";
@@ -20,6 +21,38 @@ describe("inspectBag", () => {
     await expect(request?.clone().json()).resolves.toEqual({ path: INFO.path });
     expect(store.getState().bag).toMatchObject({ path: INFO.path, inspect: { state: "ready" } });
     expect(store.getState().bag.info?.fingerprint).toBe(INFO.fingerprint);
+  });
+
+  it("a slow answer for an earlier bag never replaces the bag opened after it", async () => {
+    let release: () => void = () => undefined;
+    const held = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    setEngineConnection(sampleConnection, async (request) => {
+      const { path } = (await request.clone().json()) as { path: string };
+      const slow = path.endsWith("A.bag");
+      if (slow) await held;
+      if (slow) {
+        return new Response(
+          JSON.stringify({ error: { code: "bag_unreadable", message: "A", details: {} } }),
+          { status: 422, headers: { "Content-Type": "application/json" } },
+        );
+      }
+      return new Response(JSON.stringify({ ...INFO, path, fingerprint: "b".repeat(64) }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+    });
+    const store = makeStore({ engine: engineState() });
+    const first = store.dispatch(inspectBag("D:\\bags\\A.bag"));
+    await store.dispatch(inspectBag("D:\\bags\\B.bag"));
+    release();
+    await first;
+    expect(store.getState().bag).toMatchObject({
+      path: "D:\\bags\\B.bag",
+      inspect: { state: "ready", error: null },
+      info: { fingerprint: "b".repeat(64) },
+    });
   });
 
   it("an engine error is kept for the screen", async () => {

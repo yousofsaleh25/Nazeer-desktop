@@ -16,7 +16,8 @@
 //        offline  network off: a silent per-user install, the app (with the bag and the print),
 //                 a silent uninstall
 //   4. start WindowsSandbox.exe with it, wait for io\done.json, wait for the sandbox to close
-//   5. summarise every check by D11 item: summary.md and summary.json in the run folder
+//   5. summarise every check by D11 item, overall and per run: summary.md and summary.json in the
+//      run folder
 //
 // Keep the Sandbox window open and visible while it runs (its screenshots are of that screen).
 //
@@ -160,7 +161,10 @@ export function wsbConfig({ mode, io, installer, node, playwright, scripts, bag 
     (bag === null ? "" : ` -BagName "${path.basename(bag)}"`);
   return [
     "<Configuration>",
-    "  <VGpu>Enable</VGpu>",
+    // software rendering inside: with the host's GPU shared, the sandbox's dwm.exe kept crashing in
+    // udwm.dll on this laptop (Intel + NVIDIA, external monitors) and no logon completed (2026-10-13);
+    // a customer's PC is not assumed to share a GPU either
+    "  <VGpu>Disable</VGpu>",
     `  <Networking>${mode === "offline" ? "Disable" : "Enable"}</Networking>`,
     "  <MemoryInMB>8192</MemoryInMB>",
     "  <ClipboardRedirection>Disable</ClipboardRedirection>",
@@ -183,17 +187,23 @@ function readJson(file) {
   return JSON.parse(readFileSync(file, "utf8").replace(/^\uFEFF/, ""));
 }
 
+/** A list from a JSON value: Windows PowerShell 5.1 can write a one-entry list as a bare object. */
+export function asList(value) {
+  if (Array.isArray(value)) return value;
+  return value === null || value === undefined ? [] : [value];
+}
+
 /** Every check of one run, with the D11 item it belongs to. */
 function runChecks(io, mode) {
   const checks = [];
-  for (const entry of readJson(path.join(io, "results.json")) ?? []) {
+  for (const entry of asList(readJson(path.join(io, "results.json")))) {
     checks.push({ mode, source: "sandbox", ...entry });
   }
   for (const name of existsSync(io) ? readdirSync(io) : []) {
     const match = /^app-(.+)\.json$/.exec(name);
     if (match === null) continue;
     const app = readJson(path.join(io, name));
-    for (const entry of app?.results ?? []) checks.push({ mode, source: match[1], ...entry });
+    for (const entry of asList(app?.results)) checks.push({ mode, source: match[1], ...entry });
   }
   const shots = existsSync(path.join(io, "shots")) ? readdirSync(path.join(io, "shots")).length : 0;
   const logs = existsSync(path.join(io, "logs")) ? readdirSync(path.join(io, "logs")).length : 0;
@@ -227,27 +237,32 @@ export function verdicts(checks) {
   return out;
 }
 
-function summarize(runDir, modes) {
-  const checks = [];
-  const facts = {};
-  for (const mode of modes) {
-    const io = path.join(runDir, mode, "io");
-    facts[mode] = readJson(path.join(io, "facts.json"));
-    checks.push(...runChecks(io, mode));
-  }
+/**
+ * The summary: each run's facts, then one row per D11 item with its verdict overall and in each run
+ * (an item that passed offline but failed with the network on is FAIL overall, and shows where).
+ */
+export function summaryMarkdown(name, modes, facts, checks) {
   const byItem = verdicts(checks);
-  const lines = [`# Clean-PC check in Windows Sandbox (${path.basename(runDir)})`, ""];
+  const byMode = Object.fromEntries(
+    modes.map((mode) => [mode, verdicts(checks.filter((c) => c.mode === mode))]),
+  );
+  const lines = [`# Clean-PC check in Windows Sandbox (${name})`, ""];
   for (const mode of modes) {
     const f = facts[mode];
     lines.push(
-      f === null
+      f === null || f === undefined
         ? `- **${mode}**: no facts recorded (the run did not start or did not finish)`
         : `- **${mode}**: ${f.os} ${f.displayVersion ?? ""} (build ${f.build}, ${f.edition}), user ${f.user}, ` +
             `network ping ${f.network?.ping}, Smart App Control ${f.smartAppControl ?? "n/a"}, ` +
+            `SmartScreen ${JSON.stringify(f.smartScreen ?? null)}, ` +
             `VC++ in System32 ${JSON.stringify(f.vcRuntimeInSystem32)}`,
     );
   }
-  lines.push("", "| # | D11 item | Result | Details |", "|---|---|---|---|");
+  lines.push(
+    "",
+    `| # | D11 item | Result | ${modes.join(" | ")} | Details |`,
+    `|---|---|---|${modes.map(() => "---|").join("")}---|`,
+  );
   for (const [key, verdict] of Object.entries(byItem)) {
     const details = verdict.checks
       .map(
@@ -256,9 +271,23 @@ function summarize(runDir, modes) {
       )
       .join("<br>")
       .replace(/\|/g, "\\|");
-    lines.push(`| ${key} | ${ITEMS[key] ?? "other checks"} | ${verdict.status} | ${details} |`);
+    const perMode = modes.map((mode) => byMode[mode]?.[key]?.status ?? "not run");
+    lines.push(
+      `| ${key} | ${ITEMS[key] ?? "other checks"} | ${verdict.status} | ${perMode.join(" | ")} | ${details} |`,
+    );
   }
-  const md = `${lines.join("\n")}\n`;
+  return { markdown: `${lines.join("\n")}\n`, byItem };
+}
+
+function summarize(runDir, modes) {
+  const checks = [];
+  const facts = {};
+  for (const mode of modes) {
+    const io = path.join(runDir, mode, "io");
+    facts[mode] = readJson(path.join(io, "facts.json"));
+    checks.push(...runChecks(io, mode));
+  }
+  const { markdown: md, byItem } = summaryMarkdown(path.basename(runDir), modes, facts, checks);
   writeFileSync(path.join(runDir, "summary.md"), md, "utf8");
   writeFileSync(
     path.join(runDir, "summary.json"),

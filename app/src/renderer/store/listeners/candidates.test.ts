@@ -7,7 +7,13 @@ import { sampleConnection } from "@/design/samples";
 import { engineState } from "@/test/engine";
 import { tick, useStoreTimers } from "@/test/time";
 import { makeStore } from "../store";
-import { candidateJobRequested, candidateJobStopRequested, POLL_INTERVAL_MS } from "./candidates";
+import {
+  candidateJobCancelRequested,
+  candidateJobRequested,
+  candidateJobStopRequested,
+  POLL_INTERVAL_MS,
+  sameWindowsPath,
+} from "./candidates";
 
 const FP = "f".repeat(64);
 const PH = "abcdef012345";
@@ -167,7 +173,7 @@ describe("the candidate job", () => {
     expect(store.getState().candidates.set?.fingerprint).toBe(FP);
   });
 
-  it("job_busy: attaches to the job that is already running", async () => {
+  it("job_busy on the same recording: attaches to the job that is already running", async () => {
     const seen = jobEngine({
       "POST /candidates/jobs": [
         {
@@ -180,11 +186,52 @@ describe("the candidate job", () => {
     const fake = fakeStream();
     restore = fake.restore;
     const store = makeStore({ engine: engineState() });
-    store.dispatch(candidateJobRequested({ bagPath: "D:\\bags\\other.bag" }));
+    // the engine keeps the path as Python's str(Path(...)); case and separators do not matter
+    store.dispatch(candidateJobRequested({ bagPath: "d:/BAGS//006.bag" }));
     await tick();
     expect(seen).toEqual(["POST /candidates/jobs", "GET /candidates/jobs/job1"]);
     expect(store.getState().candidates.job?.id).toBe("job1");
+    expect(store.getState().candidates.busyElsewhere).toBeNull();
     expect(fake.streams).toHaveLength(1);
+  });
+
+  it("job_busy on another recording: not followed as this one's; Cancel reaches that job", async () => {
+    const seen = jobEngine({
+      "POST /candidates/jobs": [
+        {
+          status: 409,
+          body: { error: { code: "job_busy", message: "busy", details: { job_id: "job1" } } },
+        },
+      ],
+      "GET /candidates/jobs/job1": [{ status: 200, body: snapshot() }],
+      "POST /candidates/jobs/job1/cancel": [
+        { status: 202, body: snapshot({ state: "cancelling" }) },
+      ],
+    });
+    const fake = fakeStream();
+    restore = fake.restore;
+    const store = makeStore({ engine: engineState() });
+    store.dispatch(candidateJobRequested({ bagPath: "D:\\bags\\other.bag" }));
+    await tick();
+    const state = store.getState().candidates;
+    expect(state.bagPath).toBe("D:\\bags\\other.bag");
+    expect(state.job).toBeNull();
+    expect(state.start).toMatchObject({ state: "error", error: { code: "job_busy" } });
+    expect(state.busyElsewhere?.bag_path).toBe("D:\\bags\\006.bag");
+    expect(fake.streams).toHaveLength(0);
+
+    store.dispatch(candidateJobCancelRequested());
+    await tick();
+    expect(seen.at(-1)).toBe("POST /candidates/jobs/job1/cancel");
+    expect(store.getState().candidates.busyElsewhere?.state).toBe("cancelling");
+    expect(store.getState().candidates.set).toBeNull();
+  });
+
+  it("sameWindowsPath: separators, repeats, case and a trailing separator do not matter", () => {
+    expect(sameWindowsPath("D:\\bags\\006.bag", "d:/bags//006.BAG")).toBe(true);
+    expect(sameWindowsPath("\\\\server\\share\\a.bag", "//SERVER/share/a.bag")).toBe(true);
+    expect(sameWindowsPath("D:\\bags\\006.bag", "D:\\bags\\004.bag")).toBe(false);
+    expect(sameWindowsPath("\\\\server\\share\\a.bag", "\\server\\share\\a.bag")).toBe(false);
   });
 
   it("stop asks the engine; a stopped walk is a partial set", async () => {

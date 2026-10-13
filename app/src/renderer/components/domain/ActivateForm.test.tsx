@@ -89,6 +89,31 @@ describe("ActivateForm", () => {
     expect(screen.queryByRole("alert")).toBeNull();
   });
 
+  it("a key that verified but could not be saved says so before the app opens", async () => {
+    const status: LicenseStatus = { ...ACTIVE, notSaved: true };
+    const activate = vi.fn(() =>
+      Promise.resolve({
+        accepted: true,
+        reason: null,
+        detail: "",
+        license: ACTIVE.license,
+        status,
+      } satisfies ActivationResult),
+    );
+    const onAccepted = vi.fn();
+    renderWithStore(<ActivateForm activate={activate} onAccepted={onAccepted} />, {
+      preloadedState: uiState("en"),
+    });
+    await submit("NZL1.good.key");
+    // a warning: announced politely (role status), not as an error
+    const alert = await screen.findByRole("status");
+    expect(alert).toHaveTextContent("it will be asked for again at the next start");
+    expect(alert).toHaveTextContent("سيُطلب مرة أخرى عند التشغيل التالي");
+    expect(onAccepted).not.toHaveBeenCalled();
+    await userEvent.setup().click(screen.getByRole("button", { name: /Continue/ }));
+    expect(onAccepted).toHaveBeenCalledWith(status);
+  });
+
   it("the key field is left to right and the button waits for a key", () => {
     renderWithStore(<ActivateForm activate={vi.fn()} onAccepted={vi.fn()} />, {
       preloadedState: uiState("ar"),

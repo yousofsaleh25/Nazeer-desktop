@@ -24,6 +24,11 @@ export interface CandidatesState {
   bagPath: string | null;
   start: { state: "idle" | "starting" | "error"; error: ApiErrorShape | null };
   job: { id: string; snapshot: JobSnapshot; transport: "sse" | "poll" } | null;
+  /**
+   * The engine runs one job at a time: a search of another recording that kept this one from
+   * starting (`job_busy`). Shown with its own recording and never followed as this one's.
+   */
+  busyElsewhere: JobSnapshot | null;
   set: CandidateSetRef | null;
   picked: CandidateRef | null;
 }
@@ -32,6 +37,7 @@ export const CANDIDATES_INITIAL: CandidatesState = {
   bagPath: null,
   start: { state: "idle", error: null },
   job: null,
+  busyElsewhere: null,
   set: null,
   picked: null,
 };
@@ -54,7 +60,17 @@ const candidatesSlice = createSlice({
       state.start = { state: "idle", error: null };
       state.job = { id: action.payload.job_id, snapshot: action.payload, transport: "sse" };
     },
+    candidateJobBusyElsewhere(
+      state,
+      action: PayloadAction<{ error: ApiErrorShape; snapshot: JobSnapshot }>,
+    ) {
+      state.start = { state: "error", error: action.payload.error };
+      state.busyElsewhere = action.payload.snapshot;
+    },
     candidateJobSnapshot(state, action: PayloadAction<JobSnapshot>) {
+      if (state.busyElsewhere?.job_id === action.payload.job_id) {
+        state.busyElsewhere = action.payload;
+      }
       if (state.job === null || state.job.id !== action.payload.job_id) return;
       state.job.snapshot = action.payload;
     },
@@ -78,6 +94,7 @@ export const {
   candidateJobStarting,
   candidateJobStartFailed,
   candidateJobAttached,
+  candidateJobBusyElsewhere,
   candidateJobSnapshot,
   candidateJobPolling,
   candidateSetReady,

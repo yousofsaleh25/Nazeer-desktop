@@ -159,6 +159,12 @@ def parse_args(argv: list[str] | None) -> argparse.Namespace:
     parser.add_argument("--check", action="store_true", help="validate, print the ready line, exit")
     parser.add_argument("--dump-openapi", metavar="PATH", help="write openapi.json and exit")
     parser.add_argument("--stub-model", action="store_true", help="dev only (NAZEER_ENGINE_DEV=1)")
+    parser.add_argument(
+        "--stub-mask",
+        choices=("none", "ellipse"),
+        default="none",
+        help="with --stub-model: none = no detection; ellipse = a centred ellipse in every frame",
+    )
     return parser.parse_args(argv)
 
 
@@ -225,14 +231,19 @@ def main(argv: list[str] | None = None) -> int:
 
         model_path = Path(args.model) if args.model else default_model_path()
         warmup_ms: float | None = None
+        if args.stub_mask != "none" and not args.stub_model:
+            return _fatal("stub_mask_needs_stub_model", "--stub-mask needs --stub-model", EXIT_ARGS)
         if args.stub_model:
             if not dev_env_enabled():
                 return _fatal(
                     "stub_model_not_allowed", "--stub-model needs NAZEER_ENGINE_DEV=1", EXIT_ARGS
                 )
-            from .segmenter import StubSegmenter
+            from .segmenter import StubSegmenter, stub_ellipse_detection
 
-            segmenter: Any = StubSegmenter()
+            if args.stub_mask == "ellipse":
+                segmenter: Any = StubSegmenter(stub_ellipse_detection, name="stub-ellipse")
+            else:
+                segmenter = StubSegmenter()
         else:
             from .segmenter import CamelSegmenter
 

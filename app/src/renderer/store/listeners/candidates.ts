@@ -1,10 +1,12 @@
 /**
  * The candidate job (C2.8). Start: 200 cached → the candidate set at once; 202 → follow the job;
- * 409 `job_busy` → attach to the job that is running (one at a time, engine-wide). Follow over SSE
- * (`progress`, then `done` / `cancelled` / `failed`); when the stream fails, poll every 500 ms. A
- * finished job becomes the candidate set (partial when the operator stopped it). Cancel and stop
- * are requests to the engine; the stream (or the poll) then reports the terminal state. A new
- * start request stops following the previous job.
+ * 409 `job_busy` → attach to the job that is running (one at a time, engine-wide) when it walks
+ * the same recording; a job walking another recording is reported (`busyElsewhere`, with its own
+ * path, and Cancel reaches it), never followed as this one's. Follow over SSE (`progress`, then
+ * `done` / `cancelled` / `failed`); when the stream fails, poll every 500 ms. A finished job
+ * becomes the candidate set (partial when the operator stopped it). Cancel and stop are requests
+ * to the engine; the stream (or the poll) then reports the terminal state. A new start request
+ * stops following the previous job.
  */
 import { createAction } from "@reduxjs/toolkit";
 import { settle } from "@/api/client";
@@ -16,6 +18,7 @@ import { engineUrl } from "@/api/urls";
 import type { AppStartListening } from "../listener";
 import {
   candidateJobAttached,
+  candidateJobBusyElsewhere,
   candidateJobPolling,
   candidateJobSnapshot,
   candidateJobStartFailed,
@@ -31,6 +34,20 @@ export const candidateJobCancelRequested = createAction("candidates/cancelReques
 export const candidateJobStopRequested = createAction("candidates/stopRequested");
 
 export const POLL_INTERVAL_MS = 500;
+
+/**
+ * Two Windows paths name the same file: the engine keeps a job's bag as `str(Path(...))`
+ * (backslashes, repeated separators collapsed), and Windows paths ignore case.
+ */
+export function sameWindowsPath(a: string, b: string): boolean {
+  const key = (path: string): string => {
+    const p = path.trim().replace(/\//g, "\\");
+    const unc = p.startsWith("\\\\");
+    const rest = (unc ? p.slice(2) : p).replace(/\\{2,}/g, "\\").replace(/\\+$/, "");
+    return (unc ? "\\\\" : "") + rest.toLowerCase();
+  };
+  return key(a) === key(b);
+}
 
 /** The typed client's data (tuples widened) as a snapshot, checked for what the store uses. */
 function asSnapshot(raw: unknown): JobSnapshot | null {
@@ -72,6 +89,10 @@ export function startCandidateJobs(startListening: AppStartListening): void {
           return;
         }
         snapshot = asSnapshot(running.data);
+        if (snapshot !== null && !sameWindowsPath(snapshot.bag_path, bagPath)) {
+          api.dispatch(candidateJobBusyElsewhere({ error: started.error, snapshot }));
+          return;
+        }
       } else {
         const out = started.data;
         const cached = out.result;
@@ -109,10 +130,12 @@ export function startCandidateJobs(startListening: AppStartListening): void {
     startListening({
       actionCreator: request,
       effect: async (_action, api) => {
-        const job = api.getState().candidates.job;
+        // the followed job, or the other recording's job that kept this search from starting
+        const { job, busyElsewhere } = api.getState().candidates;
+        const target = job?.snapshot ?? busyElsewhere;
         const engine = activeEngine();
-        if (job === null || job.snapshot.terminal || engine === null) return;
-        const path = { job_id: job.id };
+        if (target === null || target.terminal || engine === null) return;
+        const path = { job_id: target.job_id };
         const result = await settle(() =>
           verb === "cancel"
             ? engine.client.POST("/candidates/jobs/{job_id}/cancel", { params: { path } })

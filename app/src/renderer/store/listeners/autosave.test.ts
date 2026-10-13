@@ -1,13 +1,14 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import type { EngineConnection, EngineStatusEvent, NazeerApi } from "@shared/ipc";
 import { tick, useStoreTimers } from "@/test/time";
 import type { MeasurementInput } from "@/api/types";
 import { setEngineConnection } from "@/api/connection";
 import { sampleConnection } from "@/design/samples";
 import { engineState } from "@/test/engine";
 import { SessionEngine } from "@/test/sessionEngine";
+import { connectEngineBridge } from "../engineBridge";
 import { flushAutosave } from "../session/flush";
 import { saveStateOf } from "../session/selectors";
-import { engineStatusReceived } from "../slices/engine";
 import {
   conflictResolved,
   measurementAdded,
@@ -200,29 +201,45 @@ describe("autosave", () => {
     expect(saveStateOf(session())).toBe("clean");
   });
 
-  it("no engine: offline; when it is ready again the session is fetched, then saved", async () => {
+  it("no engine: offline; when the supervisor reports it ready again the session is fetched, then saved", async () => {
     const { engine, store, session } = await setup();
-    setEngineConnection(null);
-    store.dispatch(measurementAdded(line("a")));
-    await tick(AUTOSAVE_DEBOUNCE_MS + 60_000);
-    expect(saveStateOf(session())).toBe("offline");
-    expect(puts(engine)).toHaveLength(0);
-    const restarted = { ...sampleConnection, token: "f".repeat(64), pid: 4242 };
-    setEngineConnection(restarted, engine.fetch);
-    const gets = engine.requests.length;
-    store.dispatch(
-      engineStatusReceived({
-        seq: 9,
-        status: "ready",
-        connection: restarted,
-        fatal: null,
-        restarts: 1,
-        unresponsive: false,
-      }),
-    );
-    await tick();
-    expect(engine.requests.slice(gets).map((r) => r.method)).toEqual(["GET", "PUT"]);
-    expect(saveStateOf(session())).toBe("clean");
+    // the production path: main's status events through the bridge, whose client uses the
+    // global fetch (here the simulated engine's)
+    vi.stubGlobal("fetch", engine.fetch);
+    let push: (event: EngineStatusEvent) => void = () => undefined;
+    const bridge: NazeerApi["engine"] = {
+      getConnection: () => Promise.resolve(null),
+      getStatus: () => new Promise<EngineStatusEvent>(() => undefined),
+      retry: () => Promise.resolve(),
+      onStatus: (listener) => {
+        push = listener;
+        return () => undefined;
+      },
+    };
+    const dispose = connectEngineBridge(store, bridge);
+    const status = (seq: number, connection: EngineConnection | null): EngineStatusEvent => ({
+      seq,
+      status: connection === null ? "restarting" : "ready",
+      connection,
+      fatal: null,
+      restarts: 1,
+      unresponsive: false,
+    });
+    try {
+      push(status(2, null));
+      store.dispatch(measurementAdded(line("a")));
+      await tick(AUTOSAVE_DEBOUNCE_MS + 60_000);
+      expect(saveStateOf(session())).toBe("offline");
+      expect(puts(engine)).toHaveLength(0);
+      const gets = engine.requests.length;
+      push(status(3, { ...sampleConnection, token: "f".repeat(64), pid: 4242 }));
+      await tick();
+      expect(engine.requests.slice(gets).map((r) => r.method)).toEqual(["GET", "PUT"]);
+      expect(saveStateOf(session())).toBe("clean");
+    } finally {
+      dispose();
+      vi.unstubAllGlobals();
+    }
   });
 
   it("flush sends at once and reports nothing unsaved after the answer", async () => {

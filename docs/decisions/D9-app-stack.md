@@ -23,7 +23,8 @@ Electron's own Chromium.
   `--data-root <absolute path>` to the engine sidecar; the engine refuses to start otherwise.
   Never Desktop / Documents / OneDrive paths.
 - Packaging: electron-builder (NSIS) with the PyInstaller one-dir engine as `extraResources`;
-  the app spawns and supervises the engine on 127.0.0.1.
+  the app spawns and supervises the engine on 127.0.0.1. (As built in Stage B: the engine is an
+  embedded CPython 3.11.9 with the venv's runtime packages, not a PyInstaller build; D11.)
 - The renderer never reads a `.bag`; it passes paths to the engine. PDF viewing in-app uses
   bundled pdf.js.
 
@@ -34,6 +35,8 @@ Electron's own Chromium.
 - `engine/wheels/` (offline wheelhouse of the pinned Python wheels, ≈ 2.5 MB for the
   Arabic/PDF deps) — whether to track it in git is open.
 - One Playwright-Electron e2e covers the export flow; everything else stays in pytest/vitest.
+  (As built: six Playwright-Electron specs — smoke, connectivity, license, export, and the operator
+  flow fast and real; see "Tests and the end-to-end proof" below.)
 
 ## App implementation decisions (2026-10-11)
 
@@ -63,7 +66,8 @@ stage; results measured later are appended here.
 - **Fonts:** the UI bundles `@fontsource/ibm-plex-sans-arabic` 5.3.0 (OFL-1.1) weights
   400/500/600/700 with `font-synthesis: none`. The print page uses only the engine's pinned
   `IBMPlexSansArabic-Regular.ttf` (sha256 `8e0f1046…0981`): Electron main reads it, checks it
-  against `/health.arabic_stack.font_sha256` (the face the overlay was drawn with) and hands the
+  against the hash `npm run gen:cmap` pinned in `src/print/plex-cmap.json` (as built, Stage 7; this
+  line first said `/health.arabic_stack.font_sha256`, the same pinned face) and hands the
   bytes to the page (`new FontFace`), so no font URL exists and dev cannot diverge from packaged;
   every printed string is weight 400 (B38; real_run measured this path as PASS). The parent
   template's four embedded "weights" are all Regular subsets — no Plex 500/600/700 exists in either
@@ -89,13 +93,16 @@ stage; results measured later are appended here.
   `supportFetchAPI`, `codeCache`) so it is a secure context (`crypto.subtle`) with a real origin for
   the engine's CORS list; CSP is sent as a response header (by the `app://` handler; in dev by a
   `webRequest` hook limited to the Vite server) and the print page gets its own policy without
-  `connect-src`; permissions are denied except `local-network-access` (Chromium 152's Local Network
-  Access for app:// → 127.0.0.1) and `clipboard-sanitized-write`, for the app origins only;
+  `connect-src`; permissions are denied except `local-network-access` and `loopback-network`
+  (Chromium 152's Local Network Access for app:// → 127.0.0.1; the code has allowed both names
+  since Stage 1, this line named the first only until Stage 9) and `clipboard-sanitized-write`, for
+  the app origins only;
   navigation, `window.open` and webviews are blocked; the production menu has no reload or
   DevTools. The engine token is 32 random bytes per spawn; it is visible on the engine's command
   line to processes of the same Windows user, which sit inside the trust boundary anyway.
-- **Packaging** (later stage, not started): renderer libraries are bundled by Vite, so
-  `node_modules` stays out of the asar.
+- **Packaging** (done in Stage B, 2026-10-12; D11): renderer libraries are bundled by Vite, and
+  `electron-builder.yml` keeps `node_modules` out of the asar (`files: "!node_modules/**/*"`; the
+  Stage B build's `app.asar` listed 42 entries, none from `node_modules`).
 
 ### Design system (Stage 2, 2026-10-11)
 
@@ -168,9 +175,9 @@ stage; results measured later are appended here.
   (`server.fs.allow` gains `../runs`, dev server only): the frame and mask, the engine's overlay
   PNG and the sealed PDF, whose SHA-256 the page computes with WebCrypto — both equal the engine's
   stamps (`914513bd…475f7`, `85c9876b…b73237`).
-- Production bundle notes for packaging: the pdf.js worker (1.27 MB) is already emitted as an
-  asset although nothing mounts the viewer yet (Vite emits `?url` assets while scanning the module
-  graph); the renderer output is not minified with the current electron-vite configuration.
+- Production bundle notes for packaging: the pdf.js worker (1.27 MB) is emitted as an asset (Vite
+  emits `?url` assets while scanning the module graph; since Stage 6 the report screen mounts the
+  viewer); the renderer output is not minified with the current electron-vite configuration.
 
 ### Engine supervisor and client (Stage 4, 2026-10-12)
 
@@ -214,20 +221,25 @@ stage; results measured later are appended here.
 - **Watchdog**: `/health` every 15 s (5 s timeout, the ready pid must answer). Two misses in a row
   set `unresponsive` (a banner); the engine is kept running, since a long finalize must not be killed.
 - **Logs** (`logs.ts`): `<userData>\logs\app-engine-stderr.log` = the engine's stderr plus the
-  supervisor's lifecycle lines (the token is masked); one rotation to `.1` at 5 MiB. The engine
-  keeps its own `<data root>\logs\engine.log`.
+  supervisor's lifecycle lines (the token is masked in the logged command line; the engine's stderr
+  is written as it comes, and the engine never prints the token); one rotation to `.1` at 5 MiB.
+  The engine keeps its own `<data root>\logs\engine.log`.
 - **Quit** (`quit.ts`): the window's `close` and the app's `before-quit` first ask the renderer to
   flush (`app.onBeforeQuit`, answer within 3 s); unsaved changes or no answer → a bilingual
   "Quit anyway?" dialog (main owns these few strings, Arabic line first). Then `will-quit` is held
   while the engine is stopped (`POST /system/shutdown`, kill after 8 s: launcher and engine pid)
   and the HTTP cache (token-bearing asset URLs) is cleared. A renderer that crashes is logged and
-  reloaded.
+  reloaded — since Stage 9 at most 3 times in 5 minutes, and never after `launch-failed` or
+  `integrity-failure`; then a bilingual dialog offers "Try again" or "Quit"
+  (`main/rendererRecovery.ts`).
 - **Preload surface additions:** `engine.getStatus()` (the state at load; every
   `EngineStatusEvent` carries an increasing `seq`, so a reply older than a pushed event is dropped)
   and `engine.retry()` (the fatal screen's "Try again"). `print.exportPdf` arrives with the print
   page in Stage 7; its `ExportRequest` shape and validator are fixed in `shared/ipc.ts`.
 - **Capture-folder scan** (`scan.ts`): paths and stat only; depth ≤ 3, ≤ 2 000 entries, ≤ 200 bags,
-  ≤ 3 s; links and junctions are never followed (tested with a real junction); `truncated` when
+  ≤ 3 s (since Stage 9 also while one listing hangs, e.g. an unreachable network share: the scan
+  stops waiting and names the folder); links and junctions are never followed (tested with a real
+  junction); `truncated` when
   any bound is hit. The folders are stored in `<userData>\app-settings.json` (atomic write; a
   damaged file means the defaults and a log line).
 - **Renderer client** (`api/client.ts`, `urls.ts`, `connection.ts`, `engineApi.ts`):
@@ -363,8 +375,7 @@ stage; results measured later are appended here.
   model (labels, scoring forms, observation fields), so it waits for finalize; saving sends only
   what changed, trimmed (`PATCH …/report-inputs`); on a sealed session that writes a new report model
   version. An exported session's PDF is downloaded and shown only when its SHA-256 matches the
-  engine's, with the checks from its manifest. Printing comes in Stage 7 (the button is there,
-  disabled, saying so).
+  engine's, with the checks from its manifest. Printing: Stage 7 ("Printing" below).
 - **History** (`screens/HistoryScreen.tsx`): search (300 ms after typing stops; the engine looks in
   the camel id, operator, recording, session id and measurement names), status, index state, order,
   pages of 50. Open: every session opens on the measuring screen, read-only when sealed, with links
@@ -404,7 +415,10 @@ stage; results measured later are appended here.
   the save lands, leaving the screen, quitting, a failing save). One addition: the open session's
   entry in the header carries its save state while the engine does not hold everything (unsaved,
   saving, not saved, offline, conflict, finalizing: `UnsavedBadge`, `screens/OperatorLayout.tsx`),
-  so a save that keeps failing stays visible from Home, History and About as well.
+  so a save that keeps failing stays visible from Home, History and About as well — while the
+  engine is ready; while it is not, its waiting or fatal panel replaces every screen and the
+  session's state waits in the store. A session made read-only elsewhere (`blocked`) shows its kept
+  draft on the measuring screen, not in the header.
 - **Wording (operator decision, 2026-10-12):** finalizing a session is «إقفال» (إقفال الجلسة،
   جارٍ الإقفال…، أقفل الجلسة أولًا؛ the state مُقفلة); approving the engine's image keeps «اعتماد»
   (اعتماد هذه الصورة، معتمدة، الصورة المعتمدة), the sense of the report's own «معتمدة من شركة نظير»
@@ -447,3 +461,143 @@ stage; results measured later are appended here.
   0.0231" as "MSE) 0.0231(": the run had swallowed the ")"; now "MSE" and "0.0231" are isolated
   separately). Both have tests; the bidi fix applies to the UI too.
 - **npm scripts:** `gen:cmap` (the face's coverage table) and `export` (the headless re-export, D7).
+
+### Tests and the end-to-end proof (Stage 8, 2026-10-13)
+
+The original consequence above ("one Playwright-Electron e2e covers the export flow") grew stage by
+stage into six specs; Stage 8 adds the two that drive the whole operator flow through the UI.
+
+- **`e2e/flow-fast.spec.ts` (in `npm run e2e`):** the built app with the stub-model engine and
+  `NAZEER_STUB_MASK=ellipse` (D10 "Development stub mask") on the real bag 004, in the Arabic UI:
+  "Choose a .bag file…" with the OS dialog answered in main (`dialog.showOpenDialog` replaced through
+  `electronApp.evaluate`), the frame search, a proposed frame, four named measurements (a 2D distance
+  with the keyboard crosshair, a 3D distance and a 3D curve with the mouse, and a 2D distance placed
+  with the keyboard while the mouse rests on the canvas), finalize, approval on the overlay verified
+  with WebCrypto, print; the engine seals it (strict probes PASS, pixel |Δ| 0, every name found, one
+  Plex subset, attachments). About 20 s; skipped when bag 004 is absent.
+- **`e2e/flow-real.spec.ts` (`NAZEER_REAL=1`):** the built app with the real engine (`best.pt`,
+  warmed up) on bag 006, in the English UI, eleven steps with every check `engine/tools/real_run.py`
+  makes, on what the app produced: health with the pinned model and the Arabic stack; rgb8; the
+  frame search (whole bag, ≥ 1 proposal, the operator gates, ≥ 1.5 s apart, one tile per proposal);
+  revision 0 and Z_ref = the picked candidate's mask median; depth sources as placed, once from the
+  app's own hover requests (inside: direct; a click 15 px above the silhouette: snapped to the
+  camel; Shift over the ground with a 3D tool: the ground's own depth) and once on the saved rows;
+  all eight kinds drawn through the UI with every autosave answered 200 at the next revision (no
+  conflict); a replay of the stored revision is a 200 with the same ETag and a stale save a 409
+  `stale_revision` carrying the current view; previews equal the saved values; the 3D curve's 2D
+  cross-check equals the 2D curve on the same points; finalize and approve in the UI, the overlay
+  W × (H + 120) with the hash the app verified, the report model's hash; report details in Arabic,
+  print and seal (verdict PASS with strict text and font probes, pixel |Δ| 0, every
+  `required_report_texts` string found); the sealed PDF read back with pdf.js (its SHA-256 =
+  `outputs.report.sha256`, A4 pages, only `IBMPlexSansArabic` faces and no Type3, the attachments
+  `overlay_vN.png`, `report_model.json`, `session.json`, the first two byte-identical to the approved
+  overlay and the printed model, `session.json` schema 2.1 with every measurement); History: the
+  engine's search and the History screen find the session by its Arabic camel ID, exported. Content
+  only, never PDF bytes. Run of 2026-10-13: 11/11 in 59–84 s (bag 006: 1751 pairs, 351 sampled, 12
+  proposed in 35 s; 10 measurements, 10 autosaves; report v1 from model v2: 5 pages, 14 required
+  texts).
+- **How the specs drive the app:** labels come from `ar.json` / `en.json` by key
+  (`e2e/helpers/labels.ts`), so the Arabic wording review changes no spec; the engine is called
+  from the test process with the app's own connection (port and token: no CORS involved); click
+  positions come from the session's own mask, decoded with a canvas in the renderer
+  (`e2e/helpers/flow.ts` `framePoints`: inside ≥ 6 px from the edge, a miss 15 px above the
+  silhouette with no mask pixel within 8 px, the ground 6 px below the drawn ground line).
+- **pdf.js 6 in Node** (`e2e/helpers/pdf.ts`, the legacy build with the app's own options):
+  `getAttachments()` returns a `Map` of names without their bytes, and `getAttachmentContent(id)`
+  returns the bytes (earlier versions returned an object with the content); `fontExtraProperties`
+  gives each font's PDF name and its Type3 flag.
+- **Unit tests added:** `shared/offline.test.ts` (the app's sources name no host but the loopback
+  engine or a `.invalid` placeholder; no stylesheet or font imported from a URL, no updater, crash
+  upload, external link or Node network request; the policy half stays in `csp.test.ts`); the print
+  page reads no stored state while it renders (a stored "English, both languages" preference and an
+  Arabic report: Arabic only, and no `Storage` method called).
+- **Development switch:** `NAZEER_STUB_MASK=<mode>` passes `--stub-mask <mode>` to a development
+  engine (`main/engine/command.ts`; ignored in production builds; the engine refuses it without the
+  stub model).
+- **The manual pass on bag 006** (`npm run dev`, the real model, a fresh data root, driven over CDP
+  as in Stage 7: all eight kinds, editing, finalize, approve, three prints, History, then
+  `npm run export` with the app closed): 44 of 45 checks passed (`runs\stage8_walk_20261013T160422Z`;
+  a first run got through 42 of 43 before the script's own clean-up failed, Electron still holding
+  its temporary profile); three PDFs sealed with strict probes, the headless re-export PASS, no
+  renderer console error. The one failure, in both runs: the keyboard angle's points were placed at
+  fractional positions, i.e. under a pointer,
+  not at the crosshair, although the script had moved its own mouse off the canvas. The window of
+  `npm run dev` is a real window on the desktop, and mouse movement over it moves the shared
+  crosshair (by design); the e2e specs, whose keyboard points land exactly, cover the path
+  deterministically, including a mouse resting on the canvas.
+
+### Review and wrap-up (Stage 9, 2026-10-13)
+
+Status: one read-only review agent over `app/` and `tools/generate-license.mjs` (no file written,
+nothing run but reads; the review areas of the plan: IPC and validation, the security baseline and
+CSP, the token, the licence gate, contract adherence C1–C3 and D7, RTL / bidi, offline,
+robustness). It reported 19 findings — 2 major, 10 minor, 7 nits, no blocker — and 8 places where
+this record had drifted from the code. Nothing broke the security baseline, the token handling or
+the licence gate beyond D11's documented limits. Each finding was checked in the code before it
+was fixed; the majors and the races were reproduced first by a test that failed on the old code.
+
+- **Fixed, each with a test:**
+  - Autosave after an engine restart (major; D10 "App side of C3.4"): the engine-ready listener ran
+    inside the status dispatch, before the bridge installed the new client, so a save the outage
+    held back waited for the next edit. The bridge now installs the connection the slice will keep
+    (computed with its reducer) before dispatching (`store/engineBridge.ts`); the test goes through
+    the real bridge (the old one set the connection first, the reverse of production).
+  - `job_busy` on another recording (major; C2): the frame search followed a running job whatever
+    bag it walked, under the bag the operator asked for. It now attaches only to a job on the same
+    recording (Windows path rules: separators, repeats, case); another recording's job is named
+    with its path and a Cancel for it, never shown as this one's (`busyElsewhere`).
+  - A 4-point angle under a new name, or a preview, kept a value while one of its lines changed
+    (D9 "rows shown"): every angle row with a value now waits for its lines.
+  - Print waited for nothing while the report details had unsaved edits: Print is disabled with
+    "Save the report details before printing", and the details are frozen while printing.
+  - Overlay checks matched their answers by version only: a slow check of another session could
+    mark this one's image as not matching or drop its kept bytes. Answers now carry their session;
+    only the check still shown keeps or drops bytes, and only its own (fails closed either way).
+  - A screen that threw while rendering showed React Router's English default page with no way
+    back (production has no reload): a bilingual error element (`screens/ScreenError.tsx`,
+    `appErrors.screen_failed`) replaces the screen inside the shell; the layout's own is the
+    last resort.
+  - The operator window reloaded a crashed renderer without limit: at most 3 reloads in 5 minutes,
+    none after `launch-failed` or `integrity-failure`, then a bilingual dialog ("Try again" / "Quit",
+    with the log folder; `main/rendererRecovery.ts`); a second launch also shows a hidden window.
+  - `--export` with an `--out` that cannot be written hung (the result file's error escaped and
+    `app.exit` was never reached): the run ends with exit 1, `out_write_failed` on stdout, and any
+    remaining throw ends the run as 1.
+  - The export could throw where it promises a coded answer: an answer cut off after the upload is
+    now `network_error` with the HTTP status, a face that cannot be read `print_font_unreadable`
+    (new code), an unreadable logo prints without it, and the report screen reads the session
+    again after every print attempt, so a PDF the engine sealed shows as sealed even when its
+    answer was lost.
+  - An answer about an earlier bag could replace the bag opened after it: inspect answers carry
+    their path and count only for the bag still open.
+  - A key that verified but could not be saved left the Activate screen at once (D11 says the
+    screen tells): it now shows that in both languages, with Continue.
+  - A print page result main refused (more than 200 problems, details too large) left main waiting
+    for the 90 s timeout: it now fails at once as `print_page_failed` with the reason
+    (`preflightOrRefusal`).
+  - Nits: the operator channels now also require the operator page (`/renderer/index.html`), so
+    the hidden print page gets only its own two channels; main sends the token only to the engine's
+    origin (`engineCallUrl`, as the renderer's `engineUrl`); a PDF viewer closed while pdf.js loads
+    creates no document; the licence generator refuses an impossible `--expires` (`2026-02-30`,
+    `24:00`) instead of rolling it over; the capture-folder scan keeps its 3 s while one listing
+    hangs; a ready line still buffered when `stop()` began no longer reports "ready" during
+    shutdown.
+- **Kept as it is: a fresh print partition per print.** The review suggested one reused in-memory
+  partition, since Electron keeps every session object for the life of the process. D7 and
+  CLAUDE.md ask for a fresh partition per print, Electron cannot release a session, and the storage
+  of each is cleared after its print; the growth (one session object per print) is unmeasured.
+  Changing it would be a contract deviation for a nit, so it is recorded here instead.
+- **This record corrected:** the third permission `loopback-network`; the print face checked
+  against `plex-cmap.json`'s hash; the pdf.js worker note; the masked token (the logged command
+  line only); "Printing comes in Stage 7"; the header save state only while the engine is ready;
+  the scan's time bound; PyInstaller and "packaging not started" (Decision, App implementation
+  decisions).
+- **Wrap-up:** CLAUDE.md (the `app/` status row, an "App map", the project paragraph, the engine
+  rows, a pitfall about runs that drive a visible window); `AGENTS.md` became a pointer to
+  CLAUDE.md (operator, 2026-10-13); the batched Arabic wording pass (`docs/arabic-wording-backlog.md`
+  "Stage 9 batch pass": 11 corrections applied, four one-word-two-meanings decisions and the style
+  suggestions left for the operator).
+- **Checks after the fixes:** typecheck, lint and format clean; `npm test` 132 files and 700 tests
+  passed (1 file and 1 test skipped); `npm run e2e` 16 passed and 11 skipped (48 s);
+  `NAZEER_REAL=1` `e2e/flow-real.spec.ts` 11 of 11 on bag 006 with `best.pt` (1.1 min): the same
+  values as in Stage 8, sealed with PASS. The engine is unchanged in Stage 9.

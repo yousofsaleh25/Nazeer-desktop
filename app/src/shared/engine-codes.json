@@ -57,6 +57,7 @@
     "session_not_found",
     "stale_revision",
     "status_not_finalized",
+    "stub_mask_needs_stub_model",
     "stub_model_not_allowed",
     "synthesized_face",
     "text_probe_failed",

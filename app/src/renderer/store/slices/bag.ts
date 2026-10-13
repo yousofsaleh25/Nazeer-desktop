@@ -2,6 +2,7 @@
  * The bag the operator opened (Home): its path and what the engine read from it
  * (`POST /bags/inspect`: size, duration, streams, intrinsics, fingerprint, cached candidate sets).
  * The engine adds an inspected bag to its recent list; the renderer only ever passes the path.
+ * An answer counts only for the path still open (a slow answer for an earlier bag is dropped).
  */
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import type { ApiErrorShape } from "@/api/errors";
@@ -26,12 +27,14 @@ const bagSlice = createSlice({
     bagInspectStarted(_state, action: PayloadAction<string>) {
       return { path: action.payload, info: null, inspect: { state: "loading", error: null } };
     },
-    bagInspected(state, action: PayloadAction<BagInfo>) {
-      state.info = action.payload;
+    bagInspected(state, action: PayloadAction<{ path: string; info: BagInfo }>) {
+      if (state.path !== action.payload.path) return;
+      state.info = action.payload.info;
       state.inspect = { state: "ready", error: null };
     },
-    bagInspectFailed(state, action: PayloadAction<ApiErrorShape>) {
-      state.inspect = { state: "error", error: action.payload };
+    bagInspectFailed(state, action: PayloadAction<{ path: string; error: ApiErrorShape }>) {
+      if (state.path !== action.payload.path) return;
+      state.inspect = { state: "error", error: action.payload.error };
     },
     bagCleared() {
       return BAG_INITIAL;

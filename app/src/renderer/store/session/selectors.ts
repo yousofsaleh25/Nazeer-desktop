@@ -110,13 +110,14 @@ export function displayRowsOf(
     return { input, row: null, status: "pending" };
   });
   // a 4-point angle's value follows its lines: while one of them is changed, added or deleted
-  // and not saved yet, the angle waits too
+  // and not saved yet, the angle waits too — whether its row is the stored one, the stored one
+  // under a new name, or a preview (the engine resolves a preview's lines in the stored document)
   const savedIds = new Set(rows.filter((r) => r.status === "saved").map((r) => r.input.id));
   const draftIds = new Set(rows.map((r) => r.input.id));
   const settled = (id: number) => (draftIds.has(id) ? savedIds.has(id) : !stored.has(id));
   return rows.map((item) => {
     const { input } = item;
-    if (input.kind !== "angle_4point" || item.status !== "saved") return item;
+    if (input.kind !== "angle_4point" || item.row === null) return item;
     const lines = [input.line_a_id, input.line_b_id];
     const waiting = lines.some((id) => typeof id === "number" && !settled(id));
     return waiting ? { input, row: null, status: "pending" } : item;

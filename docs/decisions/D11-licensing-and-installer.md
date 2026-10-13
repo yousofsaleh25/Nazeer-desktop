@@ -199,6 +199,13 @@ file I/O live in Electron main; the sandboxed renderer only shows the screen ove
     real model, overlay, headless Edge print, sealed PDF); then the same rebuilt installer that was
     refused at 18:40 and 18:59 ran through the whole install-and-run smoke (24/24). No Code
     Integrity event from 19:18 on.
+- **2026-10-13, Stage 8:** from 16:33:04 to 18:33 it blocked the venv's
+  `_pydantic_core.cp311-win_amd64.pyd` (events 3033 + 3077 + 3118 on every try; nothing else),
+  a file it had allowed for a day. For those two hours the engine started (`--check` returns before
+  FastAPI is imported) but could not serve: the sidecar died with "An Application Control policy
+  has blocked this file" right after its checks, so no app, no e2e and no API test could run. An
+  import retried once a minute was allowed again at 18:33:53. The longest block measured so far:
+  on the field laptop, a block like it would stop the whole app, not one feature.
 - **Consequences:**
   - the engine now reports a blocked matplotlib as a missing Arabic stack (Stage A1);
   - the field laptop needs Smart App Control off (irreversible without resetting Windows) or a
@@ -380,10 +387,9 @@ tools, no Visual C++ runtime, nothing installed:
     sandbox runs the host's edition);
   - *network off* — a silent per-user install, the same app run with the bag and the print, a silent
     uninstall.
-- Status: written, its pure parts unit-tested (the `.wsb`, the verdicts), the PowerShell parsed, a
-  dry run produced the configuration, and the app driver was run on this laptop against the new
-  installer (below). The Sandbox runs themselves wait for the restart. Keep the Sandbox window
-  visible while it runs: its screenshots are of that screen.
+- Status: written, its pure parts unit-tested (the `.wsb`, the verdicts, the summary), and run in
+  the Sandbox on 2026-10-13 (results below). Keep the Sandbox window visible and untouched while it
+  runs: its screenshots are of that screen, and keys pressed while it has the focus reach it.
 
 **The installer rebuilt with Stages 6 and 7** (2026-10-13 01:25–01:36 local time, 22:25–22:36 UTC on the 12th): `release\Nazeer
 Desktop Setup 0.1.0.exe`, 333,577,746 bytes, SHA-256 `0ab0dcf9…f441e0`, unsigned; the engine
@@ -401,3 +407,57 @@ gone); relaunch without the Activate screen; silent uninstall. Two earlier attem
 driver's own mistakes (fixed: it now reloads the page after finishing the session through the
 engine's API, and switches the UI to English with the header's own control). Smart App Control
 (enforcing) blocked nothing of it. This laptop is not a clean PC: the Sandbox runs still stand.
+
+**The Sandbox runs** (2026-10-13, `runs\sandbox_check_20261013T124217Z`, the installer above): every
+item of the checklist passed in a clean Windows 11 Enterprise 24H2 (build 26100) without the Visual
+C++ runtime, once with the network (14.3 min) and once without (6.0 min); two findings remain.
+
+| Item | Result | Evidence |
+|---|---|---|
+| 1 | pass, one layout finding | SmartScreen warned ("Windows protected your PC … prevented an unrecognized app"), More info → Run anyway; 9 s later the language dialog offered English / العربية, and العربية was chosen; every page reads in Arabic, its window mirrored (RTL reading order, the buttons placed mirrored); shortcuts on the desktop and in Start; the icons show the logo. **Finding:** the install-mode page's own controls (electron-builder's page, built at run time) are not mirrored: the radio buttons sit left of their labels and its text starts at the left |
+| 2 | pass | through the Arabic pages, «لي وحدي» chosen: 158 s from Install to the last page; silent and offline: 167 s; 1.5 GB needed |
+| 3 | pass | the Activate screen first, in Arabic and English (three profiles) |
+| 4 | pass | the tampered and the expired key refused with their reasons in both languages; the trial key started the engine with the real model in 5–12 s |
+| 5 | pass | About: trial and its end date, `best.pt`, the Arabic stack available (libraqm, the pinned font) |
+| 6 | pass | closing the window ended the app and the engine (eight closes) |
+| 7 | pass | the second start had no Activate screen |
+| 8 | pass, one finding | uninstall through its pages 114 s, silent 17 s; the program and its entry gone, the profile kept. **Finding:** the uninstaller's pages are in English after an Arabic install (the chosen language is not stored for it) |
+| 9 | pass | "Anyone who uses this computer": under Program Files in 156 s; the app and its engine ran from there (6/6); uninstalled |
+| 10 | pass; Windows N not testable | a standard user «مستخدم» (profile `C:\Users\مستخدم`) ran the all-users install with the bag, print and seal (13/13); no Visual C++ runtime in System32 (the engine used the app's own); no network (the whole offline run); the Sandbox runs Enterprise, not an N edition |
+| 11 | pass | 37 screenshots and the logs of every profile in the run folder |
+| beyond | pass | in all three profiles: bag 004 read, 7 frames in 20–24 s on CPU, two measurements, the overlay drawn, print and seal PASS (4 pages, only the Plex font) |
+
+Smart App Control inside the Sandbox is in evaluation mode (state 2), so these runs say nothing about
+it; it stays an open item for the field laptop with a signed installer. Also seen: the installer's
+Arabic mixes NSIS's own «تنصيب» (title, the Install button, the folder page, with «إختر» / «إضغط»)
+with this installer's «تثبيت» (the install-mode page).
+
+**Operator, 2026-10-13 — for the next installer rebuild, not now:** the two findings and the
+installer's Arabic wording are fixed together in that rebuild, which ends with a Sandbox run: mirror
+the install-mode page's controls; store the language chosen in the language dialog so the uninstaller
+uses it; one verb for install throughout the installer and the uninstaller (the installer's own
+strings replace NSIS's «تنصيب» and its «إختر» / «إضغط»; the operator picks the word at that rebuild).
+The installer's wording is handled there, not in the app's batched wording review, which keeps its
+planned slot. The `AllowVGPU = 0` policy stays: Sandbox runs on this laptop need it.
+
+What the first attempts showed (the tool and this laptop, not the product):
+
+- Windows Sandbox updated itself to the Store version 0.8.107.0 during the first run (14:03). From the
+  next start on no session logged on: inside, `dwm.exe` crashed (0xC00001AD in `udwm.dll`) and Remote
+  Desktop closed with reason 16, also with `<VGpu>Disable</VGpu>` and with an empty configuration.
+  This laptop has two GPUs (Intel UHD, NVIDIA RTX A3000) and three screens. The documented workaround
+  fixed it: the machine policy "Allow vGPU sharing for Windows Sandbox" turned off
+  (`HKLM\SOFTWARE\Policies\Microsoft\Windows\Sandbox` `AllowVGPU = 0`, set with the operator's
+  approval on 2026-10-13; deleting the value undoes it). The `.wsb` also asks for no vGPU now.
+- UI Automation inside the Sandbox reports every control of the NSIS installer as a pane (the language
+  list, OK, Cancel), so the tool drives the installer and the uninstaller through their window
+  handles: window class, control id, and the messages a click sends. SmartScreen is read with UI
+  Automation as before.
+- Started with `Start-Process`, the downloaded installer showed no SmartScreen; started through
+  Explorer, as a double-click does, it does.
+- NSIS mirrors an Arabic dialog with `WS_EX_RTLREADING | WS_EX_RIGHT` and flipped positions, not
+  `WS_EX_LAYOUTRTL`; the tool checks those styles and the mirrored buttons. A missing dialog is now a
+  failed check of its item, and the run goes on; the summary shows each item per run.
+- Closing the Sandbox's window and server by force can leave its virtual machine running for minutes;
+  `wsb stop --id <id>` stops it cleanly, and `wsb exec --id <id> -r System` runs a command inside (the
+  tool's `C:\nz\io` folder carries the output out).

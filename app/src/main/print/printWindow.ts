@@ -8,7 +8,7 @@
 import { randomUUID } from "node:crypto";
 import { BrowserWindow, ipcMain, session, type IpcMainInvokeEvent } from "electron";
 import type { PrintJob, PrintPreflight } from "@shared/ipc";
-import { validatePreflight } from "@shared/ipcValidate";
+import { preflightOrRefusal } from "@shared/ipcValidate";
 import { PRINT_IPC } from "@shared/printChannels";
 import { handleAppProtocol } from "../protocol";
 import { hardenSession, type SecurityContext } from "../security";
@@ -54,7 +54,8 @@ export function registerPrintIpc(): void {
     return entry.job;
   });
   ipcMain.handle(PRINT_IPC.ready, (event, payload: unknown) => {
-    jobFor(event).ready(validatePreflight(payload));
+    // a result main refuses ends the job now with that reason (never the 90 s timeout)
+    jobFor(event).ready(preflightOrRefusal(payload));
   });
 }
 

@@ -515,6 +515,19 @@ describe("EngineSupervisor: stop and watchdog", () => {
     expect(h.mocks.fetch).not.toHaveBeenCalled();
   });
 
+  it("a ready line that arrives after stop() is ignored: never ready while stopping", async () => {
+    const h = harness();
+    h.sup.start();
+    await tick();
+    const stopped = h.sup.stop();
+    h.procs[0]!.ready(51234, 4321); // buffered before the kill took effect
+    await tick();
+    await stopped;
+    const statuses = h.events.map((e) => e.status);
+    expect(statuses.slice(statuses.indexOf("stopping"))).not.toContain("ready");
+    expect(h.sup.getConnection()).toBeNull();
+  });
+
   it("watchdog: two failed /health checks mark the engine unresponsive; an answer clears it", async () => {
     let healthy = false;
     const h = harness({

@@ -77,6 +77,7 @@ describe("i18n catalogues", () => {
       "engine_restart_limit",
       "engine_protocol_error",
       "bridge_missing",
+      "screen_failed",
       ...PRINT_ERROR_CODES,
     ];
     expect(Object.keys(en.appErrors).sort()).toEqual([...appCodes].sort());

@@ -202,6 +202,46 @@ describe("runHeadlessExport", () => {
     expect(await runHeadlessExport({ error: "usage: --export <dir>" }, usage.d)).toBe(2);
   });
 
+  it("a result file that cannot be written: exit 1, said on stdout, the engine stopped", async () => {
+    const { d, out, stopEngine } = deps({
+      writeOut: () => Promise.reject(new Error("ENOENT: no such file or directory")),
+    });
+    const code = await runHeadlessExport(
+      { sessionDir: DIR, out: String.raw`Z:\missing\r.json` },
+      d,
+    );
+    expect(code).toBe(1);
+    const result = JSON.parse(out.join("")) as Record<string, unknown>;
+    expect(result).toMatchObject({
+      ok: false,
+      verdict: "PASS",
+      error: { code: "out_write_failed" },
+      report: { version: 2, file: "report_v2.pdf" },
+    });
+    expect(JSON.stringify(result["error"])).toContain(String.raw`Z:\\missing\\r.json`);
+    expect(stopEngine).toHaveBeenCalledTimes(1);
+  });
+
+  it("a refused PDF whose result file cannot be written keeps the refusal as its error", async () => {
+    const { d, out } = deps({
+      exportPdf: () =>
+        Promise.resolve({
+          ok: false,
+          error: { status: 409, code: "text_probe_failed", message: "x", details: {} },
+          probe: { verdict: "DRIFT" },
+          preflight: null,
+          timingsMs: {},
+        }),
+      writeOut: () => Promise.reject(new Error("EACCES")),
+    });
+    expect(await runHeadlessExport({ sessionDir: DIR, out: String.raw`D:\r.json` }, d)).toBe(1);
+    const result = JSON.parse(out.join("")) as {
+      error: { code: string; details: Record<string, unknown> };
+    };
+    expect(result.error.code).toBe("text_probe_failed");
+    expect(String(result.error.details["out_write_failed"])).toContain("EACCES");
+  });
+
   it("a refused PDF is exit 1 with the engine's verdict", async () => {
     const { d, out } = deps({
       exportPdf: () =>

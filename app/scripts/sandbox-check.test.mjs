@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ITEMS, verdicts, wsbConfig } from "./sandbox-check.mjs";
+import { ITEMS, asList, summaryMarkdown, verdicts, wsbConfig } from "./sandbox-check.mjs";
 
 const base = {
   io: String.raw`E:\repo\runs\sandbox_check_x\full\io`,
@@ -24,6 +24,7 @@ describe("the Windows Sandbox configuration", () => {
       );
     }
     expect(config).toContain("<Networking>Enable</Networking>");
+    expect(config).toContain("<VGpu>Disable</VGpu>");
     expect(config).toContain("<ClipboardRedirection>Disable</ClipboardRedirection>");
     expect(config).toContain(
       "-Mode full -InstallerName &quot;Nazeer Desktop Setup 0.1.0.exe&quot; -BagName &quot;20260414_180708-004.bag&quot;",
@@ -71,5 +72,33 @@ describe("the verdict per D11 item", () => {
       "11",
       "bag",
     ]);
+  });
+});
+
+describe("the summary", () => {
+  it("reads a one-entry results file that Windows PowerShell wrote as a bare object", () => {
+    expect(asList({ item: "1", ok: true })).toEqual([{ item: "1", ok: true }]);
+    expect(asList([{ item: "1" }, { item: "2" }])).toHaveLength(2);
+    expect(asList(null)).toEqual([]);
+    expect(asList(undefined)).toEqual([]);
+  });
+
+  it("shows each item's verdict overall and in each run", () => {
+    const { markdown, byItem } = summaryMarkdown(
+      "sandbox_check_x",
+      ["full", "offline"],
+      { full: null, offline: null },
+      [
+        { item: "2", ok: false, name: "per-user install", mode: "full", source: "sandbox" },
+        { item: "2", ok: true, name: "silent install", mode: "offline", source: "sandbox" },
+        { item: "3", ok: true, name: "Activate", mode: "offline", source: "peruser" },
+      ],
+    );
+    expect(markdown).toContain("| # | D11 item | Result | full | offline | Details |");
+    expect(markdown).toMatch(/\| 2 \| [^|]+ \| FAIL \| FAIL \| pass \|/);
+    expect(markdown).toMatch(/\| 3 \| [^|]+ \| pass \| not run \| pass \|/);
+    expect(markdown).toMatch(/\| 9 \| [^|]+ \| not run \| not run \| not run \|/);
+    expect(markdown).toContain("- **full**: no facts recorded");
+    expect(byItem["2"]?.status).toBe("FAIL");
   });
 });

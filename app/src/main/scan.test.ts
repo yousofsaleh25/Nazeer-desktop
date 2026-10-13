@@ -80,6 +80,29 @@ describe("scanCaptureFolders", () => {
     expect(byTime.truncated).toBe(true);
   });
 
+  it("keeps its time limit while a folder listing hangs (an unreachable share)", async () => {
+    const root = tempDir();
+    file(path.join(root, "a.bag"));
+    const share = String.raw`\\offline-nas\captures`;
+    const started = Date.now();
+    const scan = await scanCaptureFolders(
+      [root, share],
+      { ...SCAN_LIMITS, timeBudgetMs: 150 },
+      Date.now,
+      {
+        readdir: (dir) =>
+          dir === share
+            ? new Promise(() => undefined)
+            : import("node:fs/promises").then((fs) => fs.readdir(dir, { withFileTypes: true })),
+        stat: (p) => import("node:fs/promises").then((fs) => fs.stat(p)),
+      },
+    );
+    expect(Date.now() - started).toBeLessThan(2_000);
+    expect(scan.truncated).toBe(true);
+    expect(scan.bags.map((b) => b.name)).toEqual(["a.bag"]);
+    expect(scan.errors).toEqual([{ folder: share, message: "no answer within 150 ms" }]);
+  });
+
   it("lists a bag once when two configured folders overlap", async () => {
     const root = tempDir();
     file(path.join(root, "sub", "a.bag"));

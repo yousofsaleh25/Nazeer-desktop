@@ -8,6 +8,18 @@ export const APP_SCHEME = "app";
 export const APP_HOST = "nazeer";
 export const APP_ORIGIN = `${APP_SCHEME}://${APP_HOST}`;
 
+/** The operator window's page (the hidden print window loads /print/print.html instead). */
+export const OPERATOR_PAGE_PATH = "/renderer/index.html";
+
+/** The URL is the operator page (any hash route); the origin is checked separately. */
+export function isOperatorPage(rawUrl: string): boolean {
+  try {
+    return new URL(rawUrl).pathname === OPERATOR_PAGE_PATH;
+  } catch {
+    return false;
+  }
+}
+
 /** Map an app://nazeer URL to a file below `root`; null when malformed or escaping. */
 export function resolveAppPath(root: string, rawUrl: string): string | null {
   let url: URL;

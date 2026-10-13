@@ -3,6 +3,7 @@ import { resolve } from "node:path";
 import { describe, expect, it, vi } from "vitest";
 import type { EngineConnection, ExportRequest, PrintJob, PrintPreflight } from "@shared/ipc";
 import {
+  engineCallUrl,
   exportPdf,
   oneAtATime,
   PRINT_FONT_SHA256,
@@ -293,6 +294,73 @@ describe("exportPdf", () => {
 });
 
 describe("oneAtATime", () => {
+  it("an answer cut off after the upload is a network error with its status, never a throw", async () => {
+    const f = fake();
+    const d = deps(f);
+    const answered = d.fetch;
+    d.fetch = (input, init) =>
+      init?.method === "POST"
+        ? answered(input, init).then(
+            () =>
+              new Response(
+                new ReadableStream({
+                  start: (controller) => controller.error(new Error("The operation timed out")),
+                }),
+                { status: 200 },
+              ),
+          )
+        : answered(input, init);
+    const result = await exportPdf(request(f), d);
+    expect(result.ok).toBe(false);
+    expect(!result.ok && result.error).toMatchObject({ status: 200, code: "network_error" });
+    expect(!result.ok && result.error.message).toContain("cut off");
+  });
+
+  it("a face that cannot be read is its own code; an unreadable logo prints without it", async () => {
+    const f = fake();
+    const locked = deps(f);
+    locked.readAsset = (name) =>
+      name === "font" ? Promise.reject(new Error("EBUSY: resource busy")) : Promise.resolve(null);
+    const refused = await exportPdf(request(f), locked);
+    expect(!refused.ok && refused.error.code).toBe("print_font_unreadable");
+    expect(!refused.ok && refused.error.message).toContain("EBUSY");
+
+    const noLogo = deps(f);
+    noLogo.readAsset = (name) =>
+      name === "font" ? Promise.resolve(FONT) : Promise.reject(new Error("EPERM"));
+    const printed = await exportPdf(request(f), noLogo);
+    expect(printed.ok).toBe(true);
+    expect(noLogo.printed[0]?.logo).toBeNull();
+  });
+
+  it("sends the token to the engine's own origin only", async () => {
+    const conn = { baseUrl: "http://127.0.0.1:51234" };
+    expect(engineCallUrl("/sessions/x/assets/a.png?v=1", conn)?.href).toBe(
+      "http://127.0.0.1:51234/sessions/x/assets/a.png?v=1",
+    );
+    expect(engineCallUrl("http://127.0.0.1:51234/health", conn)).not.toBeNull();
+    expect(engineCallUrl("http://127.0.0.1:9999/x", conn)).toBeNull();
+    expect(engineCallUrl("https://example.invalid/x", conn)).toBeNull();
+    expect(engineCallUrl("//example.invalid/x", conn)).toBeNull();
+
+    const f = fake();
+    const d = deps(f);
+    const answered = d.fetch;
+    d.fetch = (input, init) =>
+      answered(input, init).then(async (response) => {
+        const href =
+          typeof input === "string" ? input : input instanceof URL ? input.href : input.url;
+        const path = new URL(href).pathname;
+        if (path !== `/sessions/${ID}`) return response;
+        const view = (await response.json()) as { outputs: { report_model: { url: string } } };
+        view.outputs.report_model.url = "https://example.invalid/model.json";
+        return new Response(JSON.stringify(view), { status: 200 });
+      });
+    const result = await exportPdf(request(f), d);
+    expect(!result.ok && result.error.code).toBe("invalid_response");
+    expect(f.calls.map((c) => c.path)).toEqual([`/sessions/${ID}`]);
+  });
+
   it("refuses a second export while one runs", async () => {
     let release: () => void = () => undefined;
     const run = oneAtATime(

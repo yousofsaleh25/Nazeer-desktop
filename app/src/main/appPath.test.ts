@@ -1,8 +1,19 @@
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { mimeType, resolveAppPath } from "./appPath";
+import { isOperatorPage, mimeType, resolveAppPath } from "./appPath";
 
 const root = path.resolve("C:/nazeer/out/renderer");
+
+describe("isOperatorPage", () => {
+  it("is the operator window's page, with any hash route; never the print page", () => {
+    expect(isOperatorPage("app://nazeer/renderer/index.html")).toBe(true);
+    expect(isOperatorPage("app://nazeer/renderer/index.html#/sessions/x")).toBe(true);
+    expect(isOperatorPage("http://localhost:5173/renderer/index.html#/")).toBe(true);
+    expect(isOperatorPage("app://nazeer/print/print.html")).toBe(false);
+    expect(isOperatorPage("app://nazeer/renderer/index.html/../../print/print.html")).toBe(false);
+    expect(isOperatorPage("not a url")).toBe(false);
+  });
+});
 
 describe("resolveAppPath", () => {
   it("maps app://nazeer paths below the renderer folder", () => {

@@ -2,9 +2,10 @@
  * Paste a licence key and send it to main for verification (D11). The reason a key fails is
  * shown in Arabic and English together, whatever the UI language: the screen appears before the
  * app's language controls, and the person reading it may be either. Main verifies; this only
- * shows the answer.
+ * shows the answer. A key that verified but could not be saved opens the app only after the
+ * operator has read that it will be asked for again at the next start (D11).
  */
-import { KeyRound } from "lucide-react";
+import { ArrowRight, KeyRound } from "lucide-react";
 import { useState, type FormEvent } from "react";
 import type { ActivationResult, LicenseStatus } from "@shared/ipc";
 import { Alert } from "@/components/ui/Alert";
@@ -37,7 +38,7 @@ export function ActivateForm({ activate, onAccepted }: ActivateFormProps) {
       (answer) => {
         setBusy(false);
         setResult(answer);
-        if (answer.accepted) onAccepted(answer.status);
+        if (answer.accepted && !answer.status.notSaved) onAccepted(answer.status);
       },
       (error: unknown) => {
         setBusy(false);
@@ -47,6 +48,23 @@ export function ActivateForm({ activate, onAccepted }: ActivateFormProps) {
   };
 
   const refused = result !== null && !result.accepted ? result : null;
+  const unsaved = result !== null && result.accepted && result.status.notSaved ? result : null;
+  if (unsaved !== null) {
+    return (
+      <div className="flex flex-col gap-3">
+        <Alert tone="warning">
+          <Bi {...messagePair("license.activated")} mode="both" block />
+          <Bi {...messagePair("license.notSaved")} mode="both" block />
+        </Alert>
+        <div className="flex justify-end">
+          <Button variant="primary" onClick={() => onAccepted(unsaved.status)}>
+            <Bi {...messagePair("license.continue")} mode="both" />
+            <ArrowRight aria-hidden="true" className="rtl:-scale-x-100" />
+          </Button>
+        </div>
+      </div>
+    );
+  }
   return (
     <form className="flex flex-col gap-3" onSubmit={submit}>
       <Field label={messagePair("license.keyLabel")} hint={messagePair("license.keyHint")}>

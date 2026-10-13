@@ -110,7 +110,9 @@ its best remaining frames in for the worst-ranked picks of other buckets, keepin
 frame of the same view is left out only by the gap.
 
 **Jobs and cache.** `POST /candidates/jobs` → 202 `{job}` or 200 `{cached: true,
-n_candidates, partial}`; one job at a time (409 `job_busy`); `cancel` discards, `stop` ranks
+n_candidates, partial}`; one job at a time (409 `job_busy`; since Stage 9 the app attaches only
+to a job on the same recording, and names one on another recording, with a Cancel for it);
+`cancel` discards, `stop` ranks
 what was gathered (`partial: true`) — such a stopped walk stays viewable at its URL but is
 **never a cache hit** (the next start re-walks); progress by polling or SSE (`/events`), the
 counters carry `rejected_by_reason` live and a slow-media warning appears while the walk
@@ -139,6 +141,18 @@ session.
 **Golden frame.** Regenerated from bag 006 by the engine's reader, bit-identical to the
 parent capture (RGB and depth max |Δ| = 0); `best.pt` gives conf 0.9593, 269,033 px, rows
 9–715; Z_ref 1.930 m; recorded in `fixtures/golden_frame.json` (tracked).
+
+**Development stub mask (Stage 8, 2026-10-13; planning decision 1).** `--stub-mask ellipse`
+(only with `--stub-model`, which itself needs `NAZEER_ENGINE_DEV=1`; otherwise exit 2
+`stub_mask_needs_stub_model`) makes the stub return the same centred ellipse in every frame
+(semi-axes 30 % of the width and 35 % of the height: 33 % of the frame, aspect 1.52 at
+1280 × 720, so QUARTER; confidence 0.9). A real bag then goes through every C2 gate without
+YOLO, which is what the fast end-to-end test needs. The stub names itself `stub-ellipse` (file
+and SHA-256 in the ready line, `/health` and `candidates.json`), so its candidate sets get their
+own params hash and never mix with the plain stub's (`stub`, no detection) or the model's. The
+app passes it with `NAZEER_STUB_MASK=ellipse` (development builds only). On bag 004: 771 pairs,
+155 sampled, 155 detected, 107 passed (48 `valid_frac_too_low`: the ellipse is not the camel),
+**8 candidates** (all QUARTER, z_median 1.75–2.20 m, valid fraction 0.61–0.71) in 9.4 s.
 
 ## App side of C3.4 (implemented 2026-10-12, Stage 5)
 
@@ -175,9 +189,10 @@ session: `npm run test:store-real`).
 - **Failures:** any other 4xx is terminal (`error`): the draft is kept and not sent again, not even
   by a flush, until it changes. No engine, a network failure, a 5xx or `session_busy` is transient
   (`offline`): retried after 1, 2, 4, 8, 16, then every 30 s, and at once, after a GET of the
-  session, when the supervisor reports the engine ready on a new connection. A save whose answer
-  was lost is retried as it was and lands once: the engine's identical replay of the stored revision
-  is a 200.
+  session, when the supervisor reports the engine ready on a new connection (until Stage 9 that
+  catch-up ran before the new client was installed and waited for the next edit; D9 "Review and
+  wrap-up"). A save whose answer was lost is retried as it was and lands once: the engine's
+  identical replay of the stored revision is a 200.
 - **States** the UnsavedBadge shows: `finalizing` › `conflict` › `blocked` › `saving` › `offline` ›
   `error` › `dirty` › `clean`. Unsaved work, as the quit dialog asks about it, is a draft different
   from the engine's, a save in flight, or an open conflict.

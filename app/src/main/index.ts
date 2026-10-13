@@ -11,7 +11,7 @@ import { join, resolve } from "node:path";
 import { app, session, type BrowserWindow } from "electron";
 import { IPC } from "@shared/ipc";
 import { APP_ORIGIN } from "./appPath";
-import { confirmQuitDialog } from "./dialogs";
+import { confirmQuitDialog, rendererLostDialog } from "./dialogs";
 import { engineAssetsDir } from "./engine/command";
 import { chooseDataRoot } from "./engine/dataRoot";
 import { RotatingLog } from "./engine/logs";
@@ -142,56 +142,63 @@ if (exportArgs !== null) {
   void app.whenReady().then(async () => {
     registerPrintIpc();
     let supervisor: EngineSupervisor | null = null;
-    const code = await runHeadlessExport(exportArgs, {
-      licenseActive: () => licenseService(logLine).status().state === "active",
-      startEngine: (dataRoot) => {
-        const engine = new EngineSupervisor(
-          {
-            dataRoot,
-            production,
-            appDir,
-            resourcesPath: process.resourcesPath,
-            corsOrigins: [APP_ORIGIN],
-            env: process.env,
-            appInfo,
-            logDir: mkdtempSync(join(tmpdir(), `${EXPORT_TEMP_PREFIX}logs-`)),
-            noWarmup: true,
-            keepOtherEngines: true,
-          },
-          {
-            spawn: spawnEngineProcess,
-            fetch: globalThis.fetch,
-            killPid,
-            isPidAlive,
-            log: { write: (source, line) => logLine(`${source}: ${line}`) },
-          },
-        );
-        supervisor = engine;
-        return new Promise((done) => {
-          engine.onStatus((event) => {
-            if (event.status === "ready" && event.connection !== null) {
-              done({ connection: event.connection });
-            } else if (event.status === "fatal" && event.fatal !== null) {
-              done({ fatal: { code: event.fatal.code, message: event.fatal.message } });
-            }
+    // runHeadlessExport answers with an exit code; anything it still throws ends the run as 1,
+    // never as a process that waits forever (the hidden print window keeps the app alive)
+    let code = 1;
+    try {
+      code = await runHeadlessExport(exportArgs, {
+        licenseActive: () => licenseService(logLine).status().state === "active",
+        startEngine: (dataRoot) => {
+          const engine = new EngineSupervisor(
+            {
+              dataRoot,
+              production,
+              appDir,
+              resourcesPath: process.resourcesPath,
+              corsOrigins: [APP_ORIGIN],
+              env: process.env,
+              appInfo,
+              logDir: mkdtempSync(join(tmpdir(), `${EXPORT_TEMP_PREFIX}logs-`)),
+              noWarmup: true,
+              keepOtherEngines: true,
+            },
+            {
+              spawn: spawnEngineProcess,
+              fetch: globalThis.fetch,
+              killPid,
+              isPidAlive,
+              log: { write: (source, line) => logLine(`${source}: ${line}`) },
+            },
+          );
+          supervisor = engine;
+          return new Promise((done) => {
+            engine.onStatus((event) => {
+              if (event.status === "ready" && event.connection !== null) {
+                done({ connection: event.connection });
+              } else if (event.status === "fatal" && event.fatal !== null) {
+                done({ fatal: { code: event.fatal.code, message: event.fatal.message } });
+              }
+            });
+            engine.start();
           });
-          engine.start();
-        });
-      },
-      stopEngine: async () => {
-        await supervisor?.stop();
-      },
-      fetch: globalThis.fetch,
-      exportPdf: (request) =>
-        exportPdf(
-          request,
-          exportDeps(() => supervisor?.getConnection() ?? null, logLine),
-        ),
-      writeOut: (file, text) => writeFile(file, text, "utf8"),
-      stdout: (text) => {
-        process.stdout.write(text);
-      },
-    });
+        },
+        stopEngine: async () => {
+          await supervisor?.stop();
+        },
+        fetch: globalThis.fetch,
+        exportPdf: (request) =>
+          exportPdf(
+            request,
+            exportDeps(() => supervisor?.getConnection() ?? null, logLine),
+          ),
+        writeOut: (file, text) => writeFile(file, text, "utf8"),
+        stdout: (text) => {
+          process.stdout.write(text);
+        },
+      });
+    } catch (error) {
+      logLine(`export failed: ${error instanceof Error ? error.message : String(error)}`);
+    }
     app.exit(code);
   });
 } else if (!app.requestSingleInstanceLock()) {
@@ -264,6 +271,7 @@ if (exportArgs !== null) {
     const win = liveWindow();
     if (win === null) return;
     if (win.isMinimized()) win.restore();
+    if (!win.isVisible()) win.show();
     win.focus();
   });
   app.on("before-quit", (event) => quit.onCloseRequested(event));
@@ -291,6 +299,11 @@ if (exportArgs !== null) {
       forwardConsole: ctx.devServerOrigin !== null,
       devTools: !production,
       log: logLine,
+      onRendererLost: async (reason) => {
+        const again = await rendererLostDialog(liveWindow(), logDir, reason);
+        if (!again) app.quit();
+        return again;
+      },
     });
     mainWindow = win;
     win.on("close", (event) => quit.onCloseRequested(event));

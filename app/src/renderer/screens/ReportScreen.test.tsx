@@ -108,6 +108,37 @@ describe("the report screen", () => {
     expect(store.getState().report.export?.state).toBe("sealed");
   });
 
+  it("edited report details are saved before printing, and frozen while it prints", async () => {
+    let finish: (result: ExportResult) => void = () => undefined;
+    const { user } = await approvedSetup(
+      () =>
+        new Promise<ExportResult>((resolve) => {
+          finish = resolve;
+        }),
+    );
+    const print = await screen.findByRole("button", { name: "Print again" });
+    await waitFor(() => expect(print).toBeEnabled());
+    await user.type(screen.getByRole("textbox", { name: "Judge" }), "ب");
+    expect(print).toBeDisabled();
+    expect(screen.getByTestId("save-before-print")).toHaveTextContent(
+      "Save the report details before printing",
+    );
+    await user.click(screen.getByRole("button", { name: "Save the details" }));
+    await waitFor(() => expect(print).toBeEnabled());
+    await user.click(print);
+    await waitFor(() => expect(screen.getByRole("textbox", { name: "Judge" })).toBeDisabled());
+    finish({
+      ok: true,
+      session: null,
+      probe: probePass,
+      preflight: PREFLIGHT_OK,
+      pdfBytes: 1_600_000,
+      timingsMs: { fetch: 120, print: 2100, seal: 1600 },
+    });
+    expect(await screen.findByText("The report is sealed")).toBeInTheDocument();
+    expect(screen.getByRole("textbox", { name: "Judge" })).toBeEnabled();
+  });
+
   it("after a print, the sealed report's checks are read again (same manifest URL)", async () => {
     let engineRef: SessionEngine | null = null;
     const { user } = await approvedSetup(

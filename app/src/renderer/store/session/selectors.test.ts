@@ -137,5 +137,62 @@ describe("the rows the measuring screen shows", () => {
     // a line already gone from both sides: the stored angle (rejected) is final
     const gone = loaded([line, angle]);
     expect(statusOf(gone, 900)?.status).toBe("saved");
+
+    // renamed (its stored row shown under the new name), then a line moves: it waits as well
+    const renamed = sessionReducer(base, measurementChanged({ id: 900, changes: { name: "b" } }));
+    expect(statusOf(renamed, 900)).toMatchObject({ status: "pending", row: { name: "b" } });
+    const renamedMoved = sessionReducer(
+      renamed,
+      measurementChanged({
+        id: line.id,
+        changes: {
+          points: [
+            [5, 5],
+            [6, 6],
+          ],
+        },
+      }),
+    );
+    expect(statusOf(renamedMoved, 900)).toMatchObject({ status: "pending", row: null });
+  });
+
+  it("a new 4-point angle's preview waits while one of its lines is not saved", () => {
+    let state = loaded([line, otherLine]);
+    const id = state.nextMeasurementId;
+    const fields: Omit<MeasurementInput, "id"> = {
+      kind: "angle_4point",
+      name: "between",
+      points: [],
+      line_a_id: line.id,
+      line_b_id: otherLine.id,
+      note: "",
+    };
+    state = sessionReducer(state, measurementAdded(fields));
+    state = sessionReducer(state, previewRequested({ measurement: { id, ...fields } }));
+    const seq = state.preview.inFlight!.seq;
+    const row: MeasurementRow = {
+      ...line,
+      id,
+      kind: "angle_2d_4point",
+      family: "angles",
+      input_kind: "angle_4point",
+      input: { id, ...fields },
+    };
+    state = sessionReducer(state, previewReplied({ seq, row }));
+    expect(statusOf(state, id)?.status).toBe("preview");
+    // the engine computed that preview from the stored lines; a moved line makes it stale
+    state = sessionReducer(
+      state,
+      measurementChanged({
+        id: otherLine.id,
+        changes: {
+          points: [
+            [7, 7],
+            [8, 9],
+          ],
+        },
+      }),
+    );
+    expect(statusOf(state, id)).toMatchObject({ status: "pending", row: null });
   });
 });

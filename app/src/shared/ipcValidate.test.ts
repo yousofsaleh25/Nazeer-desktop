@@ -10,6 +10,7 @@ import {
   validateLicenseKeyInput,
   validatePreflight,
   validateQuitAck,
+  preflightOrRefusal,
 } from "./ipcValidate";
 
 describe("isAbsolutePathString", () => {
@@ -132,6 +133,29 @@ describe("validateExportRequest", () => {
       overlay: { ...good().overlay, bytes: new Uint8Array(MAX_OVERLAY_BYTES + 1) },
     };
     expect(() => validateExportRequest(big)).toThrow(/larger than/);
+  });
+});
+
+describe("preflightOrRefusal", () => {
+  const checked = { requiredTexts: 600, textNodes: 10, characters: 200, images: 2 };
+
+  it("passes a valid result on as it is", () => {
+    const result = { ok: true, problems: [], warnings: [], checked };
+    expect(preflightOrRefusal(result)).toEqual(result);
+  });
+
+  it("turns a result main refuses into a failed print with the reason, at once", () => {
+    const missing = Array.from({ length: MAX_PREFLIGHT_PROBLEMS + 1 }, (_, i) => ({
+      code: "print_required_text_missing",
+      message: `name ${i} is not on the page`,
+      details: {},
+    }));
+    const refused = preflightOrRefusal({ ok: false, problems: missing, warnings: [], checked });
+    expect(refused.ok).toBe(false);
+    expect(refused.problems).toHaveLength(1);
+    expect(refused.problems[0]?.code).toBe("print_page_failed");
+    expect(refused.problems[0]?.message).toContain(`at most ${MAX_PREFLIGHT_PROBLEMS}`);
+    expect(preflightOrRefusal(null).problems[0]?.code).toBe("print_page_failed");
   });
 });
 

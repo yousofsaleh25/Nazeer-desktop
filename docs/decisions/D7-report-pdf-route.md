@@ -1,8 +1,16 @@
 # D7 — Judging report is a PDF produced by Electron printToPDF; the engine is the single rendering authority for the overlay image and the evidence artefacts
 
-Status: proposed 2026-10-10 — pending the half-day spike (Decision step 7). The operator
-decided "PDF, not HTML"; the route was chosen by a three-advocate judge panel (read-only
-research, 2026-10-10) and has not yet been confirmed by the operator.
+Status: **accepted 2026-10-13** (operator): printing works as designed on the Stage 7 evidence in
+"Electron side" below — the real engine and the real model on bag 006, three reports (bilingual,
+Arabic, English) printed through the app and sealed with strict probes, a headless re-export
+sealed, report model 1.1. The implementation is integration-tested on this laptop (the dev app and
+the installed app); the clean-PC and offline check (Decision step 6; D11's Windows Sandbox run) is
+pending, and it is not production-validated (nothing printed in the field yet). The questions the
+operator kept open are listed under "Open operator questions"; none blocks.
+
+History: proposed 2026-10-10, pending the half-day spike (Decision step 7). The operator decided
+"PDF, not HTML"; the route was chosen by a three-advocate judge panel (read-only research,
+2026-10-10). The spike was done as the implementation itself (Stage 7, 2026-10-12).
 
 ## Context
 
@@ -91,6 +99,13 @@ Adopt Route A with grafts from B and C:
    Electron window and inspect fonts, text order and image pixels; its result is appended to
    this record.
 
+As built (sections "Engine side" and "Electron side" below, and D11), four details differ from the
+steps above: the upload route is `POST /sessions/{id}/report` (step 3); the engine attaches
+`report_model.json` as well (step 3); the print page uses the engine's pinned Plex Regular TTF,
+added from its bytes and used at weight 400 only, with no print-only rules, instead of woff2 faces
+and `print:` utilities (step 2); and the installer carries the engine as an embedded CPython, not a
+PyInstaller build (step 6, D11).
+
 ## Consequences
 
 Positive: HarfBuzz-grade Arabic shaping and bidi with embedded Plex subsets; zero new
@@ -108,6 +123,11 @@ Ultralytics (AGPL, D6) need one counsel pass; no PDF/A or PDF/UA promise.
 
 ## Open operator questions
 
+Kept open by the operator on 2026-10-13, none blocking: signatures; one bilingual PDF or one per
+language, and which is signed; PDF/A (with PDF/UA and embedded files); and the scoring-form
+heading's wording ("Electron side", last item). The spike question is answered (below); the others
+are unchanged.
+
 - Signatures: wet ink on the printed page (parent practice, assumed here) or in-app capture
   rasterised into the PDF before export?
 - One PDF per language, or a single bilingual PDF — and which is the legally signed one?
@@ -117,7 +137,8 @@ Ultralytics (AGPL, D6) need one counsel pass; no PDF/A or PDF/UA promise.
 - Must PDFs ever be regenerated without the Electron app (batch, disputes, CI)? If yes beyond
   `--export`, Route C's engine-side converter becomes relevant.
 - Licence posture (closed-source?) — see D6.
-- Is the half-day spike acceptable before this record is locked?
+- Is the half-day spike acceptable before this record is locked? — Answered: the spike was done as
+  the implementation (Stage 7, 2026-10-12), and the record was accepted on 2026-10-13.
 
 ## Engine side (implemented 2026-10-11)
 
@@ -158,10 +179,15 @@ still untested — the app does not exist yet.
 Status: implemented and **integration-tested** — the dev app with the real model on bag 006,
 driven through its UI, printed three reports (both languages, Arabic, English) that the engine
 sealed with strict probes, and the headless re-export sealed a fourth; the built app does the same
-in `e2e/export.spec.ts` (stub model). Not production-validated: no installer with Stage 7 has been
-install-checked yet, and nothing has been printed in the field. This is the half-day spike of
-Decision step 7, done as the implementation; the route held. **The record stays "proposed" until
-the operator accepts it** (recommended).
+in `e2e/export.spec.ts` (stub model). Not production-validated: the installer with Stage 7 has been
+installed and checked on this laptop (12 checks with print and seal, D11) and, on 2026-10-13, in
+Windows Sandbox as a clean PC (the D11 checklist, print and seal included, network on and off), and
+nothing has been printed in the field. Since Stage 8 the built app also prints and seals through its
+UI in `e2e/flow-fast.spec.ts` (stub mask) and `e2e/flow-real.spec.ts` (bag 006, `best.pt`; the
+sealed PDF read back with pdf.js: pages, one embedded Plex face, the 14 required texts, attachments
+byte-identical to the approved image and the printed model; D9). This is the half-day spike of Decision step 7, done
+as the implementation; the route held. **The operator accepted the record on 2026-10-13** on this
+evidence.
 
 - **The print page** (`src/print/`, React + Tailwind v4, its own Vite entry `print.html`): laid
   out from the report model (version 1.1 only: `print/model.ts` checks every field it prints and
@@ -188,7 +214,12 @@ the operator accepts it** (recommended).
   character in the face's cmap (`plex-cmap.json`) — a required name with a character the face
   lacks stops the print, anywhere else it is a warning shown to the operator (it prints in a
   fallback face); the overlay at its natural size (1280 × 840) and untouched. A failed check is not
-  printed, and the operator sees which.
+  printed, and the operator sees which. The character rule was approved by the operator on
+  2026-10-13: a hard stop for the officially identifying texts (the names the engine checks:
+  measurement names, camel id, judge, council, event), a visible warning for free text (notes,
+  observations). The refusal (`print_glyph_missing`) lists each such name with its missing
+  characters as code points (`U+0394`); the warning lists each character, its code point and where
+  it appears.
 - **Main's export** (`main/print/exportPdf.ts`, one at a time): read the session from the engine
   (finalized or exported, outputs current, the approved overlay and the report model are the
   session's current ones), re-hash the approved bytes, fetch the report model and check its bytes
@@ -207,9 +238,11 @@ the operator accepts it** (recommended).
   Finished texts rather than templates, so the app formats no number and translates nothing.
   `engine/tools/real_run.py` reads them too (34/34 on bag 006 after the change). A session finalized
   before 1.1 has a 1.0 model: the app refuses to print it (`report_model_outdated`) and says to
-  reopen and finalize again (a changed report detail also writes a 1.1 model).
+  reopen and finalize again (a changed report detail also writes a 1.1 model). Approved by the
+  operator on 2026-10-13; nothing more to do.
 - **The printed provenance leaves out the data root** (a folder on the computer; on the field laptop
   its path names the Windows user); it stays in the attached `session.json` and report model.
+  Approved by the operator on 2026-10-13: a document for judges never prints a local path.
 - **Headless re-export** (decision step 6): `npm run export -- <session folder> [--out <file>]`
   (development), or the installed `Nazeer Desktop.exe --export <session folder> [--out <file>]`.
   It prints again only what an operator approved: the session must be finalized or exported, its
@@ -228,5 +261,5 @@ the operator accepts it** (recommended).
   headless re-export of the closed app's session: PASS (print 0.5 s, seal 1.4 s; 21 s with the
   build). Rendered pages were reviewed (poppler): right-to-left tables, the halves in their own
   directions, numbers and units in order.
-- Still open (operator): the questions above (signatures, one bilingual PDF or one per language,
-  PDF/A), and the scoring-form heading's wording.
+- Still open (operator; kept open on 2026-10-13, none blocking): the questions above (signatures,
+  one bilingual PDF or one per language, PDF/A), and the scoring-form heading's wording.

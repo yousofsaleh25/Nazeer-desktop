@@ -42,11 +42,14 @@ export type PdfLoader = (data: Uint8Array) => PdfLoadingTaskLike;
 export const loadPdf: PdfLoader = (data) => {
   const copy = data.slice();
   let task: { promise: Promise<unknown>; destroy(): Promise<void> } | null = null;
+  // destroyed while pdf.js was still loading: no document (nor its worker) is created afterwards
+  let destroyed = false;
   const promise = (async () => {
     const [pdfjs, worker] = await Promise.all([
       import("pdfjs-dist"),
       import("pdfjs-dist/build/pdf.worker.min.mjs?url"),
     ]);
+    if (destroyed) throw new Error("the PDF was closed before it loaded");
     pdfjs.GlobalWorkerOptions.workerSrc = worker.default;
     task = pdfjs.getDocument({
       data: copy,
@@ -60,6 +63,7 @@ export const loadPdf: PdfLoader = (data) => {
   return {
     promise,
     destroy: async () => {
+      destroyed = true;
       await task?.destroy();
     },
   };

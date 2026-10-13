@@ -19,10 +19,16 @@ import { appError, errorFromResponse, networkError } from "@/api/errors";
 import type { SessionView } from "@/api/types";
 import { engineUrl } from "@/api/urls";
 import type { AppStartListening, AppThunkDispatch } from "../listener";
+import type { RootState } from "../store";
 import { documentBody, sameDocument } from "../session/document";
 import { forgetVerifiedOverlay, keepVerifiedOverlay } from "../services/overlayBytes";
 import { getSessionView, reconcile, viewResult } from "../session/sync";
-import { overlayChecked, overlayCheckFailed, overlayCheckStarted } from "../slices/report";
+import {
+  isCheckOf,
+  overlayChecked,
+  overlayCheckFailed,
+  overlayCheckStarted,
+} from "../slices/report";
 import { finalizeFailed, finalizeStarted, finalizeSucceeded } from "../slices/session";
 import { autosaveDue, shouldSave } from "./autosave";
 
@@ -41,21 +47,18 @@ function hex(buffer: ArrayBuffer): string {
   return [...new Uint8Array(buffer)].map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
-async function verifyOverlay(dispatch: AppThunkDispatch, view: SessionView): Promise<void> {
+async function verifyOverlay(
+  api: { dispatch: AppThunkDispatch; getState: () => RootState },
+  view: SessionView,
+): Promise<void> {
+  const { dispatch } = api;
   const overlay = view.outputs.overlay;
   if (overlay === null || overlay === undefined) return;
-  const { version } = overlay;
-  dispatch(
-    overlayCheckStarted({
-      sessionId: view.session_id,
-      version,
-      sha256: overlay.sha256,
-      url: overlay.url,
-    }),
-  );
+  const ours = { sessionId: view.session_id, version: overlay.version };
+  dispatch(overlayCheckStarted({ ...ours, sha256: overlay.sha256, url: overlay.url }));
   const engine = activeEngine();
   if (engine === null) {
-    dispatch(overlayCheckFailed({ version, error: ENGINE_NOT_CONNECTED }));
+    dispatch(overlayCheckFailed({ ...ours, error: ENGINE_NOT_CONNECTED }));
     return;
   }
   try {
@@ -64,20 +67,22 @@ async function verifyOverlay(dispatch: AppThunkDispatch, view: SessionView): Pro
     );
     if (!response.ok) {
       const body: unknown = await response.json().catch(() => null);
-      dispatch(overlayCheckFailed({ version, error: errorFromResponse(response.status, body) }));
+      dispatch(overlayCheckFailed({ ...ours, error: errorFromResponse(response.status, body) }));
       return;
     }
     const bytes = new Uint8Array(await response.arrayBuffer());
     const computed = hex(await crypto.subtle.digest("SHA-256", bytes));
+    // another session (or a newer check) took the slot meanwhile: its kept bytes stay untouched
+    if (!isCheckOf(api.getState().report.overlay, ours)) return;
     // kept before the result is announced, so a screen reading the result finds the bytes
     if (computed === overlay.sha256) {
-      keepVerifiedOverlay({ sessionId: view.session_id, version, sha256: computed, bytes });
+      keepVerifiedOverlay({ ...ours, sha256: computed, bytes });
     } else {
-      forgetVerifiedOverlay();
+      forgetVerifiedOverlay(view.session_id);
     }
-    dispatch(overlayChecked({ version, computed }));
+    dispatch(overlayChecked({ ...ours, computed }));
   } catch (error) {
-    dispatch(overlayCheckFailed({ version, error: networkError(error) }));
+    dispatch(overlayCheckFailed({ ...ours, error: networkError(error) }));
   }
 }
 
@@ -137,7 +142,7 @@ export function startFinalize(startListening: AppStartListening): void {
         return;
       }
       api.dispatch(finalizeSucceeded(answer));
-      await verifyOverlay(api.dispatch, answer.view);
+      await verifyOverlay(api, answer.view);
     },
   });
 
@@ -145,7 +150,7 @@ export function startFinalize(startListening: AppStartListening): void {
     actionCreator: overlayVerifyRequested,
     effect: async (_action, api) => {
       const view = api.getState().session.view;
-      if (view !== null) await verifyOverlay(api.dispatch, view);
+      if (view !== null) await verifyOverlay(api, view);
     },
   });
 }

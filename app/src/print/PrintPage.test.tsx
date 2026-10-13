@@ -1,5 +1,5 @@
 import { render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import modelFixture from "../../fixtures/report_model.json";
 import sessionFixture from "../../fixtures/session_view.json";
 import { parsePrintModel, type Language, type PrintModel } from "./model";
@@ -41,6 +41,26 @@ describe("the print page", () => {
     expect(text).toContain(`${model.session.sessionId} · r${model.session.revision}`);
     const crossCheck = model.rows.find((r) => r.crossCheck !== null)?.crossCheck;
     expect(text).toContain(crossCheck?.ar);
+  });
+
+  it("reads no stored state while it renders: the report model's language wins (runtime spy)", () => {
+    // the app's own UI preference says English and both languages; the report says Arabic
+    // eslint-disable-next-line no-restricted-globals -- the test seeds what the page must ignore
+    localStorage.setItem("nazeer.ui.v1", JSON.stringify({ lang: "en", bilingual: true }));
+    const methods = ["getItem", "setItem", "removeItem", "key", "clear"] as const;
+    const spies = methods.map((method) => vi.spyOn(Storage.prototype, method));
+    try {
+      const arabic = renderPage(withLanguage("ar"));
+      expect(screen.getAllByText("معلومات الجلسة").length).toBeGreaterThan(0);
+      expect(screen.queryByText("Session Information")).toBeNull();
+      arabic.unmount();
+      for (const language of ["en", "both"] as const) renderPage(withLanguage(language)).unmount();
+      for (const spy of spies) expect(spy).not.toHaveBeenCalled();
+    } finally {
+      for (const spy of spies) spy.mockRestore();
+      // eslint-disable-next-line no-restricted-globals -- the test's own clean-up
+      localStorage.clear();
+    }
   });
 
   it("shows the approved overlay full width, from the blob of the approved bytes", () => {

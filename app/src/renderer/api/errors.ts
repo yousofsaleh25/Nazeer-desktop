@@ -31,6 +31,7 @@ export type AppErrorCode =
   | "engine_restart_limit"
   | "engine_protocol_error"
   | "bridge_missing"
+  | "screen_failed"
   | (typeof PRINT_ERROR_CODES)[number];
 
 /** The export's own codes (main/print/exportPdf.ts, printWindow.ts, print/preflight.ts). */
@@ -43,6 +44,7 @@ export const PRINT_ERROR_CODES = [
   "report_model_outdated",
   "report_model_unreadable",
   "print_font_missing",
+  "print_font_unreadable",
   "print_font_mismatch",
   "print_window_failed",
   "print_timeout",

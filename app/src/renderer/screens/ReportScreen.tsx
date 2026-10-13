@@ -60,24 +60,47 @@ function trimmed(inputs: ReportInputs): ReportInputs {
   return { ...inputs, names: trim(inputs.names), observations: trim(inputs.observations) };
 }
 
-function ReportInputsCard({ session, loaded }: { session: LoadedSession; loaded: LoadedJson }) {
+/** The report inputs the operator is editing and what saving them would change. */
+function inputsEdit(view: LoadedSession["view"], edited: ReportInputs | null) {
+  const value = edited ?? view.report_inputs;
+  const patch = inputsPatch(view.report_inputs, trimmed(value));
+  return { value, patch, dirty: Object.keys(patch).length > 0 };
+}
+
+/** The print for this session is running (its inputs are frozen until it ends). */
+function usePrinting(sessionId: string): boolean {
+  return useAppSelector(
+    (state) =>
+      state.report.export?.sessionId === sessionId && state.report.export.state === "printing",
+  );
+}
+
+function ReportInputsCard({
+  session,
+  loaded,
+  edited,
+  onEdit,
+}: {
+  session: LoadedSession;
+  loaded: LoadedJson;
+  edited: ReportInputs | null;
+  onEdit: (inputs: ReportInputs | null) => void;
+}) {
   const dispatch = useAppDispatch();
   const { view } = session;
   const model = view.outputs.report_model ?? null;
   const content = loaded.state === "ready" ? reportFormContent(loaded.data) : null;
-  const [edited, setEdited] = useState<ReportInputs | null>(null);
+  const printing = usePrinting(session.id);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<ApiErrorShape | null>(null);
-  const value = edited ?? view.report_inputs;
-  const patch = inputsPatch(view.report_inputs, trimmed(value));
-  const dirty = Object.keys(patch).length > 0;
+  const { value, patch, dirty } = inputsEdit(view, edited);
 
   const save = async () => {
     setSaving(true);
     setError(null);
     const failure = await dispatch(updateReportInputs(patch));
     setSaving(false);
-    if (failure === null) setEdited(null);
+    if (failure === null) onEdit(null);
     else setError(failure);
   };
 
@@ -90,7 +113,7 @@ function ReportInputsCard({ session, loaded }: { session: LoadedSession; loaded:
           variant="primary"
           size="sm"
           onClick={() => void save()}
-          disabled={!dirty || content === null}
+          disabled={!dirty || content === null || printing}
           loading={saving}
         >
           <Save aria-hidden="true" />
@@ -112,7 +135,12 @@ function ReportInputsCard({ session, loaded }: { session: LoadedSession; loaded:
       ) : content === null ? (
         <Alert tone="danger" title={messagePair("report.modelUnreadable")} />
       ) : (
-        <ReportInputsForm value={value} content={content} onChange={setEdited} disabled={saving} />
+        <ReportInputsForm
+          value={value}
+          content={content}
+          onChange={onEdit}
+          disabled={saving || printing}
+        />
       )}
       {model !== null ? (
         <p className="text-xs text-ink-muted">
@@ -165,7 +193,16 @@ function modelSchema(loaded: LoadedJson): string | null {
   return typeof version === "string" ? version : null;
 }
 
-function PrintCard({ session, loaded }: { session: LoadedSession; loaded: LoadedJson }) {
+function PrintCard({
+  session,
+  loaded,
+  inputsDirty,
+}: {
+  session: LoadedSession;
+  loaded: LoadedJson;
+  /** report details edited and not saved: a print now would carry the previous ones */
+  inputsDirty: boolean;
+}) {
   const dispatch = useAppDispatch();
   const reportState = useAppSelector((state) => state.report);
   const { view } = session;
@@ -175,7 +212,8 @@ function PrintCard({ session, loaded }: { session: LoadedSession; loaded: Loaded
   const outdated = schema !== null && schema !== PRINT_REPORT_MODEL_VERSION;
   const job = reportState.export?.sessionId === session.id ? reportState.export : null;
   const printing = job?.state === "printing";
-  const canPrint = sealed && approved && schema === PRINT_REPORT_MODEL_VERSION && !printing;
+  const canPrint =
+    sealed && approved && schema === PRINT_REPORT_MODEL_VERSION && !printing && !inputsDirty;
   const rejectedFile =
     job?.error !== null &&
     job?.error !== undefined &&
@@ -209,6 +247,10 @@ function PrintCard({ session, loaded }: { session: LoadedSession; loaded: Loaded
           <span className="flex items-center gap-2 text-sm text-ink-secondary" role="status">
             <Spinner size="sm" />
             <Bi {...messagePair("report.printing")} />
+          </span>
+        ) : inputsDirty ? (
+          <span className="text-sm text-warning-text" data-testid="save-before-print">
+            <Bi {...messagePair("report.saveBeforePrint")} />
           </span>
         ) : null}
       </div>
@@ -297,6 +339,9 @@ function ReportWorkspace({ session }: { session: LoadedSession }) {
   const sealed = view.status !== "open";
   const approved = approvalHolds(reportState, view);
   const loaded = useEngineJson(view.outputs.report_model?.url ?? null);
+  // shared by both cards: printing waits until edited report details are saved
+  const [edited, setEdited] = useState<ReportInputs | null>(null);
+  const { dirty } = inputsEdit(view, edited);
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 p-5">
       <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
@@ -334,8 +379,8 @@ function ReportWorkspace({ session }: { session: LoadedSession }) {
       ) : null}
       <div className="grid items-start gap-4 xl:grid-cols-[minmax(0,26rem)_minmax(0,1fr)]">
         <div className="flex flex-col gap-4">
-          <ReportInputsCard session={session} loaded={loaded} />
-          <PrintCard session={session} loaded={loaded} />
+          <ReportInputsCard session={session} loaded={loaded} edited={edited} onEdit={setEdited} />
+          <PrintCard session={session} loaded={loaded} inputsDirty={dirty} />
         </div>
         <SealedReport session={session} />
       </div>

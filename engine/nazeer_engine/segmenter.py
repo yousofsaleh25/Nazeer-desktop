@@ -185,6 +185,27 @@ def detection_from_mask(mask: np.ndarray, conf: float = 0.9) -> Detection:
     return Detection(ok=True, mask=mask_u8, bbox_xyxy=bbox, conf=float(conf), n_detections=1)
 
 
+STUB_ELLIPSE_SEMI_AXES = (0.30, 0.35)  # fractions of the frame width / height
+STUB_ELLIPSE_CONF = 0.9
+
+
+def ellipse_mask(
+    shape: tuple[int, int], semi_axes: tuple[float, float] = STUB_ELLIPSE_SEMI_AXES
+) -> np.ndarray:
+    """A filled ellipse centred in an ``HxW`` frame, uint8 0/255 (about 33 % of the frame)."""
+    h, w = int(shape[0]), int(shape[1])
+    yy, xx = np.ogrid[:h, :w]
+    rx, ry = semi_axes[0] * w, semi_axes[1] * h
+    inside = ((xx - (w - 1) / 2.0) / rx) ** 2 + ((yy - (h - 1) / 2.0) / ry) ** 2 <= 1.0
+    return inside.astype(np.uint8) * 255
+
+
+def stub_ellipse_detection(bgr: np.ndarray) -> Detection:
+    """The ``--stub-mask ellipse`` detection: the same centred ellipse in every frame, whatever
+    the frame shows (development and fast end-to-end tests only; never a measurement source)."""
+    return detection_from_mask(ellipse_mask(bgr.shape[:2]), conf=STUB_ELLIPSE_CONF)
+
+
 class StubSegmenter:
     """Test double: a constant Detection, a callable ``fn(bgr) -> Detection``, or nothing."""
 
@@ -193,11 +214,17 @@ class StubSegmenter:
     weights_name = "stub"
 
     def __init__(
-        self, fn_or_detection: Callable[[np.ndarray], Detection] | Detection | None = None
+        self,
+        fn_or_detection: Callable[[np.ndarray], Detection] | Detection | None = None,
+        *,
+        name: str | None = None,
     ):
         self._fn = fn_or_detection
         self.calls = 0
         self.warmup_ms: float | None = 0.0
+        if name is not None:  # a distinct identity keeps the candidate cache keys apart
+            self.sha256 = name
+            self.weights_name = name
 
     def warm_up(self, shape: tuple[int, int] = WARMUP_FRAME_SHAPE) -> float:
         self.warmup_ms = 0.0

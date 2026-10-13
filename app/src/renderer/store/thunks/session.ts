@@ -147,15 +147,14 @@ export function exportReport(): AppThunk<Promise<ApiErrorShape | null>> {
         timingsMs: {},
       };
     }
-    // the engine sealed it, or answered (a refused PDF is recorded): read the session again
-    if (result.ok || result.error.status !== null) {
-      const fresh = await getSessionView(id);
-      if (!("error" in fresh)) {
-        dispatch(adopt(fresh, id));
-      } else if (result.ok) {
-        const parsed = sessionViewOrError(result.session);
-        if (!("error" in parsed)) dispatch(adopt({ view: parsed.view, etag: null }, id));
-      }
+    // read the session again after every attempt: the engine sealed it, recorded a refused PDF,
+    // or may have sealed it although its answer was lost (a timeout, a broken connection)
+    const fresh = await getSessionView(id);
+    if (!("error" in fresh)) {
+      dispatch(adopt(fresh, id));
+    } else if (result.ok) {
+      const parsed = sessionViewOrError(result.session);
+      if (!("error" in parsed)) dispatch(adopt({ view: parsed.view, etag: null }, id));
     }
     dispatch(
       exportFinished({

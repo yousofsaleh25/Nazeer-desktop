@@ -20,6 +20,38 @@ afterEach(() => {
 });
 
 describe("the frame search", () => {
+  it("names a search of another recording that keeps this one from starting, and cancels it", async () => {
+    const engine = connectScriptedEngine({
+      [`POST /candidates/jobs/${running.job_id}/cancel`]: () =>
+        jsonResponse(202, { ...running, state: "cancelling" }),
+    });
+    renderRoutes([{ path: "/candidates", element: <Candidates /> }], "/candidates", {
+      preloadedState: {
+        ...uiState("en"),
+        engine: engineState(),
+        candidates: {
+          ...CANDIDATES_INITIAL,
+          bagPath: "D:\\bags\\this-camel.bag",
+          start: {
+            state: "error",
+            error: { status: 409, code: "job_busy", message: "busy", details: {} },
+          },
+          busyElsewhere: running,
+        },
+      },
+    });
+    const notice = screen.getByTestId("busy-elsewhere");
+    expect(notice).toHaveTextContent("The engine is searching another recording");
+    expect(notice).toHaveTextContent(running.bag_path.split("\\").at(-1) ?? "");
+    expect(screen.queryByText("Finding the best frames")).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "Cancel that search" }));
+    await waitFor(() =>
+      expect(engine.requests.map((r) => new URL(r.url).pathname)).toContain(
+        `/candidates/jobs/${running.job_id}/cancel`,
+      ),
+    );
+  });
+
   it("follows the job, stops it on request, and opens the frames when they are ready", async () => {
     const engine = connectScriptedEngine({
       [`POST /candidates/jobs/${running.job_id}/stop`]: () =>

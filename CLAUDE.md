@@ -34,21 +34,22 @@ End-user flow (operator decision 2026-10-10):
 The engine never scores beauty or ranks camels; it measures what the judge draws.
 Depth fallbacks and rejections are always recorded, never silent.
 
-Scaffolded 2026-10-04 inside the `camel_beauty` repo (`E:\camel_beauty`, git `main`);
-meant to become its own repository. The parent's `CLAUDE.md` (≈ 600 lines) holds the
-history (Phases 1–21, ADR-001 honesty contract, audit disciplines D7/D8/D9); read it for
-*why*. Nothing here imports the parent package.
+Scaffolded 2026-10-04 inside the `camel_beauty` repo (`E:\camel_beauty`, git `main`); its own
+git repository (`main`) since 2026-10-10, still inside the parent's folder. The parent's guidance
+file (≈ 620 lines; committed as `CLAUDE.md`, in the parent's working tree currently an untracked
+`AGENTS.md`) holds the history (Phases 1–21, ADR-001 honesty contract, audit disciplines
+D7/D8/D9); read it for *why*. Nothing here imports the parent package.
 
-## State of the repo (2026-10-12)
+## State of the repo (2026-10-13)
 
 | Path | What is there |
 |---|---|
-| `app/` | **Stage 7 of 9 + additions A (offline licence keys) and B (Windows installer), D11** — Electron 44 + electron-vite 5 (vite 7) + React 19 + Redux Toolkit + Tailwind v4 + TypeScript 5.9, exact pins (D9 "App implementation decisions"): security baseline (sandbox, context isolation, CSP header, `app://nazeer` privileged scheme, navigation/permission guards), `window.nazeer` bridge (engine status, dialogs, capture-folder scan, quit handshake, log folder), generated API types `src/shared/api.d.ts` and engine error codes `src/shared/engine-codes.json`, engine payload fixtures in `app/fixtures/`; design tokens (light/dark, WCAG AA-checked), bundled Plex 400–700, RTL-first foundations (`Bi`, `Num`, `Ltr`, `DirectionalIcon`, Latin-run isolation), ar/en i18n, the `ui` slice; the component library (`components/ui/`: Radix-based primitives; `components/domain/`: bag picker, frame-search progress, candidate grid, measuring toolbar + render-only measuring canvas, measurement list, hover readout, Z_ref card, overlay approval, report inputs, probe report, pdf.js viewer, History table, app shell), all rendering the engine's `presentation` and `/meta/labels` from the fixtures; a dev-only gallery `#/design`, `#/design/components`, `#/design/domain` (the last on the dev data root's real frame, overlay and PDF; `app/src/renderer/design/README.md`); the engine supervisor in main (`src/main/engine/`: data-root rules, spawn with a per-start token, ready-line identity, one-retry / crash-backoff / exit-6 orphan rules, /health watchdog, rotating log; quit = renderer flush → shutdown → kill) and the typed client (openapi-fetch + RTK Query, `engine` slice, operator routes behind the engine gate, About). The offline licence gate (D11): `src/main/license/` (Ed25519 `NZL1.<payload>.<signature>` keys verified in main, re-checked at every start, marker `<userData>\app-license.json`), `src/main/runtime.ts` (production = packaged or built with `NAZEER_DIST=1`: licence required, development switches ignored), the Activate screen before the main UI and About's licence card; the engine starts only once a licence is active. The vendor key pair exists (created 2026-10-12, key id `2f8696292b9d9ec0`; `publicKey.ts` holds its public half). The Windows installer (D11, Stage B): `electron-builder.yml` (NSIS x64, per-user by default, Electron fuses, `app.asar` without node_modules, unsigned), `scripts/stage-engine.mjs` (the engine as the embeddable CPython 3.11.9 + an app-local VC++ runtime + the venv's runtime packages in `dist-engine\`, checked: signatures, DLL closure, import sweep, `--check`, serve smoke), `scripts/dist-checks.mjs` (packaging guards), `scripts/packaged-smoke.mjs` (silent install → activate → quit → relaunch → uninstall), the Nazeer logo as the app icon and page icon (`build/logo.png` → `build/icon.ico` + favicon, `scripts/make_icon.py`), Arabic and English installer pages (`build/installer.nsh`), publisher "Nazeer"; production runs the engine as `<resources>\engine\python\python.exe -I -u -B -m nazeer_engine`. The Redux store (Stage 5; D9 "Redux store", D10 "App side of C3.4"): `bag`, `candidates` (the frame-proposal job over SSE, polling as fallback), `session` (the draft, autosave with rebase / conflict / blocked, undo, the hover and preview channels), `report` (the overlay re-hashed with WebCrypto, the approval), `history`; the flows run in the listener middleware (`src/renderer/store/`). The operator screens (Stage 6; D9 "Screens", D10 "App side of C3.5"): open a recording, the frame search and the proposed frames, measuring (`screens/measure/`: the eight kinds with the mouse or the keyboard crosshair, zoom and pan, naming, rename / note / colour / reorder / delete / undo, dragging a point, the hover readout, the save state and its problems), finalize and approve on the verified overlay bytes, the report details and an exported session's PDF, History (search, filters, reopen, delete, backup, rebuild); run on the real engine through the UI (bag 006, 24 checks). Printing (Stage 7; D7 "Electron side", D9 "Printing"): the print page (`src/print/`: laid out from report model 1.1, the approved overlay bytes and the engine's pinned Plex TTF only; its own checks before printing) in a hidden sandboxed window per report (`src/main/print/`), `printToPDF`, the engine's probes and seal; the report screen's Print / Print again with the result; the headless re-export `--export`; run on the real engine through the UI (bag 006: three languages sealed with strict probes, 45 checks). The open session's save state shows in the header from every screen. The clean-PC check runs in Windows Sandbox (`scripts/sandbox-check.mjs`, D11). Plan: `~/.claude/plans/pasted-content-id-80b5-role-you-swirling-brook.md` |
-| `engine/nazeer_engine/` | **the engine** (≈ 10.5 k lines): FastAPI sidecar, 31 HTTP operations, everything in contracts C1–C3 + ADR-D7's engine half. Integration-tested on real bags with the real model and headless Edge; not production-validated (no app, no field capture) |
-| `engine/tests/` | ≈ 430 default tests (synthetic frames, fake RealSense, stub model) + 6 opt-in real-resource tests (`realbag`, `realmodel`, `realpdf`) |
+| `app/` | **Stages 1–9 of the app plan done, with additions A (offline licence keys) and B (Windows installer), D11; 2026-10-13.** Electron 44 + electron-vite 5 (vite 7) + React 19 + Redux Toolkit + Tailwind v4 + TypeScript 5.9, exact pins (D9 "App implementation decisions"); what lives where: Architecture → "App map". The operator flow runs end to end through the UI: open a recording, the frame search and the proposed frames, measuring (the eight kinds, with the mouse or the keyboard crosshair), autosave, History, finalize, approve on the engine's verified image, print, seal, sign-off on the PDF. **Integration-tested:** `e2e/flow-real.spec.ts` drives the built app on bag 006 with `best.pt` through every `real_run` check (11/11, 2026-10-13); the dev app on the real engine passed the Stage 6 walk (24 checks), the Stage 7 walk (45: three languages sealed with strict probes, the headless re-export) and the Stage 8 walk (44/45; the one failure was the user's own pointer over the visible window, D9). The installer (`npm run dist`: unsigned NSIS, the engine as an embedded CPython) passed the packaged smoke on this laptop (24/24) and the D11 clean-PC checklist in Windows Sandbox, network on and off (2026-10-13). **Not production-validated:** no field laptop, no signed installer, no field capture. The vendor key pair exists (created 2026-10-12, key id `2f8696292b9d9ec0`; `src/main/license/publicKey.ts` holds its public half). Stage 9 (D9 "Review and wrap-up"): one read-only review of `app/` (19 findings, none a blocker: 18 fixed, each with a test; a fresh print partition per print kept, as D7 asks), the batched Arabic wording pass, `AGENTS.md` reduced to a pointer to this file; after the fixes `npm test` 700 tests, `npm run e2e` 16 passed, the real flow 11 of 11. Plan: `~/.claude/plans/pasted-content-id-80b5-role-you-swirling-brook.md` |
+| `engine/nazeer_engine/` | **the engine** (≈ 10.5 k lines): FastAPI sidecar, 31 HTTP operations, everything in contracts C1–C3 + ADR-D7's engine half. Integration-tested on real bags with the real model, headless Edge and the app; not production-validated (no field capture) |
+| `engine/tests/` | ≈ 440 default tests (438 on 2026-10-13) (synthetic frames, fake RealSense, stub model) + 6 opt-in real-resource tests (`realbag`, `realmodel`, `realpdf`) |
 | `engine/tools/real_run.py` | the real-bag check (the gate before the app): spawns the sidecar, walks a bag, picks a frame, places seeded random distances, prints with headless Edge, seals the PDF; **34/34 checks passed on bag 006 (2026-10-11; again on 2026-10-12 with report model 1.1)** |
 | `tools/generate-license.mjs` | the licence-key generator (D11): run on the vendor's machine, never packaged; `--init` makes the Ed25519 pair in `%USERPROFILE%\.nazeer-license` (refuses git work trees, OneDrive, Desktop, Documents) and writes the app's baked public key; `--days N` / `--expires` trial keys, `--customer` permanent keys |
-| `docs/arabic-wording-backlog.md` | the app's Arabic strings awaiting one batched wording review (operator, 2026-10-12: at the end of Stage 6 or in Stage 9); each stage adds its new strings |
+| `docs/arabic-wording-backlog.md` | the app's Arabic strings per stage and their batched wording pass (Stage 9, 2026-10-13: 11 corrections in `ar.json` and 3 in `main/dialogs.ts` applied; four one-word-two-meanings decisions, style suggestions and the engine's printed wording left for the operator); log new strings there |
 | `engine/openapi.json` | the API snapshot for client codegen; a test fails when it drifts from the code |
 | `engine/` | `.venv` (Python 3.11.9, **CPU-only torch 2.14.1**), `requirements.txt` (runtime pins incl. pypdf, arabic-reshaper, python-bidi), `requirements-dev.txt` (httpx2, pytest, ruff), `pyproject.toml` (pytest + ruff config) |
 | `engine/models/` | `best.pt` (pinned, below), `last.pt` (alternative), `MODEL_CARD.md`, `metrics.json`, `results.csv` |
@@ -58,8 +59,8 @@ history (Phases 1–21, ADR-001 honesty contract, audit disciplines D7/D8/D9); r
 | `engine/wheels/` | intended offline wheelhouse for the pinned Python deps (not created; see Decisions) |
 
 `runs\dev_root` is the app's dev data root (a copy of a `real_run` data root: one exported bag-006
-session and its candidate set); it is gitignored with the rest of `runs/`. As later app stages land,
-replace the remaining "intended" app commands below with the real ones in the same change.
+session and its candidate set); it is gitignored with the rest of `runs/`. When `app/package.json`
+changes (scripts, pins), update this table and "Commands" below in the same change.
 
 ## Commands
 
@@ -89,6 +90,8 @@ $env:NAZEER_WRITE_GOLDEN = "1"   # with NAZEER_REAL: rewrites ..\fixtures\golden
 .venv\Scripts\python.exe -m nazeer_engine --data-root <abs dir> [--port 0] [--token <secret>] [--cors-origin <origin>]
 #   → {"event": "ready", "port": 51234, "pid": …, …}   or   {"event": "fatal", "code": …} and exit 2/3/5/6
 #   --check validates data root + model and exits; --stub-model (dev only, needs NAZEER_ENGINE_DEV=1) skips YOLO
+#   (it detects nothing); with --stub-mask ellipse it finds the same centred ellipse in every frame (model "stub-ellipse":
+#   a real bag's walk proposes frames without YOLO, for the fast e2e; refused without --stub-model)
 #   the data root must be absolute and not under Desktop/Documents/OneDrive; one engine per data root (engine.lock)
 
 # --- Real-bag check: spawn the sidecar and drive the whole flow over HTTP like the app (≈ 1 min)
@@ -106,7 +109,8 @@ cd app
 npm install                 # exact pins; postinstall `install-electron` fetches the checksum-pinned Electron binary
 npm run dev                 # electron-vite dev + its engine (real model) on ..\runs\dev_root; main + preloads rebuilt
                             #   on change, renderer HMR. Dev switches: --data-root <dir> or NAZEER_DATA_ROOT,
-                            #   NAZEER_STUB_MODEL=1, NAZEER_ENGINE_NO_WARMUP=1, NAZEER_ENGINE_PYTHON=<python.exe>;
+                            #   NAZEER_STUB_MODEL=1 (+ NAZEER_STUB_MASK=ellipse), NAZEER_ENGINE_NO_WARMUP=1,
+                            #   NAZEER_ENGINE_PYTHON=<python.exe>;
                             #   supervisor log: <userData>\logs\app-engine-stderr.log. Development builds use their own
                             #   profile %APPDATA%\Nazeer Desktop (dev); NAZEER_LICENSE_ENFORCE=1 + NAZEER_LICENSE_PUBLIC_KEY=<pem>
                             #   turn the licence gate on with a test key (ignored in production builds)
@@ -119,7 +123,14 @@ npm run test:store-real     # the session store against a real engine: the stub-
 npm run build               # electron-vite build → out\main, out\preload, out\renderer\{renderer,print}
 npm run e2e                 # build + Playwright-Electron specs in e2e\: smoke + connectivity (each launch spawns
                             #   its own stub-model engine on a temp data root; connectivity copies the dev-root session;
-                            #   license drives the Activate screen with keys from the real generator)
+                            #   license drives the Activate screen with keys from the real generator; export prints and
+                            #   seals the dev-root session, then the headless re-export); flow-fast: bag 004 through the
+                            #   Arabic UI with the ellipse stub (open, frames, session, four measurements, finalize,
+                            #   approve, print, seal); labels come from the i18n tables by key (e2e\helpers\labels.ts)
+$env:NAZEER_REAL = "1"; npm run e2e   # adds flow-real: bag 006 + best.pt through the English UI with every real_run check
+                            #   (hover and saved depth sources, autosave revisions, previews, hashes, probes, the PDF's
+                            #   pages, face and attachments read back with pdf.js, History); one spec: npx playwright test
+                            #   e2e/flow-real.spec.ts after npm run build
 npm run gen:api             # src\shared\api.d.ts from ..\engine\openapi.json (a test fails when it drifts)
 npm run gen:codes           # src\shared\engine-codes.json: every error code in the engine source (a test fails on drift;
                             #   the i18n test fails when one has no Arabic + English label)
@@ -149,6 +160,8 @@ npm run check:sandbox -- [--installer <exe>] [--bag <bag> | --no-bag] [--modes f
                             #   (network on: SmartScreen, the Arabic installer pages, per-user + all-users installs, a
                             #   standard user with an Arabic name; network off), each with the app, a bag, print and
                             #   seal; ..\runs\sandbox_check_<UTC>\summary.md per D11 item. Keep the Sandbox window visible
+                            #   and untouched. Windows Sandbox 0.8.x on this two-GPU laptop logs on only with the
+                            #   policy AllowVGPU = 0 (HKLM\SOFTWARE\Policies\Microsoft\Windows\Sandbox, set 2026-10-13, D11)
 
 # --- Licence keys (D11): the vendor's machine; the private key stays in %USERPROFILE%\.nazeer-license
 node tools/generate-license.mjs --init            # once: key pair + app\src\main\license\publicKey.ts (back up the folder)
@@ -163,7 +176,7 @@ cd E:\camel_beauty
 .venv-cuda\Scripts\python.exe runs\electron_mvp_probe\probe_bag_timing.py
 ```
 
-## Architecture (engine implemented 2026-10-11; app in progress — Stage 7 of 9 + additions A and B)
+## Architecture (engine implemented 2026-10-11; app implemented 2026-10-13 — Stages 1–9 + additions A and B)
 
 - **`app/` — Electron + Vite + React + TypeScript + Tailwind CSS.** Owns the operator UI:
   bag discovery (OS file dialog filtered to `.bag`, a recent list, an optional bounded
@@ -174,7 +187,10 @@ cd E:\camel_beauty
   engine's stamp; mismatch is a hard error), History, the `print.html` Vite entry printed
   with `webContents.printToPDF` in a hidden window, and the in-app PDF viewer (bundled
   pdf.js) used for final sign-off. Resolves `DATA_ROOT = app.getPath("userData")` (dev:
-  `--data-root`) and spawns/supervises the engine sidecar on `127.0.0.1` with it.
+  `--data-root`, `NAZEER_DATA_ROOT`, else `runs\dev_root`) and spawns/supervises the engine
+  sidecar on `127.0.0.1` with it, once the offline licence gate (D11) has an active key.
+  Packaged by electron-builder as an unsigned NSIS installer that carries the engine as an
+  embedded CPython (D11).
 - **`engine/` — Python 3.11 FastAPI service, one worker.** Owns everything that touches
   numpy: bag walking (pyrealsense2), YOLO inference (model loaded + warmed at startup),
   candidate ranking as a cancellable background job, Z_ref and ground line, depth lookup
@@ -184,6 +200,20 @@ cd E:\camel_beauty
   **not** typeset the document. Must stay importable without open3d / PyQt / pyvista.
 - **Model** — one pinned checkpoint, hash-checked at load. Everything the operator sees
   traces back to one known model.
+
+### App map (`app/`)
+
+| Layer | Modules |
+|---|---|
+| main process (`src/main/`) | `index.ts` (lifecycle, single-instance lock, `--export` dispatch), `runtime.ts` (production = packaged or built with `NAZEER_DIST=1`: licence required, development switches ignored), `security.ts` + `csp.ts` (window flags, CSP builders, navigation / window-open / webview / permission guards, production menu, sender checks), `protocol.ts` + `appPath.ts` (`app://nazeer`, traversal-safe), `windows.ts` + `rendererRecovery.ts` (a crashed renderer is reloaded a few times, then the operator decides), `ipc.ts` (every `ipcMain.handle`; payloads checked by `shared/ipcValidate.ts`), `dialogs.ts`, `scan.ts` (bounded capture-folder scan), `settings.ts` (`<userData>\app-settings.json`), `quit.ts` (renderer flush → engine shutdown → kill) |
+| engine supervisor (`src/main/engine/`) | `dataRoot.ts` (data-root rules), `command.ts` (the venv in development; in production `<resources>\engine\python\python.exe -I -u -B -m nazeer_engine` with the development variables dropped), `process.ts`, `readyLine.ts`, `supervisor.ts` (a token per start, ready-line identity, `/health` watchdog), `restartPolicy.ts` (one retry, crash backoff), `orphan.ts` (exit 6), `logs.ts` (rotating `<userData>\logs\app-engine-stderr.log`) |
+| licence (`src/main/license/`, D11) | `verify.ts` (Ed25519 `NZL1.<payload>.<signature>`), `store.ts` (`<userData>\app-license.json`), `service.ts` (re-checked at every start; the engine starts only once a licence is active), `publicKey.ts` (written by `tools/generate-license.mjs --init`) |
+| printing (`src/main/print/`, D7) | `exportPdf.ts` (the checks, the print, the upload and the result), `printWindow.ts` (hidden, sandboxed, its own in-memory partition), `assets.ts` (the engine's pinned Plex TTF, hash-checked against `print/plex-cmap.json`, and the logo), `cli.ts` (`--export`) |
+| preloads (`src/preload/`) | `index.ts` (`window.nazeer`), `print.ts` (the print page's bridge); each a self-contained file (a sandboxed preload cannot load chunks) |
+| shared (`src/shared/`) | `api.d.ts` (generated from `engine/openapi.json`), `engine-codes.json` (generated from the engine source), `ipc.ts` + `printChannels.ts` (channels, payload types), `ipcValidate.ts`, `ids.ts` |
+| renderer (`src/renderer/`) | `api/` (openapi-fetch client, RTK Query `engineApi`, asset URLs with the token, SSE `jobEvents`, the error envelope, runtime readers for labels / session views / report models / probes), `store/` (slices `engine`, `license`, `ui`, `bag`, `candidates`, `session`, `report`, `history`; listeners `autosave`, `candidates`, `finalize`, `probes`; thunks; `session/` document, rebase, sync, flush; `services/overlayBytes.ts`), `screens/` (Home, Candidates, CandidateSet, `measure/`, FinalizeScreen, ReportScreen, HistoryScreen, About, Activate, `session/` gate + unsaved guard, ScreenError: a screen that failed to render), `components/ui/` (Radix-based primitives, the `Bi` / `Ltr` / `Num` isolates), `components/domain/` (bag picker, frame-search progress, candidate grid, measuring toolbar + the render-only canvas in `measure/`, measurement list, hover readout, Z_ref card, overlay approval, report inputs, probe report, pdf.js viewer, History table, the engine and licence gates), `design/` (tokens, fonts, the development-only gallery `#/design`), `i18n/` (`ar.json`, `en.json`), `lib/` (`bidi.tsx` Latin-run isolation, `sha256.ts`, `pdf.ts`, `read.ts`) |
+| print page (`src/print/`) | `model.ts` (report model 1.1, every printed field checked), `PrintPage.tsx`, `text.tsx` (labels, operator text, numbers), `face.ts` (the Plex face from its bytes), `preflight.ts` (the probe's text rules and a glyph check against `plex-cmap.json`) |
+| build, packaging, checks | `scripts/`: `gen-api`, `gen-engine-codes`, `gen-font-cmap`, `capture-fixtures`, `snap`, `store-real`, `stage-engine` (+ `engine_bundle.py`, `lib/`), `dist-checks`, `packaged-smoke`, `sandbox-check` (+ `sandbox/`), `make_icon.py`; `electron-builder.yml` (NSIS x64, per-user by default, fuses, publisher "Nazeer"); `build/` (`logo.png` → `icon.ico`, `installer.nsh` with the Arabic installer pages); `e2e/` (smoke, connectivity, license, export, flow-fast, flow-real; `helpers/`); `fixtures/` (engine payloads for unit tests and the gallery) |
 
 ### Engine package map (`engine/nazeer_engine/`)
 
@@ -446,7 +476,7 @@ depth.
    IBMPlexSansArabic subset among the fonts) → manifest → PDF reviewed in-app. Attachment
    failure keeps the PDF with `attachments_ok: false` + reason.
 
-### Report = PDF (ADR-D7, proposed; both halves implemented, the Electron side on 2026-10-12 — operator to accept)
+### Report = PDF (ADR-D7, accepted 2026-10-13; both halves implemented, the Electron side on 2026-10-12)
 
 - Engine `POST /sessions/{id}/finalize` renders `overlay_vN.png` **once** (1280×(H+120)
   at dpi 100; IBM Plex Sans Arabic TTF from `nazeer_engine/assets/fonts`; matplotlib 3.11
@@ -560,7 +590,9 @@ load-bearing. The model card, `metrics.json` and `results.csv` stay tracked.
 - **Windows Smart App Control can block unsigned engine DLLs, intermittently** (D11): on 2026-10-12, in
   enforcement, it blocked `pyrealsense2` and matplotlib's `_c_internal_utils` from 12:40 to 13:13 ("An Application
   Control policy has blocked this file"), then allowed them again (reputation lookups); while blocked the engine starts but cannot open a bag or draw
-  the overlay (since Stage A1 the stack then reports missing). Check
+  the overlay (since Stage A1 the stack then reports missing). On 2026-10-13 it blocked `pydantic_core`'s DLL from
+  16:33 to 18:33: `--check` still passed (it returns before FastAPI is imported) but the sidecar could not serve, so
+  no app, e2e or API test could run for two hours. Check
   `HKLM\SYSTEM\CurrentControlSet\Control\CI\Policy` `VerifiedAndReputablePolicyState` (1 = on).
   In Stage B (D11) the unsigned installer, the rebranded app exe and the bundled engine ran here without a
   block (24-check install-and-run smoke), but they were built on this laptop and carry no Mark of the Web;
@@ -614,6 +646,11 @@ load-bearing. The model card, `metrics.json` and `results.csv` stay tracked.
   marked `realbag` and `realmodel` needs both names in `-m`. The real flow hard-links bag
   004 under `runs\اختبار\` (same volume, removed afterwards) — librealsense 2.57 opens
   non-ASCII paths directly (8.3 short names are disabled on drive E:).
+- **Runs that drive a visible window get the user's own input:** a CDP-driven `npm run dev` walk or
+  the Windows Sandbox run receives the real mouse and keyboard (the measuring canvas shares one
+  crosshair between them, by design), so a keyboard-placed point can land under the user's pointer
+  (Stage 8, D9). Keep exact-position checks in the Playwright e2e specs; say before a long visible
+  run that the window should be left alone.
 - **Paths:** `cv2.imwrite`/`imread` fail silently on non-ASCII Windows paths; the parent's
   four-view page writes to a CWD-relative `runs/` (lost or scattered sessions under
   Electron's spawn cwd or a read-only install dir); `playback.seek()` costs ≈ 10 s.
@@ -638,7 +675,7 @@ load-bearing. The model card, `metrics.json` and `results.csv` stay tracked.
 `docs/decisions/README.md` indexes D1–D11 (D11: offline licence keys and the Windows installer, accepted 2026-10-12). D1 (checkpoint: `best.pt` recommended, hash
 already matches) and D6 (licence) are drafted from the model card; D2–D5 are implied by
 the card's numbering gap and never referenced — operator to fill. D7 PDF route
-(Electron printToPDF; engine = rendering authority; **proposed pending the spike**), D8
+(Electron printToPDF; engine = rendering authority; **accepted 2026-10-13** after Stage 7), D8
 measurement types + depth provenance (contract C1, **reviewed, parameters proposed**),
 D9 app stack (Tailwind; offline rule) and D10 frame candidates + session/history flow
 (contracts C2/C3, **reviewed, parameters proposed**) are drafted 2026-10-10. D7, D8 and

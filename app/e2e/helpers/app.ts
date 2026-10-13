@@ -1,7 +1,8 @@
 /**
  * Launching the built app for e2e: a throwaway userData, a throwaway data root (optionally seeded
- * with a session from the dev data root), the stub-model engine (fast start, no YOLO), and helpers
- * to wait for the supervisor's ready state and to collect renderer console errors.
+ * with a session from the dev data root), the stub-model engine (fast start, no YOLO) unless a spec
+ * asks for the real model, and helpers to wait for the supervisor's ready state and to collect
+ * renderer console errors.
  */
 import { cpSync, existsSync, mkdirSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -15,6 +16,7 @@ export const devRoot = path.join(repoDir, "runs", "dev_root");
 /** the session real_run exported into the dev data root (copied, never modified) */
 export const DEV_SESSION_ID = "20261011_152956_e20a7c";
 export const BAG_004 = path.join(repoDir, "data", ".bag", "20260414_180708-004.bag");
+export const BAG_006 = path.join(repoDir, "data", ".bag", "20260414_175757-006.bag");
 
 export function cleanEnv(extra: Record<string, string>): Record<string, string> {
   const env: Record<string, string> = {};
@@ -38,6 +40,8 @@ export interface LaunchedApp {
 
 export interface LaunchOptions {
   seedSession?: boolean;
+  /** false: the real model (engine/models/best.pt, warmed up) instead of the stub */
+  stubModel?: boolean;
   env?: Record<string, string>;
   /** reuse these folders (a relaunch on the same profile); they are not deleted on close */
   userData?: string;
@@ -46,6 +50,7 @@ export interface LaunchOptions {
 
 export async function launchApp({
   seedSession = false,
+  stubModel = true,
   env = {},
   userData: givenUserData,
   dataRoot: givenDataRoot,
@@ -64,7 +69,7 @@ export async function launchApp({
     env: cleanEnv({
       NAZEER_USER_DATA_DIR: userData,
       NAZEER_DATA_ROOT: dataRoot,
-      NAZEER_STUB_MODEL: "1",
+      ...(stubModel ? { NAZEER_STUB_MODEL: "1" } : {}),
       ...env,
     }),
   });
