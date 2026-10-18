@@ -4,12 +4,18 @@
  * engine's reason, a missing folder "files missing" — so nothing disappears silently. Open
  * continues an open session or inspects a sealed one; Reopen makes a sealed session editable again
  * (its outputs become stale); Delete moves it to the trash after a confirmation (screen-level).
+ * "Save PDF as…" (D12) saves a copy of a row's sealed report where the operator chooses.
+ *
+ * With `selection` (D12 F2.1) a first column ticks camels for a comparison: only rows the engine
+ * calls eligible can be ticked, and an ineligible row says why (the engine's label); ticked rows
+ * stay ticked across pages and filters (the screen holds the selection).
  */
-import { ImageOff, LockOpen, SquareArrowOutUpRight, Trash2 } from "lucide-react";
+import { FileDown, ImageOff, LockOpen, SquareArrowOutUpRight, Trash2 } from "lucide-react";
 import { useState } from "react";
 import type { HistoryRow } from "@/api/types";
 import { Bi } from "@/components/ui/Bi";
 import { Button, IconButton } from "@/components/ui/Button";
+import { Checkbox } from "@/components/ui/Checkbox";
 import { Badge, Chip } from "@/components/ui/Chip";
 import { Ltr, Num } from "@/components/ui/Ltr";
 import {
@@ -59,6 +65,15 @@ export interface HistoryTableProps {
   onOpen: (row: HistoryRow) => void;
   onReopen?: (row: HistoryRow) => void;
   onDelete?: (row: HistoryRow) => void;
+  /** save a copy of the row's sealed report (rows with one only) */
+  onSaveAs?: (row: HistoryRow) => void;
+  /** the camels ticked for a comparison (absent: no selection column) */
+  selection?: {
+    selectedIds: ReadonlySet<string>;
+    /** the maximum is reached: unticked rows cannot be ticked */
+    full: boolean;
+    onToggle: (row: HistoryRow) => void;
+  };
 }
 
 export function HistoryTable({
@@ -68,12 +83,19 @@ export function HistoryTable({
   onOpen,
   onReopen,
   onDelete,
+  onSaveAs,
+  selection,
 }: HistoryTableProps) {
   const t = useT();
   return (
     <Table>
       <TableHead>
         <tr>
+          {selection ? (
+            <TableHeaderCell>
+              <span className="sr-only">{t("history.selectColumn")}</span>
+            </TableHeaderCell>
+          ) : null}
           <TableHeaderCell>
             <span className="sr-only">{t("history.thumbnail")}</span>
           </TableHeaderCell>
@@ -102,8 +124,29 @@ export function HistoryTable({
           const busy = busyIds?.has(row.session_id) ?? false;
           const usable = row.index_state === "ok" || row.index_state === "unindexed";
           const sealed = row.status === "finalized" || row.status === "exported";
+          const eligible = row.comparison.eligible;
+          const ticked = selection?.selectedIds.has(row.session_id) ?? false;
+          const why = eligible ? null : (row.comparison.reason ?? null);
           return (
-            <TableRow key={row.session_id} data-session={row.session_id}>
+            <TableRow
+              key={row.session_id}
+              data-session={row.session_id}
+              data-selected={ticked || undefined}
+            >
+              {selection ? (
+                <TableCell>
+                  <Checkbox
+                    checked={ticked}
+                    hideLabel
+                    disabled={!ticked && (!eligible || selection.full)}
+                    label={{
+                      ar: `${messagePair("history.select").ar} ${row.camel_id || row.session_id}`,
+                      en: `${messagePair("history.select").en} ${row.camel_id || row.session_id}`,
+                    }}
+                    onCheckedChange={() => selection.onToggle(row)}
+                  />
+                </TableCell>
+              ) : null}
               <TableCell>
                 <Thumb
                   url={row.thumb_url ? assetUrl(row.thumb_url) : null}
@@ -165,6 +208,12 @@ export function HistoryTable({
                     </Badge>
                   ) : null}
                 </div>
+                {selection && why !== null ? (
+                  <p className="mt-1 max-w-sm text-xs text-ink-secondary" data-ineligible={why}>
+                    <Bi {...messagePair("history.cannotCompare")} />{" "}
+                    <CodeLabel group="comparison_ineligible" code={why} />
+                  </p>
+                ) : null}
                 {row.index_error ? (
                   <p className="mt-1 max-w-sm text-xs text-danger-text">
                     <bdi dir="ltr" lang="en">
@@ -202,6 +251,15 @@ export function HistoryTable({
                       )}
                     />
                   </Button>
+                  {onSaveAs && row.report_version > 0 && usable ? (
+                    <IconButton
+                      icon={FileDown}
+                      size="icon-sm"
+                      label={t("report.saveAs")}
+                      disabled={busy}
+                      onClick={() => onSaveAs(row)}
+                    />
+                  ) : null}
                   {onReopen && sealed && usable ? (
                     <IconButton
                       icon={LockOpen}

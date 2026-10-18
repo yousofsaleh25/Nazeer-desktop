@@ -9,7 +9,7 @@ closed ``Literal`` so the generated TypeScript gets union types (B16).
 
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import Annotated, Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -595,6 +595,45 @@ class ReportOut(_Out):
     probe: dict[str, Any]
 
 
+IneligibleReason = Literal[
+    "delete_failed",
+    "files_missing",
+    "file_corrupt",
+    "files_changed",
+    "not_finalized",
+    "reopened",
+    "model_outdated",
+]
+StaleReason = Literal[
+    "member_deleted",
+    "member_unreadable",
+    "member_reopened",
+    "member_edited",
+    "member_refinalized",
+]
+StaleNote = Literal["member_session_changed"]
+ComparisonStatus = Literal["created", "sealed"]
+SESSION_ID_PATTERN = r"^\d{8}_\d{6}_[0-9a-f]{6}$"
+SessionId = Annotated[str, Field(pattern=SESSION_ID_PATTERN)]
+
+
+class OverlayRef(_Out):
+    version: int
+    sha256: str
+    url: str
+
+
+class ComparisonEligibility(_Out):
+    """D12 F2.1: whether the row can join a comparison (labels group comparison_ineligible)."""
+
+    eligible: bool
+    reason: IneligibleReason | None
+    approved_by_seal: bool = Field(
+        description="a report sealed from the current image: no approval needed in the dialog"
+    )
+    overlay: OverlayRef | None = Field(description="the image to approve; null when ineligible")
+
+
 class HistoryRow(_Out):
     session_id: str
     camel_id: str
@@ -613,16 +652,173 @@ class HistoryRow(_Out):
     report_stale: bool
     overlay_version: int
     report_version: int
+    report_overlay_version: int = Field(
+        description="the overlay version its report was sealed with"
+    )
     index_state: str
     index_error: str
     thumb_url: str | None
     session_url: str
+    event: str = Field(description="the report's event name (report inputs)")
+    n_comparisons: int = Field(description="comparisons that include this session")
+    comparison: ComparisonEligibility
 
 
 class HistoryList(_Out):
     items: list[HistoryRow]
     total: int
     reconciled: dict[str, int]
+
+
+# ----- comparisons (D12) -----------------------------------------------------------------------
+
+
+class CoverIn(_In):
+    title: str | None = Field(default=None, max_length=200)
+    event: str | None = Field(default=None, max_length=100)
+    judge: str | None = Field(default=None, max_length=100)
+    council: str | None = Field(default=None, max_length=100)
+
+
+class ComparisonCreateIn(_In):
+    session_ids: list[SessionId] = Field(
+        max_length=500,
+        description="the camels in the operator's order (the order the PDF prints)",
+    )
+    cover: CoverIn | None = None
+    language: Language = "both"
+
+
+class ComparisonInputsIn(_In):
+    cover: CoverIn | None = None
+    language: Language | None = None
+
+
+class Cover(_Out):
+    title: str
+    event: str
+    judge: str
+    council: str
+
+
+class ComparisonMemberNow(_Out):
+    readable: bool
+    status: Status | None
+    revision: int | None
+
+
+class ComparisonOverlay(_Out):
+    version: int
+    file: str
+    sha256: str
+    width: int | None
+    height: int | None
+    url: str
+
+
+class ComparisonMemberModel(_Out):
+    file: str
+    version: int
+    sha256: str
+
+
+class ComparisonMember(_Out):
+    position: int
+    session_id: str
+    camel_id: str
+    revision: int
+    status_at_creation: Status
+    current: ComparisonMemberNow | None = Field(description="null: the session was deleted")
+    stale_reasons: list[StaleReason]
+    notes: list[StaleNote]
+    approved_by_seal: bool = Field(
+        description="its image was sealed in a report (its own, or this comparison's)"
+    )
+    overlay: ComparisonOverlay
+    report_model: ComparisonMemberModel
+    session_url: str
+
+
+class ComparisonModelOutput(_Out):
+    version: int = Field(description="new on every cover or language change")
+    file: str
+    sha256: str
+    url: str
+
+
+class ComparisonReportOutput(_Out):
+    version: int
+    file: str
+    sha256: str | None
+    url: str
+    model_version: int | None
+    stale: bool
+
+
+class ComparisonOutputs(_Out):
+    model: ComparisonModelOutput
+    report: ComparisonReportOutput | None
+    manifest_url: str | None
+
+
+class ComparisonView(_Out):
+    comparison_id: str
+    status: ComparisonStatus
+    language: Language
+    cover: Cover
+    created_at: str
+    updated_at: str
+    n_members: int
+    members: list[ComparisonMember]
+    stale: bool = Field(description="a member changed since the comparison was made (Q2)")
+    report_stale: bool = Field(description="the sealed PDF shows an earlier cover or language")
+    outputs: ComparisonOutputs
+    required_report_texts: list[str]
+    versions: dict[str, Any]
+    index_state: IndexState | None = None
+
+
+class ComparisonRowMember(_Out):
+    position: int
+    session_id: str
+    camel_id: str
+    stale_reasons: list[StaleReason]
+
+
+class ComparisonRow(_Out):
+    comparison_id: str
+    title: str
+    event: str
+    judge: str
+    council: str
+    language: str
+    status: str
+    created_at: str
+    updated_at: str
+    n_members: int
+    model_version: int
+    report_version: int
+    report_stale: bool
+    index_state: str
+    index_error: str
+    members: list[ComparisonRowMember]
+    stale: bool
+    comparison_url: str
+    report_url: str | None
+
+
+class ComparisonList(_Out):
+    items: list[ComparisonRow]
+    total: int
+    reconciled: dict[str, int]
+
+
+class ComparisonReportOut(_Out):
+    comparison: ComparisonView
+    probe: dict[str, Any] = Field(
+        description="kind comparison: the ordered pixel probe per member (page, |Δ|), the text "
+        "probe per member section, fonts, attachments, timings"
+    )
 
 
 class DeleteOut(_Out):
@@ -641,6 +837,7 @@ class BackupOut(_Out):
 
 class HistoryStats(_Out):
     sessions: dict[str, int]
+    comparisons: dict[str, int]
     candidates: dict[str, int]
     trash: dict[str, int]
     index: dict[str, Any]

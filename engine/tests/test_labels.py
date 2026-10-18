@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import re
 
-from nazeer_engine import labels
+from nazeer_engine import constants, labels
 from nazeer_engine.jsonsafe import dumps, loads_strict
 from nazeer_engine.provenance import HARD_REJECTIONS, SOFT_FLAGS, SOURCES
 from nazeer_engine.session_schema import ALL_MEASUREMENT_TYPES
@@ -137,4 +137,8 @@ def test_labels_payload_is_json_safe_and_complete():
     for key in ("kinds", "input_kinds", "sources", "flags", "rejections", "statuses", "buckets"):
         assert back[key]
     assert back["constants"]["KNN_K"] == 9 and "angle_4point" in back["input_kinds"]
+    # D12 Stage 4: the Compare dialog reads its limits from here, never from its own copy
+    assert back["constants"]["COMPARISON_MAX_SESSIONS"] == constants.COMPARISON_MAX_SESSIONS
+    assert back["constants"]["COMPARISON_MAX_TITLE"] == constants.COMPARISON_MAX_TITLE
+    assert back["constants"]["COMPARISON_MAX_NAME"] == constants.COMPARISON_MAX_NAME
     assert labels.snapped_summary(2, 5)["en"] == "2 of 5 points snapped to the camel (KNN)"

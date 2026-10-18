@@ -64,7 +64,13 @@ function isAbsolute(p: string): boolean {
 
 function under(child: string, parent: string): boolean {
   const relative = path.win32.relative(parent.toLowerCase(), child.toLowerCase());
-  return relative === "" || (!relative.startsWith("..") && !path.win32.isAbsolute(relative));
+  // ".." or "..\x" leaves the parent; a child folder named "..x" does not
+  const leaves =
+    relative === ".." ||
+    relative.startsWith("..\\") ||
+    relative.startsWith("../") ||
+    path.win32.isAbsolute(relative);
+  return !leaves;
 }
 
 /** null when the engine would accept the root; otherwise the engine's code with the reason. */

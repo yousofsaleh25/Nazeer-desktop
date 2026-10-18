@@ -15,6 +15,7 @@ import { autosaveDue, shouldSave } from "../listeners/autosave";
 import { verifiedOverlay } from "../services/overlayBytes";
 import { getSessionView, reconcile, viewResult, type ViewResult } from "../session/sync";
 import { approvalHolds, exportFinished, exportStarted } from "../slices/report";
+import { saveOffered } from "../slices/savedFiles";
 import { sessionLoaded, sessionLoadFailed, sessionLoadStarted } from "../slices/session";
 import type { RootState } from "../store";
 
@@ -166,6 +167,11 @@ export function exportReport(): AppThunk<Promise<ApiErrorShape | null>> {
         timingsMs: result.timingsMs,
       }),
     );
+    // D12: the screen showing the sealed PDF opens the Save dialog once it verified these bytes
+    const sealed = result.ok ? getState().session.view?.outputs.report : null;
+    if (sealed !== null && sealed !== undefined && getState().session.id === id) {
+      dispatch(saveOffered({ kind: "session", id, version: sealed.version }));
+    }
     return result.ok ? null : result.error;
   };
 }

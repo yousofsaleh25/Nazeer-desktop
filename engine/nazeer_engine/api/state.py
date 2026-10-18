@@ -15,6 +15,7 @@ from .. import candidate_cache as cache
 from .. import fsio
 from ..arabic import stack_status
 from ..bagreader import BagInfo, FramePair, inspect_bag
+from ..comparison_store import ComparisonStore
 from ..constants import BACKUP_INTERVAL_S, BACKUP_KEEP
 from ..history import HistoryIndex
 from ..jobs import CandidateJobManager
@@ -33,6 +34,7 @@ class EngineState:
     segmenter: SegmenterLike
     history: HistoryIndex
     store: SessionStore
+    comparisons: ComparisonStore
     jobs: CandidateJobManager
     recent: RecentBags
     inspect_bag: Callable[[Path], BagInfo]
@@ -71,6 +73,7 @@ def build_state(
         data_root=root,
     )
     store = SessionStore(root, history, versions=lambda: dict(versions))
+    comparisons = ComparisonStore(root, history, store, versions=lambda: dict(versions))
     jobs = CandidateJobManager(
         root,
         segmenter,
@@ -82,11 +85,13 @@ def build_state(
     boot: dict[str, Any] = {}
     history.record_engine_run(run_id, os.getpid(), versions)
     boot["trash_purged"] = store.purge_trash()
-    boot["temps_purged"] = fsio.purge_stale_temps(root / "sessions") + fsio.purge_stale_temps(
-        root / "candidates"
+    boot["temps_purged"] = sum(
+        fsio.purge_stale_temps(root / name) for name in ("sessions", "candidates", "comparisons")
     )
     boot["building_purged"] = cache.purge_building_dirs(root)
+    boot["index_migration"] = dict(history.migration)
     boot["reconciled"] = store.reconcile()
+    boot["comparisons_reconciled"] = comparisons.reconcile()
     try:
         backup = history.auto_backup(
             root / "backups", interval_s=BACKUP_INTERVAL_S, keep=BACKUP_KEEP
@@ -100,6 +105,7 @@ def build_state(
         segmenter=segmenter,
         history=history,
         store=store,
+        comparisons=comparisons,
         jobs=jobs,
         recent=RecentBags(Path(layout["recent"])),
         inspect_bag=inspect or inspect_bag,

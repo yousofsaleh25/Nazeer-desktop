@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from datetime import UTC, datetime
 from typing import Literal
 
 from fastapi import APIRouter, Depends, Header, Query, Request
@@ -38,6 +39,15 @@ from .views import history_row, session_base, session_etag, session_view
 router = APIRouter(tags=["sessions"])
 
 SortName = Literal["updated_desc", "created_desc", "created_asc", "camel_asc"]
+
+
+def _instant(value: datetime | None) -> str | None:
+    """An ISO instant for SQLite's julianday(); a time without an offset is UTC."""
+    if value is None:
+        return None
+    if value.tzinfo is None:
+        value = value.replace(tzinfo=UTC)
+    return value.astimezone(UTC).isoformat()
 
 
 def _view_response(
@@ -89,19 +99,32 @@ def create_session(
 def list_sessions(
     status: Status | None = None,
     camel_id: str | None = Query(default=None, max_length=64),
-    q: str | None = Query(default=None, max_length=200, description="camel, operator, bag, names"),
+    q: str | None = Query(
+        default=None, max_length=200, description="camel, operator, bag, event, names"
+    ),
     index_state: IndexState | None = None,
+    event: str | None = Query(default=None, max_length=100, description="part of the event name"),
+    created_from: datetime | None = Query(
+        default=None, description="measured at or after this instant (ISO 8601, inclusive)"
+    ),
+    created_to: datetime | None = Query(
+        default=None, description="measured at or before this instant (ISO 8601, inclusive)"
+    ),
     limit: int = Query(default=50, ge=1, le=500),
     offset: int = Query(default=0, ge=0),
     sort: SortName = "updated_desc",
     state: EngineState = Depends(engine),
 ) -> FiniteJSONResponse:
     reconciled = state.store.reconcile()
+    state.comparisons.reconcile()  # n_comparisons counts the indexed comparisons
     items, total = state.history.list(
         status=status,
         camel_id=camel_id,
         q=q,
         index_state=index_state,
+        event=event,
+        created_from=_instant(created_from),
+        created_to=_instant(created_to),
         limit=limit,
         offset=offset,
         sort=sort,

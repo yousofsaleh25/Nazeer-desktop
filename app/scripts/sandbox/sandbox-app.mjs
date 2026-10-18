@@ -13,6 +13,7 @@ import { spawn } from "node:child_process";
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import path from "node:path";
+import { cancelOsDialogs } from "./os-dialogs.mjs";
 
 function parseArgs(argv) {
   const out = { bag: null, expectLicensed: false, port: 9555 };
@@ -268,6 +269,21 @@ async function bagFlow(page, conn) {
     .waitFor({ timeout: 60_000 })
     .catch(() => undefined);
   await shot(page, "report");
+  // D12: once the viewer verified the sealed PDF, the Save dialog opens by itself; the packaged app
+  // takes no test switch, so the OS dialog is cancelled here (Win32, IDCANCEL) and the report then
+  // says no copy was saved
+  const cancelled = cancelOsDialogs(args.exe, 60_000);
+  const notSaved = await page
+    .getByTestId("not-saved-to-file")
+    .waitFor({ timeout: 30_000 })
+    .then(() => true)
+    .catch(() => false);
+  check(
+    "bag",
+    "the Save dialog opened by itself after the seal; cancelled, no copy saved",
+    cancelled.length > 0 && notSaved,
+    cancelled.length > 0 ? `dialog "${cancelled.join('", "')}"` : "no Save dialog within 60 s",
+  );
 }
 
 async function main() {

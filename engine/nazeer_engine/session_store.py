@@ -89,7 +89,7 @@ def _utc_stamp() -> str:
     return datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
 
 
-def _rejected_name(version: int) -> str:
+def rejected_report_name(version: int) -> str:
     """``report_v<N>.rejected_<UTC to the ms>_<4 hex>.pdf``: two refusals in the same second
     never share a name (the evidence of the first is kept)."""
     now = datetime.now(UTC)
@@ -191,7 +191,9 @@ class SessionStore:
         path = self.session_dir(doc.session_id) / "session.json"
         try:
             st = path.stat()
-            self.history.upsert(doc, mtime_ns=st.st_mtime_ns, size=st.st_size)
+            self.history.upsert(
+                doc, mtime_ns=st.st_mtime_ns, size=st.st_size, session_dir=path.parent
+            )
             return "ok"
         except Exception as exc:  # the next reconcile repairs the index
             log.warning(
@@ -871,9 +873,9 @@ class SessionStore:
             )
             version = int(doc.outputs.report_version or 0) + 1
             if probe["verdict"] != "PASS":
-                rejected = _rejected_name(version)
+                rejected = rejected_report_name(version)
                 while (sdir / rejected).exists():  # pragma: no cover - same ms and 16 bits
-                    rejected = _rejected_name(version)
+                    rejected = rejected_report_name(version)
                 fsio.atomic_write_bytes(sdir / rejected, pdf_bytes)
                 manifest = self._manifest(doc)
                 manifest.setdefault("history", []).append(

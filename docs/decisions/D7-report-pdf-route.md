@@ -277,3 +277,29 @@ page checks fields, not wording, `openapi.json` is unchanged. Report models writ
 pytest 438 passed (6 opt-in skipped), ruff clean, `--dump-openapi` without a diff; `real_run.py` on
 bag 006 34/34 with the new labels in its report model; the app's real flow (`flow-real`) 11/11,
 sealed with verdict PASS. Every code point of the new labels is in the pinned Plex face.
+
+## The comparison report's seal (D12 Stage 3, 2026-10-17)
+
+D12's combined comparison report is sealed by the same route and the same rules: the app prints,
+the engine probes, attaches and keeps a refused print. What differs (D12 F2.9, "Stage 3"): the
+pixel probe is ordered (each camel's approved overlay, unchanged, on exactly one page, after the
+previous camel's; image sizes read from the PDF before anything is decoded, each candidate image
+decoded once and matched by the SHA-256 of its RGB samples, so the tolerance stays 0); the text
+probe also checks each camel's names and camel id within its own pages; the attachments carry every
+member's overlay, `session.json` and report model and the comparison model. The single report's
+attach-and-verify step is shared (`pdf_finalize._seal`); its behaviour is unchanged. Measured with
+headless Edge on real bag-006 frames: 20 camels print to 26 pages and 29.3 MB, seal in 6.8 s to
+55.4 MB, with a peak of 383 MB in the engine (`tools/measure_comparison_seal.py`). Electron's own
+numbers are D12 Stage 5.
+
+## The comparison's Electron side (D12 Stage 5, 2026-10-17)
+
+The app prints the comparison through the same hidden window and page: `print.html` lays out a
+comparison model when the job's `kind` is `comparison` (same CSP, preload, bridge, sender checks,
+fresh partition and `printToPDF` options). Main fetches each camel's approved overlay from the engine
+and checks its SHA-256 against the approval or the seal (byte identity by hash, as `--export`). The
+pre-flight requires one overlay per camel, in order, at its natural size, and no table cell wider
+than its column. **Changed for both reports:** `printToPDF` now has a time limit of its own (90 s
+for a session's report, 120 s for a comparison); before, only the page's layout had one, and a hung
+print kept the export guard busy until a restart. Measured in the built app: 20 camels print in
+2.5 s to 45 pages and 27.8 MB, seal in 6.1 s to 52.7 MB, every probe PASS.

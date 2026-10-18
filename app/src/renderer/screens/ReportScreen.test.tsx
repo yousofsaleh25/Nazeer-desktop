@@ -34,7 +34,9 @@ async function approvedSetup(
 ) {
   const stamp = await sha256Hex(OVERLAY_BYTES);
   const spy = vi.fn(exportPdf);
-  (window as { nazeer?: Partial<NazeerApi> }).nazeer = { print: { exportPdf: spy } };
+  (window as { nazeer?: Partial<NazeerApi> }).nazeer = {
+    print: { exportPdf: spy, exportComparison: vi.fn() },
+  };
   const view = setup((e) => {
     e.overlayVersion = 1;
     e.overlaySha256 = stamp;

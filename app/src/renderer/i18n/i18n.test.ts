@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import engineCodes from "@shared/engine-codes.json";
-import { PRINT_ERROR_CODES, type AppErrorCode } from "@/api/errors";
+import { PRINT_ERROR_CODES, SAVE_AS_ERROR_CODES, type AppErrorCode } from "@/api/errors";
 import ar from "./ar.json";
 import en from "./en.json";
 import { errorLabel, indexStateLabel, jobStageLabel, messagePair, translate } from "./t";
@@ -79,6 +79,7 @@ describe("i18n catalogues", () => {
       "bridge_missing",
       "screen_failed",
       ...PRINT_ERROR_CODES,
+      ...SAVE_AS_ERROR_CODES,
     ];
     expect(Object.keys(en.appErrors).sort()).toEqual([...appCodes].sort());
     for (const code of appCodes) expect(errorLabel(code), code).not.toBeNull();

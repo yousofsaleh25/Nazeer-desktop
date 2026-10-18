@@ -398,6 +398,94 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/comparisons": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The Comparisons tab: reconcile the index with the folders, then list */
+        get: operations["list_comparisons"];
+        put?: never;
+        /** Compare camels picked in History (the operator's order); every member re-checked */
+        post: operations["create_comparison"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/comparisons/{comparison_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** One comparison; staleness read from the member files (no frame context is built) */
+        get: operations["get_comparison"];
+        put?: never;
+        post?: never;
+        /** Move the comparison to the trash (purged at the next start); sessions stay */
+        delete: operations["delete_comparison"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/comparisons/{comparison_id}/inputs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Cover texts and language: a change writes a new comparison model version */
+        patch: operations["patch_comparison_inputs"];
+        trace?: never;
+    };
+    "/comparisons/{comparison_id}/report": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The sealed comparison PDF (latest, or version v) */
+        get: operations["get_comparison_report"];
+        put?: never;
+        /** Upload the printed comparison: ordered probes, attachments, version, manifest */
+        post: operations["upload_comparison_report"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/comparisons/{comparison_id}/assets/{name}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** comparison_model_vN.json, comparison.json, comparison.manifest.json, PDFs */
+        get: operations["get_comparison_asset"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/history/rebuild": {
         parameters: {
             query?: never;
@@ -407,7 +495,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Rebuild the index from the session folders */
+        /** Rebuild the index from the session and comparison folders */
         post: operations["rebuild_history"];
         delete?: never;
         options?: never;
@@ -439,7 +527,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Disk use of sessions, candidates, trash */
+        /** Disk use of sessions, comparisons, candidates, trash */
         get: operations["history_stats"];
         put?: never;
         post?: never;
@@ -729,6 +817,311 @@ export interface components {
             }[] | null;
         } & {
             [key: string]: unknown;
+        };
+        /** ComparisonCreateIn */
+        ComparisonCreateIn: {
+            /**
+             * Session Ids
+             * @description the camels in the operator's order (the order the PDF prints)
+             */
+            session_ids: string[];
+            cover?: components["schemas"]["CoverIn"] | null;
+            /**
+             * Language
+             * @default both
+             * @enum {string}
+             */
+            language: "ar" | "en" | "both";
+        };
+        /**
+         * ComparisonEligibility
+         * @description D12 F2.1: whether the row can join a comparison (labels group comparison_ineligible).
+         */
+        ComparisonEligibility: {
+            /** Eligible */
+            eligible: boolean;
+            /** Reason */
+            reason: ("delete_failed" | "files_missing" | "file_corrupt" | "files_changed" | "not_finalized" | "reopened" | "model_outdated") | null;
+            /**
+             * Approved By Seal
+             * @description a report sealed from the current image: no approval needed in the dialog
+             */
+            approved_by_seal: boolean;
+            /** @description the image to approve; null when ineligible */
+            overlay: components["schemas"]["OverlayRef"] | null;
+        } & {
+            [key: string]: unknown;
+        };
+        /** ComparisonInputsIn */
+        ComparisonInputsIn: {
+            cover?: components["schemas"]["CoverIn"] | null;
+            /** Language */
+            language?: ("ar" | "en" | "both") | null;
+        };
+        /** ComparisonList */
+        ComparisonList: {
+            /** Items */
+            items: components["schemas"]["ComparisonRow"][];
+            /** Total */
+            total: number;
+            /** Reconciled */
+            reconciled: {
+                [key: string]: number;
+            };
+        } & {
+            [key: string]: unknown;
+        };
+        /** ComparisonMember */
+        ComparisonMember: {
+            /** Position */
+            position: number;
+            /** Session Id */
+            session_id: string;
+            /** Camel Id */
+            camel_id: string;
+            /** Revision */
+            revision: number;
+            /**
+             * Status At Creation
+             * @enum {string}
+             */
+            status_at_creation: "open" | "finalized" | "exported";
+            /** @description null: the session was deleted */
+            current: components["schemas"]["ComparisonMemberNow"] | null;
+            /** Stale Reasons */
+            stale_reasons: ("member_deleted" | "member_unreadable" | "member_reopened" | "member_edited" | "member_refinalized")[];
+            /** Notes */
+            notes: "member_session_changed"[];
+            /**
+             * Approved By Seal
+             * @description its image was sealed in a report (its own, or this comparison's)
+             */
+            approved_by_seal: boolean;
+            overlay: components["schemas"]["ComparisonOverlay"];
+            report_model: components["schemas"]["ComparisonMemberModel"];
+            /** Session Url */
+            session_url: string;
+        } & {
+            [key: string]: unknown;
+        };
+        /** ComparisonMemberModel */
+        ComparisonMemberModel: {
+            /** File */
+            file: string;
+            /** Version */
+            version: number;
+            /** Sha256 */
+            sha256: string;
+        } & {
+            [key: string]: unknown;
+        };
+        /** ComparisonMemberNow */
+        ComparisonMemberNow: {
+            /** Readable */
+            readable: boolean;
+            /** Status */
+            status: ("open" | "finalized" | "exported") | null;
+            /** Revision */
+            revision: number | null;
+        } & {
+            [key: string]: unknown;
+        };
+        /** ComparisonModelOutput */
+        ComparisonModelOutput: {
+            /**
+             * Version
+             * @description new on every cover or language change
+             */
+            version: number;
+            /** File */
+            file: string;
+            /** Sha256 */
+            sha256: string;
+            /** Url */
+            url: string;
+        } & {
+            [key: string]: unknown;
+        };
+        /** ComparisonOutputs */
+        ComparisonOutputs: {
+            model: components["schemas"]["ComparisonModelOutput"];
+            report: components["schemas"]["ComparisonReportOutput"] | null;
+            /** Manifest Url */
+            manifest_url: string | null;
+        } & {
+            [key: string]: unknown;
+        };
+        /** ComparisonOverlay */
+        ComparisonOverlay: {
+            /** Version */
+            version: number;
+            /** File */
+            file: string;
+            /** Sha256 */
+            sha256: string;
+            /** Width */
+            width: number | null;
+            /** Height */
+            height: number | null;
+            /** Url */
+            url: string;
+        } & {
+            [key: string]: unknown;
+        };
+        /** ComparisonReportOut */
+        ComparisonReportOut: {
+            comparison: components["schemas"]["ComparisonView"];
+            /**
+             * Probe
+             * @description kind comparison: the ordered pixel probe per member (page, |Δ|), the text probe per member section, fonts, attachments, timings
+             */
+            probe: {
+                [key: string]: unknown;
+            };
+        } & {
+            [key: string]: unknown;
+        };
+        /** ComparisonReportOutput */
+        ComparisonReportOutput: {
+            /** Version */
+            version: number;
+            /** File */
+            file: string;
+            /** Sha256 */
+            sha256: string | null;
+            /** Url */
+            url: string;
+            /** Model Version */
+            model_version: number | null;
+            /** Stale */
+            stale: boolean;
+        } & {
+            [key: string]: unknown;
+        };
+        /** ComparisonRow */
+        ComparisonRow: {
+            /** Comparison Id */
+            comparison_id: string;
+            /** Title */
+            title: string;
+            /** Event */
+            event: string;
+            /** Judge */
+            judge: string;
+            /** Council */
+            council: string;
+            /** Language */
+            language: string;
+            /** Status */
+            status: string;
+            /** Created At */
+            created_at: string;
+            /** Updated At */
+            updated_at: string;
+            /** N Members */
+            n_members: number;
+            /** Model Version */
+            model_version: number;
+            /** Report Version */
+            report_version: number;
+            /** Report Stale */
+            report_stale: boolean;
+            /** Index State */
+            index_state: string;
+            /** Index Error */
+            index_error: string;
+            /** Members */
+            members: components["schemas"]["ComparisonRowMember"][];
+            /** Stale */
+            stale: boolean;
+            /** Comparison Url */
+            comparison_url: string;
+            /** Report Url */
+            report_url: string | null;
+        } & {
+            [key: string]: unknown;
+        };
+        /** ComparisonRowMember */
+        ComparisonRowMember: {
+            /** Position */
+            position: number;
+            /** Session Id */
+            session_id: string;
+            /** Camel Id */
+            camel_id: string;
+            /** Stale Reasons */
+            stale_reasons: ("member_deleted" | "member_unreadable" | "member_reopened" | "member_edited" | "member_refinalized")[];
+        } & {
+            [key: string]: unknown;
+        };
+        /** ComparisonView */
+        ComparisonView: {
+            /** Comparison Id */
+            comparison_id: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "created" | "sealed";
+            /**
+             * Language
+             * @enum {string}
+             */
+            language: "ar" | "en" | "both";
+            cover: components["schemas"]["Cover"];
+            /** Created At */
+            created_at: string;
+            /** Updated At */
+            updated_at: string;
+            /** N Members */
+            n_members: number;
+            /** Members */
+            members: components["schemas"]["ComparisonMember"][];
+            /**
+             * Stale
+             * @description a member changed since the comparison was made (Q2)
+             */
+            stale: boolean;
+            /**
+             * Report Stale
+             * @description the sealed PDF shows an earlier cover or language
+             */
+            report_stale: boolean;
+            outputs: components["schemas"]["ComparisonOutputs"];
+            /** Required Report Texts */
+            required_report_texts: string[];
+            /** Versions */
+            versions: {
+                [key: string]: unknown;
+            };
+            /** Index State */
+            index_state?: ("ok" | "missing_files" | "corrupt" | "delete_failed" | "unindexed") | null;
+        } & {
+            [key: string]: unknown;
+        };
+        /** Cover */
+        Cover: {
+            /** Title */
+            title: string;
+            /** Event */
+            event: string;
+            /** Judge */
+            judge: string;
+            /** Council */
+            council: string;
+        } & {
+            [key: string]: unknown;
+        };
+        /** CoverIn */
+        CoverIn: {
+            /** Title */
+            title?: string | null;
+            /** Event */
+            event?: string | null;
+            /** Judge */
+            judge?: string | null;
+            /** Council */
+            council?: string | null;
         };
         /** DeleteOut */
         DeleteOut: {
@@ -1068,6 +1461,11 @@ export interface components {
             overlay_version: number;
             /** Report Version */
             report_version: number;
+            /**
+             * Report Overlay Version
+             * @description the overlay version its report was sealed with
+             */
+            report_overlay_version: number;
             /** Index State */
             index_state: string;
             /** Index Error */
@@ -1076,6 +1474,17 @@ export interface components {
             thumb_url: string | null;
             /** Session Url */
             session_url: string;
+            /**
+             * Event
+             * @description the report's event name (report inputs)
+             */
+            event: string;
+            /**
+             * N Comparisons
+             * @description comparisons that include this session
+             */
+            n_comparisons: number;
+            comparison: components["schemas"]["ComparisonEligibility"];
         } & {
             [key: string]: unknown;
         };
@@ -1083,6 +1492,10 @@ export interface components {
         HistoryStats: {
             /** Sessions */
             sessions: {
+                [key: string]: number;
+            };
+            /** Comparisons */
+            comparisons: {
                 [key: string]: number;
             };
             /** Candidates */
@@ -1349,6 +1762,17 @@ export interface components {
             width: number | null;
             /** Height */
             height: number | null;
+            /** Url */
+            url: string;
+        } & {
+            [key: string]: unknown;
+        };
+        /** OverlayRef */
+        OverlayRef: {
+            /** Version */
+            version: number;
+            /** Sha256 */
+            sha256: string;
             /** Url */
             url: string;
         } & {
@@ -2549,9 +2973,15 @@ export interface operations {
             query?: {
                 status?: ("open" | "finalized" | "exported") | null;
                 camel_id?: string | null;
-                /** @description camel, operator, bag, names */
+                /** @description camel, operator, bag, event, names */
                 q?: string | null;
                 index_state?: ("ok" | "missing_files" | "corrupt" | "delete_failed" | "unindexed") | null;
+                /** @description part of the event name */
+                event?: string | null;
+                /** @description measured at or after this instant (ISO 8601, inclusive) */
+                created_from?: string | null;
+                /** @description measured at or before this instant (ISO 8601, inclusive) */
+                created_to?: string | null;
                 limit?: number;
                 offset?: number;
                 sort?: "updated_desc" | "created_desc" | "created_asc" | "camel_asc";
@@ -3476,6 +3906,617 @@ export interface operations {
             header?: never;
             path: {
                 session_id: string;
+                name: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description the file */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Missing or wrong token (only when the engine runs with --token); code unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Request validation (code validation_error) or a semantic 422 with its own code */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unexpected engine error (code internal_error) or a typed 500 such as corrupt_file */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Engine not ready, or a file could not be saved (code save_failed) */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    list_comparisons: {
+        parameters: {
+            query?: {
+                /** @description title, event, judge, council, camel ids */
+                q?: string | null;
+                status?: ("created" | "sealed") | null;
+                /** @description only stale (true) or current (false) */
+                stale?: boolean | null;
+                index_state?: ("ok" | "missing_files" | "corrupt" | "delete_failed" | "unindexed") | null;
+                limit?: number;
+                offset?: number;
+                sort?: "created_desc" | "created_asc" | "updated_desc" | "title_asc";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ComparisonList"];
+                };
+            };
+            /** @description Missing or wrong token (only when the engine runs with --token); code unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Request validation (code validation_error) or a semantic 422 with its own code */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unexpected engine error (code internal_error) or a typed 500 such as corrupt_file */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Engine not ready, or a file could not be saved (code save_failed) */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    create_comparison: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ComparisonCreateIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ComparisonView"];
+                };
+            };
+            /** @description Missing or wrong token (only when the engine runs with --token); code unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Request validation (code validation_error) or a semantic 422 with its own code */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unexpected engine error (code internal_error) or a typed 500 such as corrupt_file */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Engine not ready, or a file could not be saved (code save_failed) */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    get_comparison: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                comparison_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ComparisonView"];
+                };
+            };
+            /** @description Missing or wrong token (only when the engine runs with --token); code unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Request validation (code validation_error) or a semantic 422 with its own code */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Engine not ready, or a file could not be saved (code save_failed) */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    delete_comparison: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                comparison_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DeleteOut"];
+                };
+            };
+            /** @description Missing or wrong token (only when the engine runs with --token); code unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Request validation (code validation_error) or a semantic 422 with its own code */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unexpected engine error (code internal_error) or a typed 500 such as corrupt_file */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Engine not ready, or a file could not be saved (code save_failed) */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    patch_comparison_inputs: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                comparison_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ComparisonInputsIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ComparisonView"];
+                };
+            };
+            /** @description Missing or wrong token (only when the engine runs with --token); code unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Request validation (code validation_error) or a semantic 422 with its own code */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unexpected engine error (code internal_error) or a typed 500 such as corrupt_file */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Engine not ready, or a file could not be saved (code save_failed) */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    get_comparison_report: {
+        parameters: {
+            query?: {
+                v?: number | null;
+            };
+            header?: never;
+            path: {
+                comparison_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                    "application/pdf": unknown;
+                };
+            };
+            /** @description Missing or wrong token (only when the engine runs with --token); code unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Request validation (code validation_error) or a semantic 422 with its own code */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unexpected engine error (code internal_error) or a typed 500 such as corrupt_file */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Engine not ready, or a file could not be saved (code save_failed) */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    upload_comparison_report: {
+        parameters: {
+            query?: {
+                /** @description a missing operator string is a DRIFT (false: soft failure) */
+                require_text?: boolean;
+                /** @description a missing IBM Plex Sans Arabic subset is a DRIFT */
+                require_font?: boolean;
+            };
+            header?: {
+                /** @description sha256 of the comparison model the page was printed from */
+                "x-comparison-model-sha256"?: string | null;
+            };
+            path: {
+                comparison_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/pdf": string;
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ComparisonReportOut"];
+                };
+            };
+            /** @description Missing or wrong token (only when the engine runs with --token); code unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unsupported Media Type */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Request validation (code validation_error) or a semantic 422 with its own code */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unexpected engine error (code internal_error) or a typed 500 such as corrupt_file */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Engine not ready, or a file could not be saved (code save_failed) */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    get_comparison_asset: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                comparison_id: string;
                 name: string;
             };
             cookie?: never;

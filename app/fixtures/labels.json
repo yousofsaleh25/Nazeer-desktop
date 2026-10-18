@@ -344,12 +344,81 @@
       "en": "failed"
     }
   },
+  "comparison_ineligible": {
+    "not_finalized": {
+      "ar": "لم تُقفل بعد: أقفلها أولًا",
+      "en": "not finalized yet: finalize it first"
+    },
+    "reopened": {
+      "ar": "أُعيد فتحها بعد الإقفال: أقفلها من جديد",
+      "en": "reopened after finalizing: finalize it again"
+    },
+    "model_outdated": {
+      "ar": "بيانات تقريرها من إصدار أقدم: أعد فتحها ثم أقفلها",
+      "en": "its report data is from an older version: reopen and finalize it"
+    },
+    "files_missing": {
+      "ar": "ملفات الجلسة مفقودة",
+      "en": "the session's files are missing"
+    },
+    "file_corrupt": {
+      "ar": "ملف الجلسة تالف",
+      "en": "the session file is damaged"
+    },
+    "files_changed": {
+      "ar": "تغيّرت ملفات الجلسة بعد إقفالها",
+      "en": "the session's files changed after it was finalized"
+    },
+    "delete_failed": {
+      "ar": "لم يكتمل حذفها",
+      "en": "its deletion did not complete"
+    }
+  },
+  "comparison_stale": {
+    "member_deleted": {
+      "ar": "حُذفت جلسة هذا الجمل",
+      "en": "this camel's session was deleted"
+    },
+    "member_unreadable": {
+      "ar": "تعذّرت قراءة جلسة هذا الجمل",
+      "en": "this camel's session could not be read"
+    },
+    "member_reopened": {
+      "ar": "أُعيد فتح جلسة هذا الجمل",
+      "en": "this camel's session was reopened"
+    },
+    "member_edited": {
+      "ar": "تغيّرت قياسات هذا الجمل أو بياناته",
+      "en": "this camel's measurements or details changed"
+    },
+    "member_refinalized": {
+      "ar": "أُقفلت جلسة هذا الجمل من جديد بصورة أخرى",
+      "en": "this camel's session was finalized again with a new image"
+    },
+    "member_session_changed": {
+      "ar": "تغيّر ملف الجلسة دون أن تتغيّر قياساتها",
+      "en": "the session file changed; its measurements did not"
+    }
+  },
+  "comparison_statuses": {
+    "created": {
+      "ar": "لم تُختم بعد",
+      "en": "not sealed yet"
+    },
+    "sealed": {
+      "ar": "مختومة",
+      "en": "sealed"
+    }
+  },
   "constants": {
     "KNN_K": 9,
     "KNN_RING_EXCLUDE_PX": 2,
     "KNN_FAR_M": 0.1,
     "KNN_MAX_DIST_M": 0.3,
     "ENDPOINT_DZ_FLAG_FRAC": 0.1,
-    "Z_MEAN_MIN_M": 1
+    "Z_MEAN_MIN_M": 1,
+    "COMPARISON_MAX_SESSIONS": 20,
+    "COMPARISON_MAX_TITLE": 200,
+    "COMPARISON_MAX_NAME": 100
   }
 }

@@ -75,6 +75,14 @@ describe("checkDataRoot (mirrors engine settings.validate_data_root)", () => {
     });
     expect(checkDataRoot(String.raw`C:\Users\op\Contoso`, env)).toBeNull();
   });
+
+  it("a child folder whose name starts with two dots is still under %OneDrive%", () => {
+    const env = { OneDrive: String.raw`C:\Users\op\Cloud` };
+    expect(checkDataRoot(String.raw`C:\Users\op\Cloud\..nazeer`, env)).toMatchObject({
+      code: "data_root_invalid",
+      details: { env: "OneDrive" },
+    });
+  });
 });
 
 describe("samePath", () => {

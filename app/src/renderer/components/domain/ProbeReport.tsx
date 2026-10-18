@@ -2,7 +2,8 @@
  * What the engine found when it sealed the PDF (C3.7): the verdict, then each probe — the overlay
  * image against the approved pixels, every required name in the text layer, the embedded Plex
  * face (no synthesized Type3 face), and the attached evidence files. On DRIFT the engine kept the
- * refused file; the failures and hints say what to fix before printing again.
+ * refused file; the failures and hints say what to fix before printing again. For a comparison
+ * (D12) a table gives each camel's image page and whether its names are within its own pages.
  */
 import { CircleCheck, CircleDashed, CircleX } from "lucide-react";
 import type { ReactNode } from "react";
@@ -234,6 +235,75 @@ export function ProbeReport({ probe, rejectedFile = null }: ProbeReportProps) {
           ) : null}
         </Section>
       </div>
+
+      {s.members.length > 0 ? (
+        <Section
+          title="probe.members"
+          ok={s.members.every((m) => m.imageOk === true && m.textOk === true)}
+        >
+          <Table data-testid="probe-members">
+            <TableHead>
+              <tr>
+                <TableHeaderCell>
+                  <Ltr>{"#"}</Ltr>
+                </TableHeaderCell>
+                <TableHeaderCell>
+                  <Bi {...messagePair("probe.pixel")} />
+                </TableHeaderCell>
+                <TableHeaderCell numeric>
+                  <Bi {...messagePair("probe.page")} />
+                </TableHeaderCell>
+                <TableHeaderCell numeric>
+                  <Bi {...messagePair("probe.maxDiff")} />
+                </TableHeaderCell>
+                <TableHeaderCell>
+                  <Bi {...messagePair("probe.memberNames")} />
+                </TableHeaderCell>
+              </tr>
+            </TableHead>
+            <TableBody>
+              {s.members.map((member) => (
+                <TableRow key={member.position} data-position={member.position}>
+                  <TableCell>
+                    <Ltr className="font-semibold">{`#${member.position}`}</Ltr>
+                  </TableCell>
+                  <TableCell>
+                    <span className="flex items-center gap-1.5">
+                      <Status ok={member.imageOk} />
+                      {member.reason ? <CodeList codes={[member.reason]} /> : null}
+                    </span>
+                  </TableCell>
+                  <TableCell numeric>
+                    {member.page !== null ? <Num value={member.page} /> : "--"}
+                  </TableCell>
+                  <TableCell numeric>
+                    {member.maxAbsDiff !== null ? <Num value={member.maxAbsDiff} /> : "--"}
+                  </TableCell>
+                  <TableCell>
+                    <span className="flex flex-wrap items-center gap-1.5">
+                      <Status ok={member.textOk} />
+                      {member.pages !== null ? (
+                        <Ltr className="text-xs text-ink-secondary">
+                          {`${member.pages[0]}–${member.pages[1]}`}
+                        </Ltr>
+                      ) : null}
+                      {member.missing.map((name) => (
+                        <bdi
+                          key={name}
+                          dir="auto"
+                          className="rounded-xs bg-danger-soft px-1 text-danger-text"
+                        >
+                          {name}
+                        </bdi>
+                      ))}
+                    </span>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </Section>
+      ) : null}
 
       <p className="flex flex-wrap gap-x-4 text-xs text-ink-muted">
         {s.pages !== null ? (

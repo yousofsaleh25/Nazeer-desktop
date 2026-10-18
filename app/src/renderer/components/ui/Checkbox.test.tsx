@@ -20,4 +20,12 @@ describe("Checkbox", () => {
     renderWithStore(<Checkbox checked="indeterminate" onCheckedChange={() => {}} label={label} />);
     expect(screen.getByRole("checkbox")).toHaveAttribute("aria-checked", "mixed");
   });
+
+  it("a hidden label still names the box (a table's selection column)", () => {
+    renderWithStore(
+      <Checkbox checked={false} onCheckedChange={() => {}} label={label} hideLabel />,
+    );
+    expect(screen.getByRole("checkbox", { name: label.ar })).toBeInTheDocument();
+    expect(screen.getByText(label.ar).closest("label")).toHaveClass("sr-only");
+  });
 });

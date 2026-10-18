@@ -1,4 +1,7 @@
-/** A labelled checkbox (Radix: keyboard, indeterminate state, direction-aware layout). */
+/**
+ * A labelled checkbox (Radix: keyboard, indeterminate state, direction-aware layout). `hideLabel`
+ * keeps the label for assistive technology only (a table's selection column).
+ */
 import * as CheckboxPrimitive from "@radix-ui/react-checkbox";
 import { Check, Minus } from "lucide-react";
 import { useId } from "react";
@@ -10,10 +13,18 @@ export interface CheckboxProps {
   onCheckedChange: (checked: boolean) => void;
   label: BiText;
   disabled?: boolean;
+  hideLabel?: boolean;
   className?: string;
 }
 
-export function Checkbox({ checked, onCheckedChange, label, disabled, className }: CheckboxProps) {
+export function Checkbox({
+  checked,
+  onCheckedChange,
+  label,
+  disabled,
+  hideLabel = false,
+  className,
+}: CheckboxProps) {
   const id = `checkbox${useId()}`;
   return (
     <div className={cn("inline-flex min-h-8 items-center gap-2", className)}>
@@ -37,7 +48,7 @@ export function Checkbox({ checked, onCheckedChange, label, disabled, className 
           )}
         </CheckboxPrimitive.Indicator>
       </CheckboxPrimitive.Root>
-      <label htmlFor={id} className="cursor-pointer text-sm text-ink">
+      <label htmlFor={id} className={hideLabel ? "sr-only" : "cursor-pointer text-sm text-ink"}>
         <Bi {...label} />
       </label>
     </div>

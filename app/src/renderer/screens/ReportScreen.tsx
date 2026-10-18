@@ -5,11 +5,15 @@
  * and the approved overlay bytes in a hidden window, prints it, and the engine probes and seals
  * the PDF — or refuses it, with its probe), and the sealed PDF — downloaded, its SHA-256 checked
  * against the engine's stamp, shown with pdf.js, with the checks the engine ran when it sealed it.
+ * "Save as" (D12): a copy of the sealed PDF goes where the operator chooses; after a print is sealed
+ * the Save dialog opens by itself once the viewer has verified those bytes. The engine's sealed copy
+ * stays in the app.
  */
 import { ArrowLeft, CircleCheck, Printer, Save, ShieldCheck } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router";
-import { PRINT_REPORT_MODEL_VERSION, type PreflightProblem } from "@shared/ipc";
+import { sessionReportFileName } from "@shared/fileNames";
+import { PRINT_REPORT_MODEL_VERSION, type SavedCopyQuery } from "@shared/ipc";
 import { useEngineJson, useVerifiedEngineBytes, type LoadedJson } from "@/api/assets";
 import type { ApiErrorShape } from "@/api/errors";
 import { reportFormContent } from "@/api/reportModel";
@@ -17,8 +21,10 @@ import type { ReportInputs } from "@/api/types";
 import { ErrorPanel } from "@/components/domain/ErrorPanel";
 import { CodeLabel } from "@/components/domain/labels";
 import { PdfViewer } from "@/components/domain/PdfViewer";
+import { ProblemList } from "@/components/domain/ProblemList";
 import { ProbeReport } from "@/components/domain/ProbeReport";
 import { ReportInputsForm } from "@/components/domain/ReportInputsForm";
+import { SaveCopyPanel } from "@/components/domain/SaveCopyPanel";
 import { Alert } from "@/components/ui/Alert";
 import { Bi } from "@/components/ui/Bi";
 import { Button } from "@/components/ui/Button";
@@ -27,11 +33,19 @@ import { Chip } from "@/components/ui/Chip";
 import { Ltr } from "@/components/ui/Ltr";
 import { Spinner } from "@/components/ui/Spinner";
 import { STATUS_TONE } from "@/design";
-import { errorLabel, messagePair } from "@/i18n/t";
+import { messagePair } from "@/i18n/t";
 import { isRecord } from "@/lib/read";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { sameValue } from "@/store/session/document";
 import { approvalHolds } from "@/store/slices/report";
+import { savedFileOf } from "@/store/slices/savedFiles";
+import { useDropSaveOfferOnLeave } from "@/store/useDropSaveOffer";
+import {
+  loadSavedCopy,
+  openSavedCopy,
+  saveReportCopy,
+  takeSaveOffer,
+} from "@/store/thunks/savedFiles";
 import { exportReport, updateReportInputs, type ReportInputsPatch } from "@/store/thunks/session";
 import { SessionGate, type LoadedSession } from "./session/SessionGate";
 
@@ -158,34 +172,6 @@ function ReportInputsCard({
   );
 }
 
-function ProblemList({ problems }: { problems: readonly PreflightProblem[] }) {
-  return (
-    <ul className="flex flex-col gap-1 text-sm">
-      {problems.map((problem, i) => {
-        const label = errorLabel(problem.code);
-        return (
-          <li key={`${problem.code}-${i}`} data-code={problem.code} className="flex flex-col">
-            <span className="font-medium">
-              {label ? <Bi {...label} /> : <Ltr className="font-mono">{problem.code}</Ltr>}
-            </span>
-            <bdi dir="ltr" lang="en" className="text-xs text-ink-secondary">
-              {problem.message}
-            </bdi>
-            {Object.keys(problem.details).length > 0 ? (
-              <pre
-                dir="ltr"
-                className="mt-1 max-h-40 overflow-auto rounded-md border border-border bg-surface-raised p-2 font-mono text-[0.72rem] whitespace-pre-wrap"
-              >
-                {JSON.stringify(problem.details, null, 2)}
-              </pre>
-            ) : null}
-          </li>
-        );
-      })}
-    </ul>
-  );
-}
-
 /** The report model the session names: is it the version this app's print page lays out? */
 function modelSchema(loaded: LoadedJson): string | null {
   if (loaded.state !== "ready" || !isRecord(loaded.data)) return null;
@@ -283,6 +269,54 @@ function PrintCard({
   );
 }
 
+/** "Save as" for the sealed PDF this screen shows (D12 F1). */
+function SaveCopy({
+  session,
+  version,
+  verified,
+}: {
+  session: LoadedSession;
+  version: number;
+  /** the viewer checked the sealed bytes against the engine's SHA-256 */
+  verified: boolean;
+}) {
+  const dispatch = useAppDispatch();
+  const { view } = session;
+  const id = session.id;
+  const entry = useAppSelector((state) =>
+    savedFileOf(state.savedFiles, { kind: "session", id, version }),
+  );
+  const offered = useAppSelector((state) => state.savedFiles.offer !== null);
+  const fileName = sessionReportFileName({
+    camelId: view.camel_id,
+    sessionId: id,
+    createdAt: view.created_at,
+    version,
+  });
+
+  useEffect(() => {
+    void dispatch(loadSavedCopy({ kind: "session", id, version }));
+  }, [dispatch, id, version]);
+  // a print sealed on this screen: the Save dialog opens once the viewer verified the bytes
+  useEffect(() => {
+    if (verified && offered) {
+      void dispatch(takeSaveOffer({ kind: "session", id, version }, fileName));
+    }
+  }, [dispatch, verified, offered, id, version, fileName]);
+  // leaving the screen drops the offer it did not take
+  useDropSaveOfferOnLeave({ kind: "session", id, version });
+
+  const ref: SavedCopyQuery = { kind: "session", id, version };
+  return (
+    <SaveCopyPanel
+      entry={entry}
+      onSave={() => void dispatch(saveReportCopy(ref, fileName))}
+      onOpen={() => void dispatch(openSavedCopy(ref, "open"))}
+      onShow={() => void dispatch(openSavedCopy(ref, "show"))}
+    />
+  );
+}
+
 function SealedReport({ session }: { session: LoadedSession }) {
   const { view } = session;
   const report = view.outputs.report ?? null;
@@ -322,6 +356,7 @@ function SealedReport({ session }: { session: LoadedSession }) {
           <Ltr className="font-mono text-xs break-all">{pdf.computed}</Ltr>
         </Alert>
       ) : null}
+      <SaveCopy session={session} version={report.version} verified={pdf.state === "match"} />
       <PdfViewer
         data={pdf.state === "match" ? pdf.bytes : null}
         fileName={report.file}

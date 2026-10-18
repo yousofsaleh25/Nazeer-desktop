@@ -30,6 +30,20 @@ describe("parseLabels", () => {
     );
   });
 
+  it("keeps D12's comparison groups (eligibility, staleness, status)", () => {
+    const labels = parseLabels(fixture);
+    expect(labelOf(labels, "comparison_ineligible", "model_outdated")?.en).toBe(
+      "its report data is from an older version: reopen and finalize it",
+    );
+    expect(labelOf(labels, "comparison_stale", "member_reopened")?.ar).toBe(
+      "أُعيد فتح جلسة هذا الجمل",
+    );
+    expect(labelOf(labels, "comparison_statuses", "sealed")?.ar).toBe("مختومة");
+    const withoutStale: Record<string, unknown> = { ...fixture };
+    delete withoutStale["comparison_stale"];
+    expect(() => parseLabels(withoutStale)).toThrow("comparison_stale: missing or not an object");
+  });
+
   it("drops groups it does not know", () => {
     const labels = parseLabels({ ...fixture, future_group: { x: { ar: "س", en: "x" } } });
     expect(labels).not.toHaveProperty("future_group");

@@ -40,13 +40,13 @@ file (≈ 620 lines; committed as `CLAUDE.md`, in the parent's working tree curr
 `AGENTS.md`) holds the history (Phases 1–21, ADR-001 honesty contract, audit disciplines
 D7/D8/D9); read it for *why*. Nothing here imports the parent package.
 
-## State of the repo (2026-10-14)
+## State of the repo (2026-10-18)
 
 | Path | What is there |
 |---|---|
-| `app/` | **Stages 1–9 of the app plan done, with additions A (offline licence keys) and B (Windows installer), D11; 2026-10-13.** Electron 44 + electron-vite 5 (vite 7) + React 19 + Redux Toolkit + Tailwind v4 + TypeScript 5.9, exact pins (D9 "App implementation decisions"); what lives where: Architecture → "App map". The operator flow runs end to end through the UI: open a recording, the frame search and the proposed frames, measuring (the eight kinds, with the mouse or the keyboard crosshair), autosave, History, finalize, approve on the engine's verified image, print, seal, sign-off on the PDF. **Integration-tested:** `e2e/flow-real.spec.ts` drives the built app on bag 006 with `best.pt` through every `real_run` check (11/11, 2026-10-13); the dev app on the real engine passed the Stage 6 walk (24 checks), the Stage 7 walk (45: three languages sealed with strict probes, the headless re-export) and the Stage 8 walk (44/45; the one failure was the user's own pointer over the visible window, D9). The installer (`npm run dist`: unsigned NSIS, the engine as an embedded CPython) passed the packaged smoke on this laptop (24/24) and the D11 clean-PC checklist in Windows Sandbox, network on and off (2026-10-13). **Not production-validated:** no field laptop, no signed installer, no field capture. The vendor key pair exists (created 2026-10-12, key id `2f8696292b9d9ec0`; `src/main/license/publicKey.ts` holds its public half). Stage 9 (D9 "Review and wrap-up"): one read-only review of `app/` (19 findings, none a blocker: 18 fixed, each with a test; a fresh print partition per print kept, as D7 asks), the batched Arabic wording pass, `AGENTS.md` reduced to a pointer to this file; after the fixes `npm test` 700 tests, `npm run e2e` 16 passed, the real flow 11 of 11. **Release 1.0.0 (2026-10-14; `package.json` version 1.0.0):** the operator's wording decisions (the app, the engine's printed labels, «تثبيت» throughout the installer), the installer's two Sandbox findings fixed (`build/installer.nsh`: the install-mode page mirrored, the uninstaller in the language chosen at install), `npm test` 705, e2e 16, the real flow 11 of 11, `release\Nazeer Desktop Setup 1.0.0.exe` (packaged smoke 24/24, every D11 item passed again in Windows Sandbox); delivered with a 7-day trial key to one client as an evaluation under the operator's responsibility (D6; D11 "Release 1.0.0"). Plan: `~/.claude/plans/pasted-content-id-80b5-role-you-swirling-brook.md` |
-| `engine/nazeer_engine/` | **the engine** (≈ 10.5 k lines): FastAPI sidecar, 31 HTTP operations, everything in contracts C1–C3 + ADR-D7's engine half. Integration-tested on real bags with the real model, headless Edge and the app; not production-validated (no field capture) |
-| `engine/tests/` | ≈ 440 default tests (438 on 2026-10-13) (synthetic frames, fake RealSense, stub model) + 6 opt-in real-resource tests (`realbag`, `realmodel`, `realpdf`) |
+| `app/` | **Stages 1–9 of the app plan done, with additions A (offline licence keys) and B (Windows installer), D11; 2026-10-13.** Electron 44 + electron-vite 5 (vite 7) + React 19 + Redux Toolkit + Tailwind v4 + TypeScript 5.9, exact pins (D9 "App implementation decisions"); what lives where: Architecture → "App map". The operator flow runs end to end through the UI: open a recording, the frame search and the proposed frames, measuring (the eight kinds, with the mouse or the keyboard crosshair), autosave, History, finalize, approve on the engine's verified image, print, seal, sign-off on the PDF. **Integration-tested:** `e2e/flow-real.spec.ts` drives the built app on bag 006 with `best.pt` through every `real_run` check (11/11, 2026-10-13); the dev app on the real engine passed the Stage 6 walk (24 checks), the Stage 7 walk (45: three languages sealed with strict probes, the headless re-export) and the Stage 8 walk (44/45; the one failure was the user's own pointer over the visible window, D9). The installer (`npm run dist`: unsigned NSIS, the engine as an embedded CPython) passed the packaged smoke on this laptop (24/24) and the D11 clean-PC checklist in Windows Sandbox, network on and off (2026-10-13). **Not production-validated:** no field laptop, no signed installer, no field capture. The vendor key pair exists (created 2026-10-12, key id `2f8696292b9d9ec0`; `src/main/license/publicKey.ts` holds its public half). Stage 9 (D9 "Review and wrap-up"): one read-only review of `app/` (19 findings, none a blocker: 18 fixed, each with a test; a fresh print partition per print kept, as D7 asks), the batched Arabic wording pass, `AGENTS.md` reduced to a pointer to this file; after the fixes `npm test` 700 tests, `npm run e2e` 16 passed, the real flow 11 of 11. **Release 1.0.0 (2026-10-14; `package.json` version 1.0.0):** the operator's wording decisions (the app, the engine's printed labels, «تثبيت» throughout the installer), the installer's two Sandbox findings fixed (`build/installer.nsh`: the install-mode page mirrored, the uninstaller in the language chosen at install), `npm test` 705, e2e 16, the real flow 11 of 11, `release\Nazeer Desktop Setup 1.0.0.exe` (packaged smoke 24/24, every D11 item passed again in Windows Sandbox); delivered with a 7-day trial key to one client as an evaluation under the operator's responsibility (D6; D11 "Release 1.0.0"). **D12 (proposed 2026-10-17; "Save as" and the comparison report): Stage 1 of 6 done** — "Save as" for single reports: main opens the Save dialog, fetches the sealed PDF from the engine (its SHA-256 checked against `session.json` and the manifest), writes the copy atomically anywhere but the data root, reads it back and records it (`src/main/report/`, `settings.ts`); the dialog opens by itself once the viewer verified a freshly sealed report; "Save PDF as…" on the Report screen and on History rows; `npm test` 776, e2e 16, the real flow 11 of 11 with the saved copy byte-identical to the sealed report (integration-tested). **Stage 2 of 6 done** (engine: the comparison model, storage and index): `comparison_model.py` builds the rows (exact name + kind + occurrence; 2D never shares a row with 3D; texts only, nothing ranked) from each member's frozen report model, `comparison_store.py` keeps `<root>/comparisons/<id>/` (create re-checks every member from its files; stale by content, computed), `history.sqlite` version 2 (comparison tables, a migration in place), six new operations and the eligibility of every History row; pytest 488, `npm test` 777 (unit-tested; the engine's real-model flow untouched). **Stage 3 of 6 done** (engine: the comparison seal): `POST /comparisons/{id}/report` probes the printed PDF in order (each camel's approved overlay, unchanged, on exactly one page after the previous camel's), checks each camel's names and camel id within its own pages, attaches every member's overlay, `session.json` and report model plus the comparison model, keeps a refused print, and re-checks the members after the probe (a camel changed meanwhile → `comparison_stale`); measured with headless Edge on real frames: 20 camels = 26 pages, 29.3 MB printed, 55.4 MB sealed, seal 6.8 s, peak 383 MB (`tools/measure_comparison_seal.py`; the upload cap 64 MiB follows); pytest 500, the opt-in `realpdf` comparison passes (integration-tested with Edge, not yet with the app). **Stage 4 of 6 done** (app: the comparison screens): History gains a Comparisons tab (`?tab=comparisons`), event and date filters, a selection column (eligible rows only, the engine's reason on the others) with a sticky Compare bar; the Compare dialog orders the camels (drag, or ▲ / ▼ from the keyboard), approves each image not sealed in a report on the engine's full image (WebCrypto-checked), takes the cover and language and creates the comparison; `#/comparisons/:id` edits the cover, shows each camel's stale reasons and offers "Compare again" and Delete; the limits come from `/meta/labels` constants; `npm test` 824 (unit-tested), e2e 16, the real flow 11 of 11. **Stage 5 of 6 done** (app: the comparison's print): `print.html` lays out a comparison model too (`ComparisonPage`: cover, the table in blocks of camel columns, one section per camel with its approved overlay; pre-flight: one overlay per camel in order, no cell wider than its column), main fetches and hashes each approved image and has the engine seal the PDF (`print.exportComparison`, one gate with the report's export), each print phase has its time limit, the sealed comparison is shown, checked and saved with "Save as"; printed and sealed in the built app at 1, 5 and 20 camels on real frames, every seal PASS (20 camels: 45 pages, 27.8 MB printed, 52.7 MB sealed, print 2.5 s, seal 6.1 s; `e2e/measure-comparison.spec.ts`); `npm test` 858, e2e 16, the real flow 11 of 11. **Stage 6 of 6 done (2026-10-18)**: `e2e/comparison-fast.spec.ts` (bag 004, ellipse stub, Arabic UI) and `e2e/comparison-real.spec.ts` (bag 006 + `best.pt`, English UI, both languages, the PDF read back with pdf.js) drive the comparison through the screens: History selection, order, cover, the image approvals, print, seal, the saved copy, the Comparisons tab, a reopened camel → stale (integration-tested); the Sandbox driver cancels the automatic Save dialog through Win32 (`scripts/sandbox/os-dialogs.mjs`, checked on this laptop only); one read-only review, 7 findings, each fixed with a test (D12 "Stage 6"). Plan: `~/.claude/plans/pasted-content-id-80b5-role-you-swirling-brook.md`. **Release 1.1.0 (2026-10-18; `package.json` 1.1.0):** pytest 502, `npm test` 863, `NAZEER_REAL=1 npm run e2e` 33 passed; `release\Nazeer Desktop Setup 1.1.0.exe` (unsigned; packaged smoke 24/24; an in-place upgrade from 1.0.0 on a real profile: licence kept, History index migrated to version 2); delivered with a **permanent** key (customer `Nazeer_CEO_Ahmed`) under the operator's responsibility (D6, D11 "Release 1.1.0"). The Windows Sandbox check no longer runs: since this laptop's Windows update (build 26100.9711) the Sandbox enforces Smart App Control and refuses the unsigned installer, 1.0.0 included |
+| `engine/nazeer_engine/` | **the engine** (≈ 14.5 k lines): FastAPI sidecar, 39 HTTP operations, everything in contracts C1–C3 + ADR-D7's engine half + D12's comparison storage and seal (Stages 2–3). Integration-tested on real bags with the real model, headless Edge and the app; not production-validated (no field capture) |
+| `engine/tests/` | ≈ 500 default tests (502 on 2026-10-18) (synthetic frames, fake RealSense, stub model) + 7 opt-in real-resource tests (`realbag`, `realmodel`, `realpdf`) |
 | `engine/tools/real_run.py` | the real-bag check (the gate before the app): spawns the sidecar, walks a bag, picks a frame, places seeded random distances, prints with headless Edge, seals the PDF; **34/34 checks passed on bag 006 (2026-10-11; again on 2026-10-12 with report model 1.1)** |
 | `tools/generate-license.mjs` | the licence-key generator (D11): run on the vendor's machine, never packaged; `--init` makes the Ed25519 pair in `%USERPROFILE%\.nazeer-license` (refuses git work trees, OneDrive, Desktop, Documents) and writes the app's baked public key; `--days N` / `--expires` trial keys, `--customer` permanent keys |
 | `docs/arabic-wording-backlog.md` | the app's Arabic strings per stage and their batched wording pass (Stage 9, 2026-10-13: 11 corrections in `ar.json` and 3 in `main/dialogs.ts` applied); the operator's decisions for release 1.0.0 (2026-10-14: the four one-word-two-meanings items, the engine's printed wording, «تثبيت» throughout the installer) applied; the 12 style suggestions stay open; log new strings there |
@@ -98,6 +98,10 @@ $env:NAZEER_WRITE_GOLDEN = "1"   # with NAZEER_REAL: rewrites ..\fixtures\golden
 .venv\Scripts\python.exe tools\real_run.py [--bag <bag>] [--seed N] [--pick auto|<tile>|<candidate id>] [--angles]
 #   bag 006 by default; writes ..\runs\real_run_<UTC>\ (data_root\, candidates\ + contact_sheet.jpg, final_report.pdf,
 #   summary.json); random clicks, strict probes, headless Edge print; exit 0 only when every check passes
+.venv\Scripts\python.exe tools\measure_comparison_seal.py [--sizes 1,5,20] [--candidates <set dir>]
+#   D12: N sessions on the dev root's real frames, a comparison printed in Arabic with headless Edge and sealed
+#   in a fresh process; prints pages, printed / sealed MB, print and seal time, peak memory per size (≈ 1 min);
+#   writes ..\runs\comparison_seal_<UTC>\summary.json
 
 # --- Model integrity (the engine refuses to load on mismatch: exit 3, model_hash_mismatch)
 Get-FileHash models\best.pt -Algorithm SHA256
@@ -113,7 +117,9 @@ npm run dev                 # electron-vite dev + its engine (real model) on ..\
                             #   NAZEER_ENGINE_PYTHON=<python.exe>;
                             #   supervisor log: <userData>\logs\app-engine-stderr.log. Development builds use their own
                             #   profile %APPDATA%\Nazeer Desktop (dev); NAZEER_LICENSE_ENFORCE=1 + NAZEER_LICENSE_PUBLIC_KEY=<pem>
-                            #   turn the licence gate on with a test key (ignored in production builds)
+                            #   turn the licence gate on with a test key (ignored in production builds);
+                            #   NAZEER_E2E_SAVE_DIALOG=cancel|file:<path>|folder:<dir> answers "Save as"'s dialog (D12;
+                            #   the e2e specs default it to cancel; ignored in production builds)
 npm run dev -- --remoteDebuggingPort 9333   # same, inspectable from Playwright (chromium.connectOverCDP)
 npm run typecheck           # tsc over three projects: node (main/preload/shared), web (renderer/print), e2e
 npm run lint ; npm run format:check         # ESLint (type-aware) ; Prettier (line width 100; also ..\tools)
@@ -126,11 +132,19 @@ npm run e2e                 # build + Playwright-Electron specs in e2e\: smoke +
                             #   license drives the Activate screen with keys from the real generator; export prints and
                             #   seals the dev-root session, then the headless re-export); flow-fast: bag 004 through the
                             #   Arabic UI with the ellipse stub (open, frames, session, four measurements, finalize,
-                            #   approve, print, seal); labels come from the i18n tables by key (e2e\helpers\labels.ts)
+                            #   approve, print, seal); comparison-fast (D12): two sessions on bag 004 set up over the
+                            #   API, then History selection, order, cover, the two image approvals, print, seal, the
+                            #   saved copy (NAZEER_E2E_SAVE_DIALOG folder:), the Comparisons tab, a reopened camel →
+                            #   stale with its reason; labels come from the i18n tables by key (e2e\helpers\labels.ts)
 $env:NAZEER_REAL = "1"; npm run e2e   # adds flow-real: bag 006 + best.pt through the English UI with every real_run check
                             #   (hover and saved depth sources, autosave revisions, previews, hashes, probes, the PDF's
-                            #   pages, face and attachments read back with pdf.js, History); one spec: npx playwright test
-                            #   e2e/flow-real.spec.ts after npm run build
+                            #   pages, face and attachments read back with pdf.js, History), and comparison-real (D12:
+                            #   the comparison flow on bag 006 + best.pt in both languages, its PDF read back with
+                            #   pdf.js); one spec: npx playwright test e2e/flow-real.spec.ts after npm run build
+$env:NAZEER_MEASURE = "1"; npx playwright test e2e/measure-comparison.spec.ts   # after npm run build: D12, the
+                            #   built app prints and seals comparisons of 1, 5 and 20 camels (copies of the newest
+                            #   ..\runs\comparison_seal_* roots) through print.exportComparison; times, pages, sizes,
+                            #   peak memory → ..\runs\comparison_print_<UTC>\summary.json + the sealed PDFs (≈ 40 s)
 npm run gen:api             # src\shared\api.d.ts from ..\engine\openapi.json (a test fails when it drifts)
 npm run gen:codes           # src\shared\engine-codes.json: every error code in the engine source (a test fails on drift;
                             #   the i18n test fails when one has no Arabic + English label)
@@ -159,7 +173,8 @@ npm run check:sandbox -- [--installer <exe>] [--bag <bag> | --no-bag] [--modes f
                             # the D11 clean-PC checklist in Windows Sandbox (feature on, after a restart): two runs
                             #   (network on: SmartScreen, the Arabic installer pages, per-user + all-users installs, a
                             #   standard user with an Arabic name; network off), each with the app, a bag, print and
-                            #   seal; ..\runs\sandbox_check_<UTC>\summary.md per D11 item. Keep the Sandbox window visible
+                            #   seal (the Save dialog that opens by itself after the seal is cancelled through Win32,
+                            #   scripts\sandbox\os-dialogs.mjs, D12); ..\runs\sandbox_check_<UTC>\summary.md per D11 item. Keep the Sandbox window visible
                             #   and untouched. Windows Sandbox 0.8.x on this two-GPU laptop logs on only with the
                             #   policy AllowVGPU = 0 (HKLM\SOFTWARE\Policies\Microsoft\Windows\Sandbox, set 2026-10-13, D11)
 
@@ -205,15 +220,15 @@ cd E:\camel_beauty
 
 | Layer | Modules |
 |---|---|
-| main process (`src/main/`) | `index.ts` (lifecycle, single-instance lock, `--export` dispatch), `runtime.ts` (production = packaged or built with `NAZEER_DIST=1`: licence required, development switches ignored), `security.ts` + `csp.ts` (window flags, CSP builders, navigation / window-open / webview / permission guards, production menu, sender checks), `protocol.ts` + `appPath.ts` (`app://nazeer`, traversal-safe), `windows.ts` + `rendererRecovery.ts` (a crashed renderer is reloaded a few times, then the operator decides), `ipc.ts` (every `ipcMain.handle`; payloads checked by `shared/ipcValidate.ts`), `dialogs.ts`, `scan.ts` (bounded capture-folder scan), `settings.ts` (`<userData>\app-settings.json`), `quit.ts` (renderer flush → engine shutdown → kill) |
+| main process (`src/main/`) | `index.ts` (lifecycle, single-instance lock, `--export` dispatch), `runtime.ts` (production = packaged or built with `NAZEER_DIST=1`: licence required, development switches ignored), `security.ts` + `csp.ts` (window flags, CSP builders, navigation / window-open / webview / permission guards, production menu, sender checks), `protocol.ts` + `appPath.ts` (`app://nazeer`, traversal-safe), `windows.ts` + `rendererRecovery.ts` (a crashed renderer is reloaded a few times, then the operator decides), `ipc.ts` (every `ipcMain.handle`; payloads checked by `shared/ipcValidate.ts`), `dialogs.ts`, `scan.ts` (bounded capture-folder scan), `settings.ts` (`<userData>\app-settings.json`: the capture folders, "Save as"'s last folder and the copies it wrote), `quit.ts` (renderer flush → engine shutdown → kill), `report/` ("Save as", D12: `saveAs.ts` the orchestration — the sealed PDF read and checked, the Save dialog, the data-root refusal, the copy verified and recorded; `atomicWrite.ts` temp file + fsync + rename; `savedCopies.ts` the recorded copy, open / show in folder) |
 | engine supervisor (`src/main/engine/`) | `dataRoot.ts` (data-root rules), `command.ts` (the venv in development; in production `<resources>\engine\python\python.exe -I -u -B -m nazeer_engine` with the development variables dropped), `process.ts`, `readyLine.ts`, `supervisor.ts` (a token per start, ready-line identity, `/health` watchdog), `restartPolicy.ts` (one retry, crash backoff), `orphan.ts` (exit 6), `logs.ts` (rotating `<userData>\logs\app-engine-stderr.log`) |
 | licence (`src/main/license/`, D11) | `verify.ts` (Ed25519 `NZL1.<payload>.<signature>`), `store.ts` (`<userData>\app-license.json`), `service.ts` (re-checked at every start; the engine starts only once a licence is active), `publicKey.ts` (written by `tools/generate-license.mjs --init`) |
-| printing (`src/main/print/`, D7) | `exportPdf.ts` (the checks, the print, the upload and the result), `printWindow.ts` (hidden, sandboxed, its own in-memory partition), `assets.ts` (the engine's pinned Plex TTF, hash-checked against `print/plex-cmap.json`, and the logo), `cli.ts` (`--export`) |
-| preloads (`src/preload/`) | `index.ts` (`window.nazeer`), `print.ts` (the print page's bridge); each a self-contained file (a sandboxed preload cannot load chunks) |
-| shared (`src/shared/`) | `api.d.ts` (generated from `engine/openapi.json`), `engine-codes.json` (generated from the engine source), `ipc.ts` + `printChannels.ts` (channels, payload types), `ipcValidate.ts`, `ids.ts` |
-| renderer (`src/renderer/`) | `api/` (openapi-fetch client, RTK Query `engineApi`, asset URLs with the token, SSE `jobEvents`, the error envelope, runtime readers for labels / session views / report models / probes), `store/` (slices `engine`, `license`, `ui`, `bag`, `candidates`, `session`, `report`, `history`; listeners `autosave`, `candidates`, `finalize`, `probes`; thunks; `session/` document, rebase, sync, flush; `services/overlayBytes.ts`), `screens/` (Home, Candidates, CandidateSet, `measure/`, FinalizeScreen, ReportScreen, HistoryScreen, About, Activate, `session/` gate + unsaved guard, ScreenError: a screen that failed to render), `components/ui/` (Radix-based primitives, the `Bi` / `Ltr` / `Num` isolates), `components/domain/` (bag picker, frame-search progress, candidate grid, measuring toolbar + the render-only canvas in `measure/`, measurement list, hover readout, Z_ref card, overlay approval, report inputs, probe report, pdf.js viewer, History table, the engine and licence gates), `design/` (tokens, fonts, the development-only gallery `#/design`), `i18n/` (`ar.json`, `en.json`), `lib/` (`bidi.tsx` Latin-run isolation, `sha256.ts`, `pdf.ts`, `read.ts`) |
-| print page (`src/print/`) | `model.ts` (report model 1.1, every printed field checked), `PrintPage.tsx`, `text.tsx` (labels, operator text, numbers), `face.ts` (the Plex face from its bytes), `preflight.ts` (the probe's text rules and a glyph check against `plex-cmap.json`) |
-| build, packaging, checks | `scripts/`: `gen-api`, `gen-engine-codes`, `gen-font-cmap`, `capture-fixtures`, `snap`, `store-real`, `stage-engine` (+ `engine_bundle.py`, `lib/`), `dist-checks`, `packaged-smoke`, `sandbox-check` (+ `sandbox/`), `make_icon.py`; `electron-builder.yml` (NSIS x64, per-user by default, fuses, publisher "Nazeer"); `build/` (`logo.png` → `icon.ico`, `installer.nsh` with the Arabic installer pages); `e2e/` (smoke, connectivity, license, export, flow-fast, flow-real; `helpers/`); `fixtures/` (engine payloads for unit tests and the gallery) |
+| printing (`src/main/print/`, D7) | `exportPdf.ts` (the checks, the print, the upload and the result; the export gate shared with the comparison's), `exportComparison.ts` (D12: the comparison read again, every camel's image approved, the model and each overlay fetched and hashed, the print, the seal), `printWindow.ts` (hidden, sandboxed, its own in-memory partition; a time limit for the layout and another for `printToPDF`), `assets.ts` (the engine's pinned Plex TTF, hash-checked against `print/plex-cmap.json`, and the logo), `cli.ts` (`--export`) |
+| preloads (`src/preload/`) | `index.ts` (`window.nazeer`; D12 adds `report.*` and `print.exportComparison`), `print.ts` (the print page's bridge); each a self-contained file (a sandboxed preload cannot load chunks) |
+| shared (`src/shared/`) | `api.d.ts` (generated from `engine/openapi.json`), `engine-codes.json` (generated from the engine source), `ipc.ts` + `printChannels.ts` (channels, payload types), `ipcValidate.ts`, `ids.ts`, `fileNames.ts` (the default names of saved copies, sanitised for Windows) |
+| renderer (`src/renderer/`) | `api/` (openapi-fetch client, RTK Query `engineApi`, asset URLs with the token, SSE `jobEvents`, the error envelope, runtime readers for labels / session views / report models / probes), `store/` (slices `engine`, `license`, `ui`, `bag`, `candidates`, `session`, `report`, `history`, `comparisons` (D12: the camels ticked in the operator's order, the Compare dialog, the approvals given in the app, the Comparisons tab's query), `savedFiles`; listeners `autosave`, `candidates`, `finalize`, `probes`, `indexRefresh` (History and Comparisons asked again when the open session's status, image or report changes); thunks; `session/` document, rebase, sync, flush; `services/overlayBytes.ts`; `useDropSaveOffer.ts`: leaving a sealed report's screen drops its Save offer, not on a StrictMode remount), `screens/` (Home, Candidates, CandidateSet, `measure/`, FinalizeScreen, ReportScreen, HistoryScreen (tabs Sessions and Comparisons: `ComparisonsTab`), ComparisonScreen (`#/comparisons/:id`, D12; its print and sealed PDF in `ComparisonReport`), About, Activate, `session/` gate + unsaved guard, ScreenError: a screen that failed to render), `components/ui/` (Radix-based primitives, the `Bi` / `Ltr` / `Num` isolates), `components/domain/` (bag picker, frame-search progress, candidate grid, measuring toolbar + the render-only canvas in `measure/`, measurement list, hover readout, Z_ref card, overlay approval, report inputs, probe report, pdf.js viewer, "Save as" panel, History table (with D12's selection column), the Compare bar and dialog, the member-image approval, the comparisons table, the engine and licence gates), `design/` (tokens, fonts, the development-only gallery `#/design`), `i18n/` (`ar.json`, `en.json`), `lib/` (`bidi.tsx` Latin-run isolation, `sha256.ts`, `pdf.ts`, `read.ts`) |
+| print page (`src/print/`) | `model.ts` (report model 1.1, every printed field checked), `PrintPage.tsx`, `comparisonModel.ts` + `ComparisonPage.tsx` (D12: the comparison model 1.0 and its page; `main.tsx` picks the page by the job's `kind`), `text.tsx` (labels, operator text, numbers), `face.ts` (the Plex face from its bytes), `preflight.ts` (the probe's text rules and a glyph check against `plex-cmap.json`) |
+| build, packaging, checks | `scripts/`: `gen-api`, `gen-engine-codes`, `gen-font-cmap`, `capture-fixtures`, `snap`, `store-real`, `stage-engine` (+ `engine_bundle.py`, `lib/`), `dist-checks`, `packaged-smoke`, `sandbox-check` (+ `sandbox/`; `sandbox/os-dialogs.mjs` cancels the packaged app's Save dialog through Win32), `make_icon.py`; `electron-builder.yml` (NSIS x64, per-user by default, fuses, publisher "Nazeer"); `build/` (`logo.png` → `icon.ico`, `installer.nsh` with the Arabic installer pages); `e2e/` (smoke, connectivity, license, export, flow-fast, flow-real, comparison-fast, comparison-real, the opt-in measure-comparison; `helpers/`, `helpers/comparison.ts` the comparison flow both comparison specs share); `fixtures/` (engine payloads for unit tests and the gallery) |
 
 ### Engine package map (`engine/nazeer_engine/`)
 
@@ -222,12 +237,13 @@ cd E:\camel_beauty
 | foundations | `constants` (every threshold; `CONSTANTS_STAMP` goes into every session / candidates / manifest), `errors` (`EngineError(code, status, details)`), `jsonsafe` (finite-only JSON, `FiniteJSONResponse`), `fsio` (atomic writes with the C3.4 retry ladder, imencode/imdecode, fingerprints), `settings` (data-root rules), `versions`, `assets`, `logsetup` |
 | measurement core | `geometry` (vendored math + `curve_length_3d`), `maskstats` (eroded-mask stats, Z_ref block, ground rows, depth-valid bbox, `frame_clearance`), `depthlookup` (C1: `build_frame_context`, `depth_for_pixel`), `provenance`, `session_compute` (input → computed row, presentation), `labels` (every code's AR/EN label) |
 | bag → candidates | `bagreader` (lazy pyrealsense2), `segmenter` (pinned YOLO, retina masks; `StubSegmenter`), `candidates` (C2 gates, holders, ranking, persistence), `candidate_cache`, `frames`, `jobs` (one background job, cancel / stop) |
-| sessions → report | `session_schema` (2.1 dataclasses, `required_report_texts`), `session_store` (locks, autosave, finalize, attach, delete), `history` (derived SQLite index), `recent`, `overlay` (the PNG), `report_model`, `report_content`, `arabic`, `pdf_finalize` (probes + attachments) |
+| sessions → report | `session_schema` (2.1 dataclasses, `required_report_texts`), `session_store` (locks, autosave, finalize, attach, delete), `history` (derived SQLite index), `recent`, `overlay` (the PNG), `report_model`, `report_content`, `arabic`, `pdf_finalize` (probes + attachments; the comparison's ordered probes) |
+| comparisons (D12) | `comparison_model` (pure: eligibility, staleness by content, rows matched by exact name + kind + occurrence, member blocks from the frozen report models — texts only), `comparison_store` (`<root>/comparisons/<id>/`: create under the member session locks in sorted order, view, cover / language → model v+1, the seal: evidence read under the member locks, the probe without them, a second look before writing; delete to the trash, reconcile) |
 | HTTP | `api/app.py` (`create_app`, error handlers, token + CORS middleware), `api/routes_*.py`, `api/schemas.py` (pydantic; `extra="forbid"`, no NaN), `api/views.py` (response shapes), `__main__.py` (the sidecar) |
 
 ### HTTP API for the renderer (React + Redux)
 
-31 operations; `engine/openapi.json` is the contract (operation ids = function names, e.g.
+39 operations; `engine/openapi.json` is the contract (operation ids = function names, e.g.
 `put_document`) — generate the client types from it. Conventions:
 
 - Errors are always `{"error": {"code", "message", "details"}}` with a stable `code`
@@ -256,7 +272,24 @@ cd E:\camel_beauty
   `require_font=false`) → `GET …/report` for sign-off (`outputs.report.stale` when it no
   longer shows the session). History: `GET /sessions?q=&status=` (reconciled on every call;
   a broken session folder is a `corrupt` row), `DELETE`, `POST …/reopen`,
-  `PATCH …/report-inputs` (a change writes a new report model version).
+  `PATCH …/report-inputs` (a change writes a new report model version). Since D12 each row also
+  carries `event`, `n_comparisons` and `comparison {eligible, reason, approved_by_seal, overlay}`
+  (labels group `comparison_ineligible`), and the list filters by `event` and
+  `created_from` / `created_to` (ISO instants, inclusive).
+- Comparisons (D12; engine done in Stages 2–3): `POST /comparisons {session_ids (the operator's order),
+  cover {title, event, judge, council}, language}` (201; every member re-checked from its files;
+  one refused member refuses the request and `details.members[]` names each with its `reason`) →
+  `GET /comparisons/{id}` (members with `stale_reasons`, `notes`, `approved_by_seal`, the
+  approved overlay's URL and SHA-256; staleness read from the member files) →
+  `PATCH …/inputs` (cover / language → `comparison_model_v<N+1>.json`) → `GET …/assets/{name}`;
+  `GET /comparisons?q=&status=&stale=` (reconciled; staleness from the index); `DELETE`. Labels
+  groups `comparison_stale`, `comparison_statuses`; the app's limits are `/meta/labels` `constants`
+  `COMPARISON_MAX_SESSIONS`, `COMPARISON_MAX_TITLE`, `COMPARISON_MAX_NAME`. Seal: `POST …/report` with the raw PDF
+  (`X-Comparison-Model-Sha256`; text and font probes strict unless `require_text=false` /
+  `require_font=false`; at most `COMPARISON_PDF_MAX_BYTES`) → `{comparison, probe}`; refusals 409
+  `comparison_stale`, `comparison_model_mismatch`, `overlay_missing` / `overlay_drift` /
+  `overlay_out_of_place`, `text_probe_failed`, `font_probe_failed`, `session_assets_changed` (a
+  refused print kept, `rejected_url`); `GET …/report?v=` the sealed PDF.
 - A measurement input is `{id, kind, name, points, targets?, line_a_id?, line_b_id?,
   color?, note}`; `kind` ∈ `distance_2d | distance_3d | curve_2d | curve_3d |
   angle_2d_3point | angle_3d_3point | angle_2d_from_horizontal | angle_4point`. The client
@@ -431,7 +464,7 @@ depth.
 1. **Data root** is passed by the app (`--data-root`, absolute, writable; never a
    CWD-relative `runs/`, never Desktop/Documents/OneDrive — this machine has a OneDrive
    shadow of the parent repo). Layout `<root>/sessions/<id>/`, `<root>/candidates/…`,
-   `<root>/history.sqlite`, `<root>/recent.json`, `<root>/trash/`. Stamped into
+   `<root>/comparisons/<id>/` (D12), `<root>/history.sqlite`, `<root>/recent.json`, `<root>/trash/`. Stamped into
    `session.json` and the manifest.
 2. **Session** = one chosen candidate frame + operator measurements.
    `session_id = YYYYmmdd_HHMMSS_<6 hex>` (sortable, ASCII, no colon; the parent hit
@@ -445,7 +478,11 @@ depth.
    (rows without a directory → "missing files", directories without a row → "unindexed",
    refresh by mtime). Single writer = the engine (uvicorn `--workers 1`); connection per
    request; `journal_mode=WAL`, `synchronous=NORMAL`, `foreign_keys=ON`,
-   `busy_timeout=5000`; Electron never opens the DB; backup via `Connection.backup()`.
+   `busy_timeout=5000`; Electron never opens the DB; backup via `Connection.backup()`. Index version 2 (D12, 2026-10-17) adds the `comparisons` and
+   `comparison_members` tables (no foreign key to `sessions`: an `INSERT OR REPLACE` would cascade)
+   and the sessions' `event`, `input_sha256`, `overlay_sha256`, `report_overlay_version`,
+   `report_model_schema`; the migration adds the missing columns in one transaction and refreshes
+   every row when the stored version is not 2 (also after a 1.0.0 engine ran on the root).
 4. **Autosave**: the renderer keeps a monotonic `revision`; one save in flight, changes
    coalesced, 250 ms debounce, forced flush on blur / close / quit; the engine rejects
    `revision ≤ stored` with 409. Write = mkstemp → write → flush → `fsync` → `os.replace`
@@ -509,6 +546,14 @@ depth.
 - The generated PDF is the final review surface shown in-app; `--export <session_dir>`
   re-exports headlessly. Tests assert content (attachments, pixels, text, font names),
   never file bytes.
+- **The comparison report (D12)** is sealed the same way, with an ordered pixel probe (image sizes
+  read first; each camel's overlay matched by the SHA-256 of its RGB samples, on exactly one page,
+  after the previous camel's), the text probe per camel section, every member's evidence attached
+  (`m<NN>_<session>_overlay_vN.png`, `…_session.json`, `…_report_model_vN.json`) plus
+  `comparison_model_vN.json`, and the member files re-checked after the probe. Measured with
+  headless Edge (2026-10-17): 1.46 MB printed per camel; 20 camels seal in 6.8 s. Printed by the app
+  (`print.html` in its comparison mode, D12 Stage 5): 20 camels = 45 pages, 27.8 MB printed, 52.7 MB
+  sealed, 2.5 s to lay out and print, 6.1 s to seal; each print phase has a time limit (`print_timeout`).
 - Rejected alternatives: reportlab in the engine (the parent's `render_pdf_report` uses
   Helvetica with no TTF registration and ignores curves; reportlab installed nowhere) and
   engine-side headless Chromium (a second Chromium on an offline laptop for no fidelity gain).
@@ -598,7 +643,11 @@ load-bearing. The model card, `metrics.json` and `results.csv` stay tracked.
   block (24-check install-and-run smoke), but they were built on this laptop and carry no Mark of the Web;
   once, polars' runtime DLL was blocked in the staging folder (the engine never loads polars).
   Turning it off cannot be undone without resetting Windows: an operator decision (also for the
-  field laptop and the packaged engine).
+  field laptop and the packaged engine). **Since 2026-10-18 Windows Sandbox enforces it too**
+  (state 1; it was 2, evaluation, through 2026-10-14; this laptop's build 26100.9711): the unsigned
+  installer, 1.0.0 included, is refused at its start, so `npm run check:sandbox` cannot pass until
+  the installer is signed (D11 "Release 1.1.0"). Never change the setting on this laptop or in the
+  Sandbox without the operator.
 
 - **Old numbers are suspect.** The parent notebook path fed channel-swapped colours and
   the padding-squeezed mask (22 px ground-row shift). Its measurements are not regression
@@ -672,9 +721,9 @@ load-bearing. The model card, `metrics.json` and `results.csv` stay tracked.
 
 ## Decisions
 
-`docs/decisions/README.md` indexes D1–D11 (D11: offline licence keys and the Windows installer, accepted 2026-10-12). D1 (checkpoint: `best.pt` recommended, hash
+`docs/decisions/README.md` indexes D1–D12 (D11: offline licence keys and the Windows installer, accepted 2026-10-12; D12: "Save as" and the comparison report, proposed 2026-10-17, implemented). D1 (checkpoint: `best.pt` recommended, hash
 already matches) and D6 (licence; still open, with one evaluation delivery to a client under the
-operator's responsibility on 2026-10-14) are drafted from the model card; D2–D5 are implied by
+operator's responsibility on 2026-10-14 and a permanent-key delivery of release 1.1.0 on 2026-10-18) are drafted from the model card; D2–D5 are implied by
 the card's numbering gap and never referenced — operator to fill. D7 PDF route
 (Electron printToPDF; engine = rendering authority; **accepted 2026-10-13** after Stage 7), D8
 measurement types + depth provenance (contract C1, **reviewed, parameters proposed**),

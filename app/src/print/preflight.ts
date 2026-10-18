@@ -8,7 +8,11 @@
  * - every character: in the face's cmap (plex-cmap.json; default-ignorables and spaces skipped).
  *   A required string with a character the face lacks stops the print (it could only be drawn in
  *   a fallback face); elsewhere (a note, an observation) it is a warning and prints anyway;
- * - every image decoded; the overlay at its natural size, full width, no filter or opacity.
+ * - every image decoded; each overlay at its natural size, full width, no filter or opacity —
+ *   one for a session's report; for a comparison (D12) one per camel, in the operator's order,
+ *   each naming its camel (`data-member`);
+ * - for a comparison, no table cell wider than its column (`print_overflow`): the page is laid out
+ *   at the A4 content width, so what overflows here would be cut on paper.
  */
 import type { PreflightProblem, PrintPreflight } from "@shared/ipc";
 import { PRINT_FONT_FAMILY } from "./face";
@@ -138,8 +142,17 @@ export interface PreflightInput {
   face: FontFace | null;
   fontsCheck: (font: string) => boolean;
   requiredTexts: readonly string[];
-  overlay: { width: number; height: number };
+  /** the overlays the page must show, in order (`member`: the camel's session id, or null) */
+  overlays: readonly ExpectedOverlay[];
+  /** check the cells of every `[data-overflow-check]` table (the comparison page) */
+  overflow?: boolean;
   getStyle?: (element: Element) => CSSStyleDeclaration;
+}
+
+export interface ExpectedOverlay {
+  member: string | null;
+  width: number;
+  height: number;
 }
 
 const SAMPLES = 8;
@@ -264,34 +277,75 @@ export function runPreflight(input: PreflightInput): PrintPreflight {
       details: { images: broken.length },
     });
   }
-  const overlay = root.querySelector<HTMLImageElement>('img[data-role="overlay"]');
-  if (overlay === null) {
+  const overlays = [...root.querySelectorAll<HTMLImageElement>('img[data-role="overlay"]')];
+  if (overlays.length !== input.overlays.length) {
     problems.push({
       code: "print_overlay_missing",
-      message: "the overlay is not on the page",
-      details: {},
+      message:
+        input.overlays.length === 1
+          ? "the overlay is not on the page"
+          : `the page shows ${overlays.length} camel images, not ${input.overlays.length}`,
+      details: { found: overlays.length, expected: input.overlays.length },
     });
-  } else {
+  }
+  const outOfOrder: { position: number; expected: string; found: string | null }[] = [];
+  const altered: { position: number; issues: string[] }[] = [];
+  input.overlays.forEach((expected, i) => {
+    const overlay = overlays[i];
+    if (overlay === undefined) return;
+    const member = overlay.dataset["member"] ?? null;
+    if (expected.member !== null && member !== expected.member) {
+      outOfOrder.push({ position: i + 1, expected: expected.member, found: member });
+    }
     const cs = style(overlay);
     const issues: string[] = [];
-    if (
-      overlay.naturalWidth !== input.overlay.width ||
-      overlay.naturalHeight !== input.overlay.height
-    ) {
+    if (overlay.naturalWidth !== expected.width || overlay.naturalHeight !== expected.height) {
       issues.push(
         `natural size ${overlay.naturalWidth} x ${overlay.naturalHeight}, ` +
-          `expected ${input.overlay.width} x ${input.overlay.height}`,
+          `expected ${expected.width} x ${expected.height}`,
       );
     }
     if (cs.opacity !== "1") issues.push(`opacity ${cs.opacity}`);
     if (cs.filter !== "none") issues.push(`filter ${cs.filter}`);
     if (cs.mixBlendMode !== "normal") issues.push(`blend ${cs.mixBlendMode}`);
     if (cs.objectFit !== "fill") issues.push(`object-fit ${cs.objectFit}`);
-    if (issues.length > 0) {
+    if (issues.length > 0) altered.push({ position: i + 1, issues });
+  });
+  if (outOfOrder.length > 0) {
+    problems.push({
+      code: "print_overlay_order",
+      message: "the camels' images are not in the comparison's order",
+      details: { members: outOfOrder },
+    });
+  }
+  if (altered.length > 0) {
+    problems.push({
+      code: "print_overlay_altered",
+      message: "the overlay would not print as the approved pixels",
+      details:
+        input.overlays.length === 1
+          ? { issues: altered[0]?.issues ?? [] }
+          : { members: altered.slice(0, SAMPLES) },
+    });
+  }
+
+  // a comparison's tables: no cell wider than its column
+  if (input.overflow === true) {
+    const overflowing: string[] = [];
+    for (const table of root.querySelectorAll("[data-overflow-check]")) {
+      for (const cell of table.querySelectorAll<HTMLElement>("th, td")) {
+        if (cell.scrollWidth > cell.clientWidth + 1 && overflowing.length < SAMPLES) {
+          overflowing.push(
+            `${cell.scrollWidth} > ${cell.clientWidth} px: ${(cell.textContent ?? "").slice(0, 40)}`,
+          );
+        }
+      }
+    }
+    if (overflowing.length > 0) {
       problems.push({
-        code: "print_overlay_altered",
-        message: "the overlay would not print as the approved pixels",
-        details: { issues },
+        code: "print_overflow",
+        message: "a table cell is wider than its column and would be cut on paper",
+        details: { samples: overflowing },
       });
     }
   }

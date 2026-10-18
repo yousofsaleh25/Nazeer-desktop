@@ -5,9 +5,11 @@
 // and saved), autosave (one revision per save; a replay is a 200, a stale save a 409 with the
 // current view), previews = saved values, the 3D curve's cross-check, the overlay and report model
 // hashes, then print and seal (probes PASS, pixel |Δ| 0, every name in the text layer, only the
-// Plex face, attachments byte-identical to what was approved and printed), History. Content only,
-// never PDF bytes. About 5 minutes; skipped without NAZEER_REAL=1, bag 006 or the model.
-import { existsSync } from "node:fs";
+// Plex face, attachments byte-identical to what was approved and printed), the copy "Save as" wrote
+// (D12) identical to the sealed report, History. Content only, never PDF bytes. About 5 minutes;
+// skipped without NAZEER_REAL=1, bag 006 or the model.
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
 import path from "node:path";
 import { expect, test, type Page, type Response } from "@playwright/test";
 import { BAG_006, launchApp, repoDir, waitForReady, type LaunchedApp } from "./helpers/app";
@@ -36,6 +38,7 @@ import {
 } from "./helpers/flow";
 import { labels } from "./helpers/labels";
 import { readPdf, sha256 } from "./helpers/pdf";
+import { sessionReportFileName } from "../src/shared/fileNames";
 
 const REAL = process.env["NAZEER_REAL"] === "1";
 const MODEL = path.join(repoDir, "engine", "models", "best.pt");
@@ -61,6 +64,7 @@ let sessionId = "";
 let points: FramePoints;
 let saved: SessionView;
 let approvedOverlay: Uint8Array;
+let saveDir = "";
 const depthReplies: { body: { u: number; v: number; target: string }; reply: DepthOut }[] = [];
 const documentSaves: { status: number; revision: number | null; ifMatch: string | null }[] = [];
 
@@ -92,7 +96,13 @@ test.beforeAll(async () => {
   test.skip(!REAL, "set NAZEER_REAL=1 to run the real-model proof (bag 006 and best.pt)");
   test.skip(!existsSync(BAG_006), `needs bag 006 (${BAG_006})`);
   test.skip(!existsSync(MODEL), `needs the model (${MODEL})`);
-  launched = await launchApp({ stubModel: false });
+  // "Save as" (D12): the Save dialog that opens after the seal saves into a folder named in Arabic
+  saveDir = path.join(mkdtempSync(path.join(tmpdir(), "nazeer-e2e-real-save-")), "نسخ حقيقية");
+  mkdirSync(saveDir);
+  launched = await launchApp({
+    stubModel: false,
+    env: { NAZEER_E2E_SAVE_DIALOG: `folder:${saveDir}` },
+  });
   page = launched.page;
   engine = new Engine((await waitForReady(page, { timeoutMs: 240_000 })).connection);
   page.on("response", (response: Response) => {
@@ -118,6 +128,7 @@ async function record(response: Response): Promise<void> {
 
 test.afterAll(async () => {
   if (launched !== undefined) await launched.close();
+  if (saveDir !== "") rmSync(path.dirname(saveDir), { recursive: true, force: true });
 });
 
 test("1. engine: healthy, the pinned real model, the Arabic stack with the pinned font", async () => {
@@ -452,6 +463,24 @@ test("10. report details, print and seal: probes PASS with every name, the pixel
     ),
   );
   for (const m of saved.measurements) expect(stored.has(m.name), m.name).toBe(true);
+
+  // "Save as" (D12): once the viewer verified the sealed bytes, the Save dialog opened by itself;
+  // the copy main wrote under the default name is the sealed report, byte for byte
+  const copy = path.join(
+    saveDir,
+    sessionReportFileName({
+      camelId: view.camel_id,
+      sessionId,
+      createdAt: view.created_at,
+      version: report.version,
+    }),
+  );
+  await expect.poll(() => existsSync(copy), { timeout: 60_000 }).toBe(true);
+  await expect(page.getByTestId("saved-copy")).toContainText(t("report.savedTo"));
+  expect(sha256(new Uint8Array(readFileSync(copy)))).toBe(report.sha256);
+  note(
+    `saved a copy: ${path.basename(copy)} (${readFileSync(copy).byteLength} bytes, same SHA-256)`,
+  );
   note(
     `report v${report.version} (overlay v${report.overlay_version}, model v${model.version}): ` +
       `verdict PASS, ${pdf.pages.length} A4 pages, fonts ${pdf.fonts.map((f) => f.name).join(", ")}, ` +

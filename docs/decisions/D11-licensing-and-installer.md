@@ -4,7 +4,8 @@ Status: accepted 2026-10-12 (operator: scope, done before Stage 5, re-check at e
 embedded CPython, the install check partly on a machine without Smart App Control) ·
 licence keys implemented in Stage A, the installer in Stage B (results below) · release 1.0.0
 built, checked in Windows Sandbox and delivered with a 7-day trial key on 2026-10-14 ("Release
-1.0.0", at the end).
+1.0.0", at the end) · release 1.1.0 built and delivered with a permanent key on 2026-10-18; the
+Sandbox now enforces Smart App Control and refuses the unsigned installer ("Release 1.1.0").
 
 ## Context
 
@@ -529,3 +530,46 @@ installer (More info → Run anyway); Smart App Control, on by default on a fres
 11, may refuse it (this record's Smart App Control section; a signing certificate is the fix);
 Windows N needs the Media Feature Pack; the program takes about 1.6 GB. Production validation starts
 with this delivery: no field capture has been measured yet.
+
+## Release 1.1.0 (2026-10-18)
+
+The second client release: D12 ("Save as" for every sealed PDF, the comparison report) on top of
+1.0.0, delivered with a **permanent** key. The operator recorded the delivery as theirs while the
+model licence is open (D6, 2026-10-18).
+
+- **Version 1.1.0** (`app/package.json` and its lock). The engine's own version stays `0.1.0`, as in
+  1.0.0. The history index moves to version 2 at the first start (D10, D12 Stage 2).
+- **Checks before the build:**
+  - engine: pytest 502 passed, 7 opt-in skipped; ruff check and format clean.
+  - app: typecheck, lint and format clean; `npm test` 863 passed, 1 skipped.
+  - `NAZEER_REAL=1 npm run e2e`: 33 passed, 3 opt-in skipped. This includes flow-real 11/11,
+    comparison-fast 3/3 and comparison-real 3/3 (D12 Stage 6, with the review's 7 fixes).
+
+| Check (2026-10-18) | Result |
+|---|---|
+| `npm run dist` | the engine staged (18,868 files, 1,254.4 MB; imports, `--check` and serve smoke passed; 69 s); `release\Nazeer Desktop Setup 1.1.0.exe`, 333,637,671 bytes, SHA-256 `48248f7571bde7b8b9aee60033e8621678352c20db8e75e780333c91974fb971`, not signed (`Get-AuthenticodeSignature`: NotSigned; electron-builder's "signing with signtool.exe" lines sign nothing without a certificate) |
+| `npm run smoke:packaged -- --move-profile-aside` | 24/24 on this laptop. Silent per-user install 189 s, 1,645 MB. The real-model engine ready 13.5 s after activation. Smart App Control (on, state 1, on this laptop) let it run: the file was built here and has no Mark of the Web. Release 1.0.0 had to be uninstalled first; the profile was kept and backed up to `runs\profile_backup_1.0.0_20261018` |
+| upgrade in place on the operator's own profile | 1.0.0 installed silently (162 s), then 1.1.0 over it (218 s): one uninstall entry, version 1.1.0, the exe 1.1.0.0. The upgraded app starts in 15 s; the 1.0.0 trial key stays active; the engine is ready; History lists the 3 sessions; `history.sqlite` is at index version 2, every row's hashes filled, the comparison tables present |
+| `npm run check:sandbox` | **refused by Smart App Control**, `runs\sandbox_check_20261017T222251Z`. The Sandbox's Windows (build 26100.9711; 26100.9549 on 2026-10-13/14) now reports Smart App Control **1 (on)**, where it reported 2 (evaluation) before. Network on: the installer, copied with the Mark of the Web, was refused at its start ("An Application Control policy has blocked this file"). Network off: the silent install exited 0 after 9 s without installing. **Control run** `runs\sandbox_check_20261017T222616Z`: the 1.0.0 installer, which passed every item on 2026-10-14, is refused the same way. So the cause is the Sandbox's Windows, not 1.1.0. Items 3–9, the bag flow and the automatic Save-dialog cancel (D12 Stage 6) did not run |
+
+**What this measures:** a Windows 11 PC with Smart App Control on refuses this unsigned installer.
+The Sandbox shares the host's Windows build, and this laptop's update between 2026-10-14 and
+2026-10-18 changed how the Sandbox starts. Nothing here changed any Smart App Control setting: not
+on this laptop, not in the Sandbox. The operator chose (2026-10-18) to ship with the warning rather
+than to switch Smart App Control off inside the Sandbox or to hold the delivery for a signed build.
+The client's PC must have Smart App Control off or in evaluation mode (Windows Security → App &
+browser control). Turning it off cannot be undone without resetting Windows; that is the client's
+decision. A code-signing certificate stays the fix (this record's Smart App Control section). Until
+then the Sandbox check cannot pass on this laptop.
+
+**Delivered (operator, 2026-10-18):** the installer above and a permanent key.
+- The key: fingerprint `34afa394592570e0`, customer `Nazeer_CEO_Ahmed`, issued 2026-10-17 21:48:45
+  UTC, never expires, signed with key id `2f8696292b9d9ec0`. It was checked with the app's own
+  `verifyLicenseKey` and the baked public key: valid now, in 10 years and in 50 years; one changed
+  character → `bad_signature`.
+- The handover folder `runs\release_1.1.0\` (gitignored) holds a copy of the installer (same
+  SHA-256), the key (`licence-key-permanent-Nazeer_CEO_Ahmed.txt`) and `HANDOVER.txt` (what is
+  new, the Smart App Control condition, installing, activating, upgrading from 1.0.0). A PC that
+  ran the 1.0.0 trial enters the permanent key with About → Change key.
+- Not covered: Windows 10, an all-users install of 1.1.0, and any field capture. Production
+  validation is still open.

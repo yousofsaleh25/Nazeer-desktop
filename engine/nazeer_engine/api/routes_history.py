@@ -21,10 +21,14 @@ router = APIRouter(tags=["history"])
 @router.post(
     "/history/rebuild",
     response_model=dict[str, int],
-    summary="Rebuild the index from the session folders",
+    summary="Rebuild the index from the session and comparison folders",
 )
 def rebuild_history(state: EngineState = Depends(engine)) -> FiniteJSONResponse:
-    return FiniteJSONResponse(state.store.rebuild_index())
+    sessions = state.store.rebuild_index()
+    comparisons = state.comparisons.rebuild_index()
+    return FiniteJSONResponse(
+        {**sessions, **{f"comparisons_{key}": value for key, value in comparisons.items()}}
+    )
 
 
 @router.post(
@@ -60,13 +64,16 @@ def backup_history(body: BackupIn, state: EngineState = Depends(engine)) -> Fini
 
 
 @router.get(
-    "/history/stats", response_model=HistoryStats, summary="Disk use of sessions, candidates, trash"
+    "/history/stats",
+    response_model=HistoryStats,
+    summary="Disk use of sessions, comparisons, candidates, trash",
 )
 def history_stats(state: EngineState = Depends(engine)) -> FiniteJSONResponse:
     backups = list((state.data_root / "backups").glob("*.sqlite"))
     return FiniteJSONResponse(
         {
             "sessions": state.store.sessions_stats(),
+            "comparisons": state.comparisons.stats(),
             "candidates": cache.cache_stats(state.data_root),
             "trash": state.store.trash_stats(),
             "index": state.history.stats(),

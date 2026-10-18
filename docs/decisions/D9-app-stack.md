@@ -601,3 +601,44 @@ was fixed; the majors and the races were reproduced first by a test that failed 
   passed (1 file and 1 test skipped); `npm run e2e` 16 passed and 11 skipped (48 s);
   `NAZEER_REAL=1` `e2e/flow-real.spec.ts` 11 of 11 on bag 006 with `best.pt` (1.1 min): the same
   values as in Stage 8, sealed with PASS. The engine is unchanged in Stage 9.
+
+### "Save as" (D12 Stage 1, 2026-10-17)
+
+- **Preload surface additions, for the operator's acceptance as before:** `report.saveAs`,
+  `report.savedCopy` and `report.openSaved` (channels `nazeer:report:*`, operator page only, every
+  payload validated with exact keys). The renderer names a sealed report version and suggests a
+  file name; main opens the Save dialog, fetches and checks the bytes, writes and verifies the
+  copy, and keeps its record in `<userData>\app-settings.json`. No path and no bytes cross the
+  bridge, and `openSaved` opens only the path main recorded. The design and its tests are in D12.
+- **Development switch:** `NAZEER_E2E_SAVE_DIALOG` (`cancel` | `file:<path>` | `folder:<dir>`)
+  answers the Save dialog in development builds (read through `devSwitch`, ignored in production
+  builds, as the other switches); the e2e specs default it to `cancel`.
+
+### The comparison screens (D12 Stage 4, 2026-10-17)
+
+- **Routes:** History has two tabs, Sessions and Comparisons (`#/history?tab=comparisons`, kept in the
+  address so returning from a comparison lands on its tab); one comparison is `#/comparisons/:id`.
+  Radix Tabs mount only the active tab, so each tab asks the engine for its own list only.
+- **No preload change in Stage 4:** creating, listing, editing and deleting comparisons go to the engine
+  through the typed client like History; `print.exportComparison` arrives in Stage 5.
+- **Approval stays the app's own** (D10): the approvals the Compare dialog and the comparison screen
+  collect live in the `comparisons` slice (memory only), keyed by session and naming the image's version
+  and SHA-256; the image is the engine's, shown only after WebCrypto matched its stamp, through the same
+  `OverlayApproval` the single report uses. The open session's single-slot overlay cache is untouched.
+- **Ordering without a pointer:** the dialog's ▲ / ▼ buttons move a camel from the keyboard; drag and drop
+  (the browser's own) is the pointer's shortcut. Nothing in the app sorts camels by a value.
+- **Limits from the engine:** the maximum number of camels and the cover's text lengths are read from
+  `/meta/labels` `constants`; the app keeps no copy of them.
+
+### The comparison's print (D12 Stage 5, 2026-10-17)
+
+- **Preload surface:** `print.exportComparison({comparisonId, model {version, sha256}, approvals
+  [{sessionId, overlayVersion, sha256}]})` on `nazeer:print:export-comparison` (validated in
+  `ipcValidate.ts`: exact keys, ids, positive versions, lowercase digests, each session at most once,
+  at most 100 approvals). No bytes cross IPC from the renderer; main fetches the images. `report.*`
+  takes `kind: "comparison"` too. For the operator's acceptance, as the earlier preload additions.
+- **One print at a time:** the report's and the comparison's export share one gate (`export_busy`).
+- **The print page's two modes** stay one Vite entry (`print/main.tsx` dispatches on the job's
+  `kind`), so the print-rules scan of `src/print/*` covers the comparison page too.
+- **Approvals** are read from the `comparisons` slice when the print starts (`exportApprovals`): a
+  camel sealed in a report needs none; one approved in this app run sends its version and SHA-256.

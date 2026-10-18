@@ -2,16 +2,28 @@
 // (stub-model engine: the overlay, report model, PDF probes and attachments are all real) is
 // reopened and finalized again (report model 1.1, overlay v2), its image approved on the Finalize
 // screen, and printed from the Report screen — main lays the print page out in a hidden window,
-// printToPDF, and the engine probes and seals it. Then the headless re-export (`--export`):
-// refused while the app serves the data root, accepted once it is closed. Run `npm run build`
-// first (`npm run e2e` does).
+// printToPDF, and the engine probes and seals it. "Save as" (D12): once the viewer has verified
+// the sealed bytes the Save dialog opens by itself — answered here by the test switch with a folder
+// whose name is Arabic — and the copy on disk is the sealed report byte for byte; History saves it
+// again. Then the headless re-export (`--export`): refused while the app serves the data root,
+// accepted once it is closed. Run `npm run build` first (`npm run e2e` does).
 import { spawnSync } from "node:child_process";
-import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { createHash } from "node:crypto";
+import {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readdirSync,
+  readFileSync,
+  rmSync,
+  statSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { expect, test, type Page } from "@playwright/test";
 import { createRequire } from "node:module";
 import type { EngineConnection } from "@shared/ipc";
+import { sessionReportFileName } from "../src/shared/fileNames";
 import {
   appDir,
   cleanEnv,
@@ -21,6 +33,9 @@ import {
   waitForReady,
   type LaunchedApp,
 } from "./helpers/app";
+import { labels } from "./helpers/labels";
+
+const t = labels("ar");
 
 test.describe.configure({ mode: "serial" });
 
@@ -29,6 +44,8 @@ let page: Page;
 let connection: EngineConnection;
 let closed = false;
 let sessionDir: string;
+/** where the Save dialog's test switch saves copies (a folder with an Arabic name) */
+let saveDir: string;
 /** the Electron executable (the `electron` package exports its path in Node) */
 const electronPath = createRequire(__filename)("electron") as string;
 
@@ -74,7 +91,12 @@ test.beforeAll(async () => {
     !existsSync(path.join(devRoot, "sessions", DEV_SESSION_ID)),
     `needs the dev data root session ${DEV_SESSION_ID} (runs\\dev_root)`,
   );
-  launched = await launchApp({ seedSession: true });
+  saveDir = path.join(mkdtempSync(path.join(tmpdir(), "nazeer-e2e-save-")), "اختبار حفظ");
+  mkdirSync(saveDir);
+  launched = await launchApp({
+    seedSession: true,
+    env: { NAZEER_E2E_SAVE_DIALOG: `folder:${saveDir}` },
+  });
   page = launched.page;
   connection = (await waitForReady(page)).connection;
   sessionDir = path.join(launched.dataRoot, "sessions", DEV_SESSION_ID);
@@ -82,6 +104,7 @@ test.beforeAll(async () => {
 
 test.afterAll(async () => {
   if (launched !== undefined && !closed) await launched.close();
+  if (saveDir !== undefined) rmSync(path.dirname(saveDir), { recursive: true, force: true });
 });
 
 test("finalize again, approve on the engine's image, print: the engine seals the PDF", async () => {
@@ -139,6 +162,43 @@ test("finalize again, approve on the engine's image, print: the engine seals the
 
   // the sign-off view shows the sealed PDF, its fingerprint checked
   await expect(page.getByText("البصمة مطابقة").first()).toBeVisible({ timeout: 60_000 });
+
+  // D12: once the viewer verified the sealed bytes, the Save dialog opened by itself; the test
+  // switch answered it with the save folder, and main wrote the copy under the default name
+  const sha256 = (file: string) => createHash("sha256").update(readFileSync(file)).digest("hex");
+  const asText = (value: unknown) => (typeof value === "string" ? value : "");
+  const name = sessionReportFileName({
+    camelId: asText(sealed["camel_id"]),
+    sessionId: id,
+    createdAt: asText(sealed["created_at"]),
+    version: 2,
+  });
+  expect(name.endsWith("_v2.pdf")).toBe(true);
+  const copy = path.join(saveDir, name);
+  await expect.poll(() => existsSync(copy), { timeout: 60_000 }).toBe(true);
+  await expect(page.getByTestId("saved-copy")).toContainText(t("report.savedTo"));
+  expect(sha256(copy)).toBe(report["sha256"]);
+  expect(readdirSync(saveDir)).toEqual([name]); // the temp file was renamed over it
+
+  // History saves the same sealed report again from its row
+  await page.evaluate(() => {
+    location.hash = "#/history";
+  });
+  const historyRow = page.locator(`tr[data-session="${id}"]`);
+  const firstWritten = statSync(copy).mtimeMs;
+  await historyRow.getByRole("button", { name: t("report.saveAs") }).click();
+  const notice = page.getByTestId("history-save-copy");
+  await expect(notice).toContainText(t("report.savedTo"), { timeout: 60_000 });
+  // the notice names this report's copy at once (it was saved before): wait for the new copy to
+  // replace it, then for the save to end, and only then look at the folder
+  await expect
+    .poll(() => statSync(copy).mtimeMs, { timeout: 60_000 })
+    .toBeGreaterThan(firstWritten);
+  await expect(notice.getByRole("button", { name: t("report.saveAs") })).toBeEnabled({
+    timeout: 60_000,
+  });
+  expect(sha256(copy)).toBe(report["sha256"]);
+  expect(readdirSync(saveDir)).toEqual([name]);
   expect(launched.consoleErrors).toEqual([]);
 });
 

@@ -67,6 +67,8 @@ export class SessionEngine {
   /** the sealed report the view names (the fixture's v1 unless set) and the manifest file */
   report: SessionView["outputs"]["report"] | undefined = undefined;
   manifest: unknown = null;
+  /** the sealed PDF's bytes (`GET …/report`); null answers 404 */
+  reportPdf: Uint8Array<ArrayBuffer> | null = null;
   etagSalt = 0;
   readonly requests: SeenRequest[] = [];
   private gate: Promise<void> | null = null;
@@ -283,6 +285,12 @@ export class SessionEngine {
       this.manifest !== null
     ) {
       return json(200, this.manifest);
+    }
+    if (request.method === "GET" && url.pathname === `${base}/report` && this.reportPdf !== null) {
+      return new Response(this.reportPdf, {
+        status: 200,
+        headers: { "Content-Type": "application/pdf" },
+      });
     }
     if (request.method === "PATCH" && url.pathname === `${base}/report-inputs`) {
       const patch = body as Partial<SessionView["report_inputs"]>;

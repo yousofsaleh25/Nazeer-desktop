@@ -117,6 +117,27 @@ def test_text_probe_accepts_chromium_reordered_mixed_names():
     assert oks == {"Ahmed أحمد 12": True, "طول الجسم": True, "absent": False}
 
 
+def test_text_probes_never_match_a_name_across_a_page_boundary():
+    # review, Stage 6: page N ends with one half of a name, page N + 1 starts with the other
+    class Page:
+        def __init__(self, text: str) -> None:
+            self._text = text
+
+        def extract_text(self) -> str:
+            return self._text
+
+    class Reader:
+        pages = [Page("القياسات حجم"), Page("الرأس 1.20 m")]
+
+    assert not pf.text_probe(Reader(), ["حجمالرأس"])["ok"]
+    assert pf.text_probe(Reader(), ["حجم", "الرأس"])["ok"]
+    pieces = ["القياسات حجم", "الرأس 1.20 m"]
+    probe = pf.comparison_text_probe(pieces, ["حجمالرأس"], [["حجمالرأس"]], [(1, 2)])
+    assert not probe["ok"] and probe["n_missing"] == 1
+    assert not probe["members"][0]["ok"]
+    assert pf.comparison_text_probe(pieces, ["حجم", "الرأس"], [["الرأس"]], [(2, 2)])["ok"]
+
+
 # ----- real Chromium (headless Edge prints like Electron's printToPDF) ----------------------
 
 

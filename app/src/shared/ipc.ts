@@ -1,10 +1,11 @@
 /**
  * The window.nazeer bridge: channel names and payload types shared by main, the preloads and the
  * renderer. Grows stage by stage (Stage 1: engine connection + status; Stage 4: supervisor status,
- * dialogs, capture-folder scan, quit handshake, log folder; Stage 7: print). Main validates every
- * payload it receives (src/shared/ipcValidate.ts). The hidden print window's own channels are in
- * printChannels.ts: each sandboxed preload must stay one file, so the two preloads share no runtime
- * module (D9).
+ * dialogs, capture-folder scan, quit handshake, log folder; Stage 7: print; D12: "Save as" and the
+ * comparison's print). Main
+ * validates every payload it receives (src/shared/ipcValidate.ts). The hidden print window's own
+ * channels are in printChannels.ts: each sandboxed preload must stay one file, so the two preloads
+ * share no runtime module (D9).
  */
 
 export const IPC = {
@@ -22,6 +23,10 @@ export const IPC = {
   licenseGetStatus: "nazeer:license:get-status",
   licenseActivate: "nazeer:license:activate",
   printExportPdf: "nazeer:print:export-pdf",
+  printExportComparison: "nazeer:print:export-comparison",
+  reportSaveAs: "nazeer:report:save-as",
+  reportSavedCopy: "nazeer:report:saved-copy",
+  reportOpenSaved: "nazeer:report:open-saved",
 } as const;
 
 /** Licence keys (D11): what a verified (or, when expired, decoded) key says. */
@@ -153,20 +158,50 @@ export interface ExportRequest {
 /** The report model the print page lays out: 1.1 carries every text the page prints. */
 export const PRINT_REPORT_MODEL_VERSION = "1.1";
 
-/** What main hands the hidden print page (ADR-D7): everything it typesets, as data. */
-export interface PrintJob {
+/** The comparison model the print page lays out (D12 F2.6: texts only). */
+export const PRINT_COMPARISON_MODEL_VERSION = "1.0";
+
+/** The face and the logo every print page gets from main. */
+interface PrintAssets {
+  /** the engine's pinned IBM Plex Sans Arabic Regular (the face the overlay was drawn with) */
+  font: { sha256: string; bytes: Uint8Array<ArrayBuffer> };
+  /** the engine's logo, when it has one */
+  logo: Uint8Array<ArrayBuffer> | null;
+}
+
+/** What main hands the hidden print page for one session's report (ADR-D7), as data. */
+export interface ReportPrintJob extends PrintAssets {
+  kind: "report";
   /** the report model exactly as the engine wrote it (the page checks its shape) */
   model: unknown;
   reportModel: { version: number; sha256: string };
   /** the approved overlay: the bytes the operator approved, re-hashed in main */
   overlay: { version: number; sha256: string; bytes: Uint8Array<ArrayBuffer> };
-  /** the engine's pinned IBM Plex Sans Arabic Regular (the face the overlay was drawn with) */
-  font: { sha256: string; bytes: Uint8Array<ArrayBuffer> };
-  /** the engine's logo, when it has one */
-  logo: Uint8Array<ArrayBuffer> | null;
   /** SessionView.required_report_texts: the strings the engine's text probe looks for */
   requiredTexts: string[];
 }
+
+/** One camel's approved overlay for the comparison's page: fetched and re-hashed by main. */
+export interface ComparisonPrintOverlay {
+  sessionId: string;
+  version: number;
+  sha256: string;
+  bytes: Uint8Array<ArrayBuffer>;
+}
+
+/** What main hands the hidden print page for a comparison (D12 F2.11), as data. */
+export interface ComparisonPrintJob extends PrintAssets {
+  kind: "comparison";
+  /** the comparison model exactly as the engine wrote it (the page checks its shape) */
+  model: unknown;
+  comparisonModel: { version: number; sha256: string };
+  /** one per camel, in the operator's order */
+  overlays: ComparisonPrintOverlay[];
+  /** ComparisonView.required_report_texts */
+  requiredTexts: string[];
+}
+
+export type PrintJob = ReportPrintJob | ComparisonPrintJob;
 
 export interface PreflightProblem {
   code: string;
@@ -192,6 +227,16 @@ export interface ExportError {
   details: Record<string, unknown>;
 }
 
+/** An export that did not seal: why, and what the page or the engine found. */
+export interface ExportFailure {
+  ok: false;
+  error: ExportError;
+  /** the engine's probe when it refused the PDF (DRIFT), else null */
+  probe: unknown;
+  preflight: PrintPreflight | null;
+  timingsMs: Record<string, number>;
+}
+
 /** What `print.exportPdf` resolves to; an expected failure resolves too, with `ok: false`. */
 export type ExportResult =
   | {
@@ -203,14 +248,91 @@ export type ExportResult =
       pdfBytes: number;
       timingsMs: Record<string, number>;
     }
+  | ExportFailure;
+
+/** At most this many approvals in one comparison export (the engine allows fewer camels). */
+export const MAX_COMPARISON_APPROVALS = 100;
+
+/**
+ * What the renderer sends to print and seal a comparison (`print.exportComparison`, D12): the
+ * comparison model version it shows, and the images the operator approved in the app (a camel whose
+ * image is sealed in a report needs none). No bytes: main fetches each camel's overlay from the
+ * engine and checks its SHA-256 against the approval or the seal (the `--export` precedent).
+ */
+export interface ComparisonExportRequest {
+  comparisonId: string;
+  model: { version: number; sha256: string };
+  approvals: { sessionId: string; overlayVersion: number; sha256: string }[];
+}
+
+/** What `print.exportComparison` resolves to. */
+export type ComparisonExportResult =
   | {
-      ok: false;
-      error: ExportError;
-      /** the engine's probe when it refused the PDF (DRIFT), else null */
+      ok: true;
+      /** the engine's answer to the upload: the comparison view and the probe (verdict PASS) */
+      comparison: unknown;
       probe: unknown;
-      preflight: PrintPreflight | null;
+      preflight: PrintPreflight;
+      pdfBytes: number;
       timingsMs: Record<string, number>;
-    };
+    }
+  | ExportFailure;
+
+/**
+ * "Save as" for a sealed PDF (D12 F1). Main reads what is sealed from the engine, fetches the
+ * bytes, asks where to save them, writes the copy and checks it; the renderer names the report
+ * and suggests a file name, never a path and never bytes: a session's report or a comparison's.
+ */
+export type ReportKind = "session" | "comparison";
+
+export interface SaveAsRequest {
+  kind: ReportKind;
+  id: string;
+  /** the sealed report version the screen shows (a newer one on the engine is refused) */
+  version: number;
+  /** a file name only (main drops any folder part and sanitises it again) */
+  suggestedName: string;
+}
+
+/** Which saved copy (the record main keeps in app-settings.json). */
+export interface SavedCopyQuery {
+  kind: ReportKind;
+  id: string;
+  version: number;
+}
+
+export interface OpenSavedRequest extends SavedCopyQuery {
+  action: "open" | "show";
+}
+
+/** The copy main wrote last for that report version, and whether it is still as written. */
+export interface SavedCopy {
+  path: string;
+  /** ISO 8601 */
+  savedAt: string;
+  sha256: string;
+  bytes: number;
+  /** the file is still there */
+  exists: boolean;
+  /** its size or modification time moved since it was written */
+  changed: boolean;
+}
+
+export type SaveAsResult =
+  | {
+      state: "saved";
+      path: string;
+      version: number;
+      bytes: number;
+      sha256: string;
+      savedAt: string;
+      /** false when the copy was written and verified but its record could not be stored */
+      recorded: boolean;
+    }
+  | { state: "cancelled" }
+  | { state: "failed"; error: ExportError };
+
+export type OpenSavedResult = { ok: true } | { ok: false; error: ExportError };
 
 /** The hidden print window's bridge (`window.nazeerPrint`, preload/print.ts). */
 export interface NazeerPrintApi {
@@ -255,5 +377,16 @@ export interface NazeerApi {
     /** Print the report with the approved overlay in a hidden window and have the engine seal
      * it (main, ADR-D7). One export at a time. */
     exportPdf(request: ExportRequest): Promise<ExportResult>;
+    /** Print a comparison with each camel's approved image and have the engine seal it (D12).
+     * Shares the one-at-a-time rule with `exportPdf`. */
+    exportComparison(request: ComparisonExportRequest): Promise<ComparisonExportResult>;
+  };
+  report: {
+    /** Save a copy of a sealed PDF where the operator chooses (main's Save dialog, D12). */
+    saveAs(request: SaveAsRequest): Promise<SaveAsResult>;
+    /** The copy saved last for that report version; null when none is recorded. */
+    savedCopy(query: SavedCopyQuery): Promise<SavedCopy | null>;
+    /** Open the recorded copy, or show it in its folder (never a path from the page). */
+    openSaved(request: OpenSavedRequest): Promise<OpenSavedResult>;
   };
 }

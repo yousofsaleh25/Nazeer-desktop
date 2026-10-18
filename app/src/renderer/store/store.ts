@@ -2,9 +2,10 @@
  * The Redux store: `ui` (preferences), `engine` (the supervisor's status), `license` (main's
  * licence gate), `bag` (the bag opened), `candidates` (the frame-proposal job and its set),
  * `session` (the open session: draft, autosave, hover and preview), `report` (the overlay check and
- * approval), `history` (History's query) and the RTK Query cache (`engineApi`). The listener
- * middleware runs autosave, the hover and preview channels, finalize and the candidate job
- * (store/listeners); each store gets its own (tests build many).
+ * approval), `history` (History's query), `comparisons` (the camels picked for a comparison, the
+ * Compare dialog, the approvals given there, the Comparisons tab's query; D12), `savedFiles` (the copies "Save as" wrote, D12) and the RTK
+ * Query cache (`engineApi`). The listener middleware runs autosave, the hover and preview channels,
+ * finalize and the candidate job (store/listeners); each store gets its own (tests build many).
  */
 import { combineReducers, configureStore, createListenerMiddleware } from "@reduxjs/toolkit";
 import { engineApi } from "@/api/engineApi";
@@ -12,14 +13,17 @@ import type { AppStartListening } from "./listener";
 import { startAutosave } from "./listeners/autosave";
 import { startCandidateJobs } from "./listeners/candidates";
 import { startFinalize } from "./listeners/finalize";
+import { startIndexRefresh } from "./listeners/indexRefresh";
 import { startProbes } from "./listeners/probes";
 import { loadUiPrefs, saveUiPrefs } from "./prefs";
 import { bagReducer } from "./slices/bag";
 import { candidatesReducer } from "./slices/candidates";
+import { comparisonsReducer } from "./slices/comparisons";
 import { engineReducer } from "./slices/engine";
 import { historyReducer } from "./slices/history";
 import { licenseReducer } from "./slices/license";
 import { reportReducer } from "./slices/report";
+import { savedFilesReducer } from "./slices/savedFiles";
 import { sessionReducer } from "./slices/session";
 import { uiReducer } from "./slices/ui";
 
@@ -32,6 +36,8 @@ const rootReducer = combineReducers({
   session: sessionReducer,
   report: reportReducer,
   history: historyReducer,
+  comparisons: comparisonsReducer,
+  savedFiles: savedFilesReducer,
   [engineApi.reducerPath]: engineApi.reducer,
 });
 
@@ -50,6 +56,7 @@ export function makeStore(preloadedState?: Partial<RootState>) {
   startProbes(startListening);
   startFinalize(startListening);
   startCandidateJobs(startListening);
+  startIndexRefresh(startListening);
   return store;
 }
 

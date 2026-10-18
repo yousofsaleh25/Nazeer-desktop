@@ -5,13 +5,20 @@
  * window, no single-instance lock, a throwaway Chromium profile and its own engine.
  */
 import { mkdtempSync, readFileSync } from "node:fs";
-import { writeFile } from "node:fs/promises";
+import { stat, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
-import { app, session, type BrowserWindow } from "electron";
-import { IPC } from "@shared/ipc";
+import { app, session, shell, type BrowserWindow } from "electron";
+import { IPC, type ComparisonExportRequest, type ExportRequest } from "@shared/ipc";
 import { APP_ORIGIN } from "./appPath";
-import { confirmQuitDialog, rendererLostDialog } from "./dialogs";
+import {
+  confirmQuitDialog,
+  confirmReplaceDialog,
+  dataRootDialog,
+  rendererLostDialog,
+  saveCopyDialog,
+  writeFailedDialog,
+} from "./dialogs";
 import { engineAssetsDir } from "./engine/command";
 import { chooseDataRoot } from "./engine/dataRoot";
 import { RotatingLog } from "./engine/logs";
@@ -28,9 +35,13 @@ import {
   removeStaleExportFolders,
   runHeadlessExport,
 } from "./print/cli";
+import { exportComparison } from "./print/exportComparison";
 import { exportPdf, oneAtATime, type ExportDeps } from "./print/exportPdf";
 import { printInHiddenWindow, registerPrintIpc } from "./print/printWindow";
 import { handleAppProtocol, registerAppScheme } from "./protocol";
+import { NODE_SAVE_AS_FS } from "./report/atomicWrite";
+import { openSavedCopy, savedCopyStatus, type SavedCopyDeps } from "./report/savedCopies";
+import { oneSaveAtATime, saveReportAs, testSaveDialogs, type SaveAsDialogs } from "./report/saveAs";
 import { QuitCoordinator, RendererQuitBridge } from "./quit";
 import { DEV_USER_DATA_NAME, devSwitch, isProduction, licenseRequired } from "./runtime";
 import {
@@ -109,8 +120,8 @@ function exportDeps(connection: ExportDeps["connection"], log: (line: string) =>
     connection,
     fetch: globalThis.fetch,
     readAsset: (name) => readEngineAsset(assetsDir, name),
-    print: (job, timeoutMs) =>
-      printInHiddenWindow(job, timeoutMs, {
+    print: (job, timeouts) =>
+      printInHiddenWindow(job, timeouts, {
         ctx,
         pageUrl: rendererUrl("print/print.html"),
         rendererRoot: join(__dirname, "../renderer"),
@@ -260,12 +271,64 @@ if (exportArgs !== null) {
     quit: () => app.quit(),
     log: logLine,
   });
-  const exportReport = oneAtATime((request) =>
-    exportPdf(
-      request,
-      exportDeps(() => supervisor.getConnection(), logLine),
-    ),
+  // one print at a time, a report's or a comparison's (D12)
+  const exportGate = { busy: false };
+  const exportReport = oneAtATime(
+    (request: ExportRequest) =>
+      exportPdf(
+        request,
+        exportDeps(() => supervisor.getConnection(), logLine),
+      ),
+    exportGate,
   );
+  const exportComparisonReport = oneAtATime(
+    (request: ComparisonExportRequest) =>
+      exportComparison(
+        request,
+        exportDeps(() => supervisor.getConnection(), logLine),
+      ),
+    exportGate,
+  );
+
+  // "Save as" for a sealed PDF (D12): the operator window's Save dialog, or in development the
+  // test switch NAZEER_E2E_SAVE_DIALOG (cancel | file:<path> | folder:<folder>; ignored in
+  // production builds); everything after the dialog runs the same either way
+  const saveSwitch = devEnv("NAZEER_E2E_SAVE_DIALOG");
+  if (saveSwitch !== undefined)
+    logLine(`save-as: the test switch answers the Save dialog (${saveSwitch})`);
+  const saveDialogs: SaveAsDialogs =
+    saveSwitch !== undefined
+      ? testSaveDialogs(saveSwitch, logLine)
+      : {
+          choosePath: (defaultPath) => saveCopyDialog(liveWindow(), defaultPath),
+          confirmReplace: (file) => confirmReplaceDialog(liveWindow(), file),
+          insideDataRoot: (file) => dataRootDialog(liveWindow(), file),
+          writeFailed: (problem, file, detail) =>
+            writeFailedDialog(liveWindow(), problem, file, detail),
+        };
+  const saveAs = oneSaveAtATime((request) =>
+    saveReportAs(request, {
+      connection: () => supervisor.getConnection(),
+      fetch: globalThis.fetch,
+      dataRoot: dataRoot.path,
+      documentsDir: app.getPath("documents"),
+      lastSaveFolder: () => settings.get().lastSaveFolder,
+      record: (copy) => settings.recordSavedCopy(copy),
+      dialogs: saveDialogs,
+      fs: NODE_SAVE_AS_FS,
+      log: logLine,
+    }),
+  );
+  const savedCopyDeps: SavedCopyDeps = {
+    record: (query) => settings.savedCopy(query.kind, query.id, query.version),
+    stat: async (file) => {
+      const info = await stat(file);
+      return { size: info.size, mtimeMs: info.mtimeMs };
+    },
+    openPath: (file) => shell.openPath(file),
+    showItemInFolder: (file) => shell.showItemInFolder(file),
+    log: logLine,
+  };
 
   app.on("second-instance", () => {
     const win = liveWindow();
@@ -293,6 +356,12 @@ if (exportArgs !== null) {
       license,
       onLicenseActivated: startEngineIfLicensed,
       exportPdf: exportReport,
+      exportComparison: exportComparisonReport,
+      report: {
+        saveAs,
+        savedCopy: (query) => savedCopyStatus(query, savedCopyDeps),
+        openSaved: (request) => openSavedCopy(request, savedCopyDeps),
+      },
     });
     startEngineIfLicensed();
     const win = createMainWindow(rendererUrl("renderer/index.html"), {

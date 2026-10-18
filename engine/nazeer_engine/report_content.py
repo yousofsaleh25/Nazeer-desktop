@@ -203,6 +203,94 @@ PROVENANCE_ROWS: dict[str, Label] = {
 }
 
 
+# --- D12 comparison report (the print page lays these out; the engine composes every text) ---
+COMPARISON_TITLE: Label = {"ar": "مقارنة قياسات الإبل", "en": "Camel Measurement Comparison"}
+COMPARISON_DISCLAIMERS: list[Label] = [
+    DISCLAIMER,
+    {
+        "ar": (
+            "تظهر الإبل بالترتيب الذي اختاره المشغّل، وتُعرض القيم جنبًا إلى جنب دون ترتيب أو مفاضلة."
+        ),
+        "en": (
+            "The camels appear in the order the operator chose; the values are shown side by "
+            "side, not ranked."
+        ),
+    },
+    {
+        "ar": (
+            "يُطابَق القياس بين الإبل بالاسم كما كُتب وبنوع القياس، "
+            "ولا يُجمع قياس ثنائي الأبعاد مع ثلاثي الأبعاد."
+        ),
+        "en": (
+            "Measurements are matched across camels by their name as written and by their kind; "
+            "a 2D measurement never shares a row with a 3D one."
+        ),
+    },
+]
+COMPARISON_HEADINGS: dict[str, Label] = {
+    "cover": {"ar": "بيانات المقارنة", "en": "Comparison details"},
+    "members": {"ar": "الإبل في هذه المقارنة", "en": "Camels in this comparison"},
+    "table": {"ar": "جدول المقارنة", "en": "Comparison table"},
+    "member": {"ar": "الجمل", "en": "Camel"},
+    "measurements": HEADINGS["measurements"],
+    "camel_view": HEADINGS["camel_view"],
+    "depth": HEADINGS["depth"],
+    "member_provenance": {"ar": "مصدر بيانات هذا الجمل", "en": "This camel's sources"},
+    "signatures": HEADINGS["signatures"],
+    "provenance": HEADINGS["provenance"],
+}
+COMPARISON_COLUMNS: dict[str, Label] = {
+    "position": {"ar": "#", "en": "#"},
+    "camel_id": SESSION_ROWS["camel_id"],
+    "session_id": SESSION_ROWS["session_id"],
+    "source_frame": SESSION_ROWS["source_frame"],
+    "status": {"ar": "الحالة", "en": "Status"},
+    "measurement": COLUMNS["measurement"],
+    "kind": COLUMNS["kind"],
+    "value": COLUMNS["value"],
+    "uncertainty": COLUMNS["uncertainty"],
+    "depth_basis": COLUMNS["depth_basis"],
+    "flags": COLUMNS["flags"],
+}
+COMPARISON_COVER_ROWS: dict[str, Label] = {
+    "title": {"ar": "العنوان", "en": "Title"},
+    "event": SESSION_ROWS["event"],
+    "judge": {"ar": "الحكم", "en": "Judge"},
+    "council": {"ar": "مجلس الحكام", "en": "Council of Judges"},
+    "created": {"ar": "تاريخ الإنشاء", "en": "Created"},
+    "n_camels": {"ar": "عدد الإبل", "en": "Camels"},
+    "comparison_id": {"ar": "معرّف المقارنة", "en": "Comparison ID"},
+}
+COMPARISON_PROVENANCE_ROWS: dict[str, Label] = {
+    "engine": PROVENANCE_ROWS["engine"],
+    "comparison_model": {"ar": "بيانات المقارنة", "en": "Comparison model"},
+    "overlay": PROVENANCE_ROWS["overlay"],
+    "report_model": PROVENANCE_ROWS["report_model"],
+    "session": PROVENANCE_ROWS["session"],
+    "libraries": PROVENANCE_ROWS["libraries"],
+}
+COMPARISON_MISSING = "—"  # a camel without that measurement (never a blank, never 0)
+UNNAMED: Label = {"ar": "قياس بلا اسم", "en": "Unnamed measurement"}
+
+
+def comparison_static() -> dict[str, Any]:
+    """The comparison page's labels (D12 F2.3); the per-camel values live in the model."""
+    return {
+        "brand": BRAND,
+        "title": COMPARISON_TITLE,
+        "certification": CERTIFICATION,
+        "disclaimers": COMPARISON_DISCLAIMERS,
+        "headings": COMPARISON_HEADINGS,
+        "columns": COMPARISON_COLUMNS,
+        "cover_rows": COMPARISON_COVER_ROWS,
+        "frame_rows": {key: FRAME_ROWS[key] for key in ("z_ref", "ground")},
+        "provenance_rows": COMPARISON_PROVENANCE_ROWS,
+        "signature_fields": SIGNATURE_FIELDS,
+        "rejected": REJECTED,
+        "missing": {"ar": COMPARISON_MISSING, "en": COMPARISON_MISSING},
+    }
+
+
 def rubric_rows(variant: str) -> list[dict[str, Any]]:
     table = RUBRIC_MAGHATEER if variant == "maghateer" else RUBRIC_MJAHEEM
     return [{"num": i, "ar": ar, "en": en, "weight": w} for i, (ar, en, w) in enumerate(table, 1)]

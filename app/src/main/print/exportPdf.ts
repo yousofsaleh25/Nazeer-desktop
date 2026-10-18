@@ -19,6 +19,7 @@ import {
   PRINT_REPORT_MODEL_VERSION,
   type EngineConnection,
   type ExportError,
+  type ExportFailure,
   type ExportRequest,
   type ExportResult,
   type PrintJob,
@@ -28,7 +29,16 @@ import cmap from "../../print/plex-cmap.json";
 
 export const ENGINE_CALL_TIMEOUT_MS = 30_000;
 export const UPLOAD_TIMEOUT_MS = 180_000;
+/** The page's layout and checks, then printToPDF: each phase has its own limit (D12). */
+export interface PrintTimeouts {
+  layoutMs: number;
+  printMs: number;
+}
 export const PRINT_TIMEOUT_MS = 90_000;
+export const REPORT_PRINT_TIMEOUTS: PrintTimeouts = {
+  layoutMs: PRINT_TIMEOUT_MS,
+  printMs: PRINT_TIMEOUT_MS,
+};
 
 /** What the print window returns: the page's checks, and the PDF when they passed. */
 export interface PrintOutcome {
@@ -42,7 +52,7 @@ export interface ExportDeps {
   /** the engine's asset files (null when absent) */
   readAsset(name: "font" | "logo"): Promise<Uint8Array | null>;
   /** lay the page out in a hidden window, check it and print it */
-  print(job: PrintJob, timeoutMs: number): Promise<PrintOutcome>;
+  print(job: PrintJob, timeouts: PrintTimeouts): Promise<PrintOutcome>;
   appInfo: { appVersion: string; electron: string; chromium: string };
   now?: () => number;
   log?: (line: string) => void;
@@ -52,7 +62,7 @@ export function sha256Hex(bytes: Uint8Array): string {
   return createHash("sha256").update(bytes).digest("hex");
 }
 
-function appError(
+export function appError(
   code: string,
   message: string,
   details: Record<string, unknown> = {},
@@ -60,7 +70,7 @@ function appError(
   return { status: null, code, message, details };
 }
 
-function isRecord(value: unknown): value is Record<string, unknown> {
+export function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
@@ -78,7 +88,8 @@ export function engineError(status: number, body: unknown): ExportError {
   return { status, code: "http_error", message: `HTTP ${status}`, details: {} };
 }
 
-type Fetched = { ok: true; status: number; bytes: Uint8Array } | { ok: false; error: ExportError };
+export type Fetched =
+  { ok: true; status: number; bytes: Uint8Array } | { ok: false; error: ExportError };
 
 /**
  * An engine path (or a URL an engine answer named) on the engine's own origin; null for anything
@@ -93,8 +104,9 @@ export function engineCallUrl(path: string, conn: Pick<EngineConnection, "baseUr
   }
 }
 
-async function call(
-  deps: ExportDeps,
+/** One engine call with the token, a timeout and the error envelope (also used by "Save as"). */
+export async function call(
+  deps: Pick<ExportDeps, "fetch">,
   conn: EngineConnection,
   path: string,
   init: RequestInit & { timeoutMs?: number } = {},
@@ -156,7 +168,7 @@ async function readAsset(
   }
 }
 
-function json(bytes: Uint8Array): unknown {
+export function json(bytes: Uint8Array): unknown {
   try {
     return JSON.parse(new TextDecoder().decode(bytes));
   } catch {
@@ -247,13 +259,19 @@ export function checkSession(
 /** The pinned face the page's cmap was built from (src/print/plex-cmap.json). */
 export const PRINT_FONT_SHA256: string = cmap.sha256;
 
-/** One export at a time: a second request while one runs is refused (`export_busy`). */
-export function oneAtATime(
-  run: (request: ExportRequest) => Promise<ExportResult>,
-): (request: ExportRequest) => Promise<ExportResult> {
-  let busy = false;
+/** Shared by every export that must not overlap: a report's and a comparison's (D12). */
+export interface ExportGate {
+  busy: boolean;
+}
+
+/** One export at a time: a second request while one runs is refused (`export_busy`). Pass the
+ * same gate to the report's and the comparison's export so neither overlaps the other. */
+export function oneAtATime<Q, R>(
+  run: (request: Q) => Promise<R>,
+  gate: ExportGate = { busy: false },
+): (request: Q) => Promise<R | ExportFailure> {
   return async (request) => {
-    if (busy) {
+    if (gate.busy) {
       return {
         ok: false,
         error: appError("export_busy", "another report is being printed"),
@@ -262,13 +280,72 @@ export function oneAtATime(
         timingsMs: {},
       };
     }
-    busy = true;
+    gate.busy = true;
     try {
       return await run(request);
     } finally {
-      busy = false;
+      gate.busy = false;
     }
   };
+}
+
+/** The face (the engine's pinned TTF, checked against the page's cmap) and the logo. */
+export async function printAssets(
+  deps: ExportDeps,
+  label: string,
+): Promise<
+  { font: { sha256: string; bytes: Uint8Array }; logo: Uint8Array | null } | { error: ExportError }
+> {
+  const font = await readAsset(deps, "font");
+  if (font === null) {
+    return {
+      error: appError("print_font_missing", "the engine's IBM Plex Sans Arabic file is missing"),
+    };
+  }
+  if ("error" in font) {
+    return {
+      error: appError(
+        "print_font_unreadable",
+        `the engine's IBM Plex Sans Arabic file cannot be read: ${font.error}`,
+      ),
+    };
+  }
+  const fontSha = sha256Hex(font);
+  if (fontSha !== PRINT_FONT_SHA256) {
+    return {
+      error: appError(
+        "print_font_mismatch",
+        "the engine's face is not the one the print page was built for",
+        { expected: PRINT_FONT_SHA256, found: fontSha },
+      ),
+    };
+  }
+  // the logo is decoration: an unreadable one is logged and the page prints without it
+  const logoRead = await readAsset(deps, "logo");
+  if (logoRead !== null && "error" in logoRead) {
+    deps.log?.(`${label}: the logo cannot be read (${logoRead.error})`);
+    return { font: { sha256: fontSha, bytes: font }, logo: null };
+  }
+  return { font: { sha256: fontSha, bytes: font }, logo: logoRead };
+}
+
+/** The print window's outcome, or the failure it threw (its code when it carries one). */
+export async function runPrint(
+  deps: ExportDeps,
+  job: PrintJob,
+  timeouts: PrintTimeouts,
+): Promise<PrintOutcome | { error: ExportError }> {
+  try {
+    return await deps.print(job, timeouts);
+  } catch (error) {
+    const err = error as { code?: unknown; message?: unknown };
+    return {
+      error: appError(
+        typeof err.code === "string" ? err.code : "print_failed",
+        typeof err.message === "string" ? err.message : String(error),
+      ),
+    };
+  }
 }
 
 export async function exportPdf(request: ExportRequest, deps: ExportDeps): Promise<ExportResult> {
@@ -347,42 +424,12 @@ export async function exportPdf(request: ExportRequest, deps: ExportDeps): Promi
   lap("fetch");
 
   // 4. the face (the engine's pinned TTF) and the logo
-  const font = await readAsset(deps, "font");
-  if (font === null) {
-    return fail(
-      appError("print_font_missing", "the engine's IBM Plex Sans Arabic file is missing"),
-    );
-  }
-  if ("error" in font) {
-    return fail(
-      appError(
-        "print_font_unreadable",
-        `the engine's IBM Plex Sans Arabic file cannot be read: ${font.error}`,
-      ),
-    );
-  }
-  const fontSha = sha256Hex(font);
-  if (fontSha !== PRINT_FONT_SHA256) {
-    return fail(
-      appError(
-        "print_font_mismatch",
-        "the engine's face is not the one the print page was built for",
-        {
-          expected: PRINT_FONT_SHA256,
-          found: fontSha,
-        },
-      ),
-    );
-  }
-  // the logo is decoration: an unreadable one is logged and the page prints without it
-  const logoRead = await readAsset(deps, "logo");
-  const logo = logoRead !== null && "error" in logoRead ? null : logoRead;
-  if (logoRead !== null && "error" in logoRead) {
-    deps.log?.(`export ${request.sessionId}: the logo cannot be read (${logoRead.error})`);
-  }
+  const assets = await printAssets(deps, `export ${request.sessionId}`);
+  if ("error" in assets) return fail(assets.error);
 
   // 5. lay out, check, print
   const job: PrintJob = {
+    kind: "report",
     model,
     reportModel: { version: facts.reportModel.version, sha256: facts.reportModel.sha256 },
     overlay: {
@@ -390,22 +437,12 @@ export async function exportPdf(request: ExportRequest, deps: ExportDeps): Promi
       sha256: facts.overlay.sha256,
       bytes: new Uint8Array(request.overlay.bytes),
     },
-    font: { sha256: fontSha, bytes: new Uint8Array(font) },
-    logo: logo === null ? null : new Uint8Array(logo),
+    font: { sha256: assets.font.sha256, bytes: new Uint8Array(assets.font.bytes) },
+    logo: assets.logo === null ? null : new Uint8Array(assets.logo),
     requiredTexts: facts.requiredTexts,
   };
-  let printed: PrintOutcome;
-  try {
-    printed = await deps.print(job, PRINT_TIMEOUT_MS);
-  } catch (error) {
-    const err = error as { code?: unknown; message?: unknown };
-    return fail(
-      appError(
-        typeof err.code === "string" ? err.code : "print_failed",
-        typeof err.message === "string" ? err.message : String(error),
-      ),
-    );
-  }
+  const printed = await runPrint(deps, job, REPORT_PRINT_TIMEOUTS);
+  if ("error" in printed) return fail(printed.error);
   lap("print");
   const { preflight, pdf } = printed;
   if (!preflight.ok || pdf === null) {

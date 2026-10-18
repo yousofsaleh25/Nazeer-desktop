@@ -38,6 +38,11 @@ operator decides the items left open there. **The operator decided them for rele
 | 8 (tests, end-to-end proof) | 1 added | errors 1: `stub_mask_needs_stub_model` «القناع التجريبي يتطلب النموذج التجريبي», the engine's refusal of its development-only `--stub-mask` switch without the stub model (never seen in production) | `ar.json` holds 661 strings |
 | Release 1.0.0 (the operator's decisions, 2026-10-14) | 14 changed | decision 1 (b): 3 log strings; decision 2 (b): 11 report-model strings ("Release 1.0.0" below) | `main/dialogs.ts`: 1 changed (`rendererLostDetail`); `build/installer.nsh`: 33 of NSIS's Arabic strings replaced; the engine's printed wording: 5 values; `ar.json` still holds 667 strings |
 | 9 (wrap-up: the batch pass, then the review's fixes) | 6 added, 11 changed | changed: the corrections listed in "Stage 9 batch pass" below; added afterwards by the review's fixes (D9 "Review and wrap-up"), so not part of the pass: job 2 (`busyElsewhere` «يبحث المحرك الآن في تسجيل آخر، ولا يعمل إلا بحث واحد في كل مرة:», `cancelOther` «إلغاء ذلك البحث»), report 1 (`saveBeforePrint` «احفظ تفاصيل التقرير قبل الطباعة»), license 1 (`continue` «متابعة»), appErrors 2 (`screen_failed` «تعذّر عرض هذه الشاشة», `print_font_unreadable` «تعذّرت قراءة ملف خط التقرير في المحرك») | `main/dialogs.ts`: 3 changed by the pass; 4 added by the fixes (the window that keeps failing: «توقفت نافذة التطبيق ولم تُستعد.», «كل ما حُفظ باقٍ لدى المحرك، وتضيع التعديلات التي لم تُحفظ بعد. التفاصيل في مجلد السجلات:», «إعادة المحاولة», «إنهاء»); `ar.json` holds 667 strings |
+| D12 Stage 1 ("Save as", 2026-10-17) | 20 added | report 11 (the operator's wording, "D12: Save as" below), appErrors 9 (`save_as_*`, main's own codes) | `main/dialogs.ts`: 14 strings (the Save dialog's title and file type, the Replace question, the data-folder refusal, the three write failures and their buttons); `ar.json` holds 687 strings |
+| D12 Stage 2 (the comparison engine, 2026-10-17) | 11 added | errors 11: the engine's new `comparison_*` codes ("D12: the comparison engine" below) | the engine's labels (`labels.py`): 3 groups, 16 strings; the comparison page's wording (`report_content.py`, `comparison_model.py`): 23 strings, 4 of them reused from the single report; `ar.json` holds 698 strings |
+| D12 Stage 3 (the comparison seal, 2026-10-17) | 4 added | errors 4: `comparison_stale`, `comparison_model_mismatch`, `comparison_model_sha_required`, `overlay_out_of_place` ("D12: the comparison seal" below) | no engine wording; `ar.json` holds 702 strings |
+| D12 Stage 4 (History selection, the Compare dialog, the Comparisons tab, 2026-10-17) | 69 added | compare 23, comparisons 20 (incl. 4 orders), comparison 17, history 9 ("D12: the comparison screens" below) | no engine wording; `ar.json` holds 771 strings; **one word for the operator: «ترتيب»** (below) |
+| D12 Stage 5 (the comparison's print, 2026-10-17) | 19 added | comparison 11, probe 2, appErrors 6 ("D12: the comparison's print" below) | no engine wording; `ar.json` holds 790 strings; «ترتيب» avoided in the new strings (still open, Stage 4) |
 
 The `design` keys label the development-only gallery (`#/design`), which is not in the production
 bundle; review them last.
@@ -207,3 +212,290 @@ Browse button included; electron-builder's four Arabic messages already said «�
 Left for a reviewer, not changed: NSIS's «عرض...» for Browse (Windows says «استعراض»), electron-builder's
 Arabic messages (one reads «لقد فشل إلغاء التثبيت ملفات التطبيق»), and «أيّ تثبيت تريد إزالته؟» on the
 uninstaller's install-mode page, where «إزالة» names removing one of two installs.
+
+## D12: "Save as" (2026-10-17)
+
+«حفظ» already meant saving to the engine (autosave, the report details), and «نسخة» already names a
+version (the conflict dialog), the backup and the development build. The operator chose the
+wording for saving a copy of a sealed PDF (D12, Q3): «نسخة» says it is a copy, the sealed original
+staying in the app.
+
+### The operator's decision (`ar.json`, `report.*`)
+
+| Key | Arabic | English |
+|---|---|---|
+| `report.saveAs` | حفظ نسخة PDF باسم… | Save PDF as… |
+| `report.notSavedToFile` | لم تُحفظ نسخة منه في ملف بعد | Not saved to a file yet |
+| `report.savedTo` | حُفظت نسخة في: | Saved to: |
+| `report.openFile` | فتح الملف | Open file |
+| `report.showInFolder` | إظهار في المجلد | Show in folder |
+
+### Added with them, to review in the next batch
+
+| Key | Arabic | English |
+|---|---|---|
+| `report.savingCopy` | جارٍ حفظ النسخة… | Saving the copy… |
+| `report.copyMissing`, `appErrors.save_as_copy_missing` | لم تعد النسخة المحفوظة في مكانها | The saved copy is no longer there |
+| `report.copyChanged` | تغيّرت النسخة المحفوظة بعد حفظها | The saved copy changed after it was saved |
+| `report.copyNotRecorded` | حُفظت النسخة، لكن تعذّر تذكّر مكانها | The copy was saved, but its place could not be remembered |
+| `report.saveCopyFailed` | تعذّر حفظ نسخة PDF | The PDF copy could not be saved |
+| `report.openCopyFailed` | تعذّر فتح النسخة المحفوظة | The saved copy could not be opened |
+| `appErrors.save_as_busy` | نافذة حفظ نسخة أخرى مفتوحة | Another Save dialog is open |
+| `appErrors.save_as_no_report` | لا يوجد تقرير مختوم لهذه الجلسة | This session has no sealed report |
+| `appErrors.save_as_report_changed` | تغيّر التقرير المختوم: اعرضه من جديد ثم احفظ نسخة منه | The sealed report changed: show it again, then save a copy |
+| `appErrors.save_as_report_mismatch` | التقرير المختوم لا يطابق بصمته لدى المحرك | The sealed report does not match the engine's fingerprint |
+| `appErrors.save_as_write_failed` | تعذّرت كتابة النسخة | The copy could not be written |
+| `appErrors.save_as_copy_mismatch` | النسخة المكتوبة لا تطابق التقرير المختوم، فحُذفت | The written copy did not match the sealed report and was removed |
+| `appErrors.save_as_no_copy` | لا توجد نسخة محفوظة مسجّلة لهذا التقرير | No saved copy of this report is recorded |
+| `appErrors.save_as_open_failed` | تعذّر فتح النسخة | The copy could not be opened |
+
+### Main's dialogs (`main/dialogs.ts`, Arabic line first)
+
+| String | Arabic |
+|---|---|
+| `saveCopyTitle` (the Save dialog's title) | حفظ نسخة PDF باسم |
+| `pdfFilter` (its file type) | مستند PDF |
+| `replaceMessage`, `replaceDetail`, `replace` | يوجد ملف بهذا الاسم. / هل تستبدله بالنسخة الجديدة؟ / استبدال |
+| `dataRootMessage`, `dataRootDetail`, `chooseAnother` | لا تُحفظ النسخة في مجلد بيانات التطبيق. / يحتفظ المحرك بهذا المجلد لنفسه. اختر مجلدًا آخر. / اختيار مكان آخر |
+| `writeBusyMessage`, `writeBusyDetail` | الملف مفتوح في برنامج آخر. / أغلقه ثم أعد المحاولة، أو احفظ النسخة في مكان آخر. |
+| `writeDeniedMessage`, `writeDeniedDetail` | تعذّرت الكتابة في هذا المكان. / قد يكون الملف مفتوحًا في برنامج آخر، أو المجلد للقراءة فقط، أو تحجزه خدمة مزامنة سحابية. |
+| `writeOtherMessage` | تعذّرت كتابة النسخة. |
+| `saveElsewhere` | حفظ النسخة في مكان آخر… |
+
+The existing «إعادة المحاولة» (Try again) and «إلغاء» (Cancel) are reused.
+
+## D12: the comparison engine (Stage 2, 2026-10-17)
+
+The engine's words for comparisons. A comparison is «مقارنة» (the plan's file name «مقارنة_<n>_<date>.pdf»);
+finalizing stays «إقفال» and sealing «ختم», as for a session. The judge and council keep the single
+report's «الحكم» / «مجلس الحكام» (their open style suggestions above apply here too).
+
+### A word for the operator to decide: «مراجعة»
+
+«مراجعة» already carries two meanings: the session's **revision** number (`errors.invalid_revision`
+«رقم مراجعة غير صالح») and the final **review** of the PDF (`report.printExplain` «… للمراجعة
+النهائية», `design.d.pdf` (the development gallery) «عارض ملف PDF للمراجعة النهائية»). The comparison's per-camel provenance line
+prints the revision: «<session id> · رقم المراجعة 9» (`comparison_model.member_block`), matching
+`errors.invalid_revision` for now. Options:
+
+| Option | Revision | Review |
+|---|---|---|
+| A (as now) | رقم المراجعة 9 | المراجعة النهائية |
+| B | رقم التعديل 9 | المراجعة النهائية |
+| C | رقم المراجعة 9 | التدقيق النهائي |
+
+### The engine's labels (`labels.py`, `/meta/labels`)
+
+| Group, code | Arabic | English |
+|---|---|---|
+| `comparison_ineligible.not_finalized` | لم تُقفل بعد: أقفلها أولًا | not finalized yet: finalize it first |
+| `comparison_ineligible.reopened` | أُعيد فتحها بعد الإقفال: أقفلها من جديد | reopened after finalizing: finalize it again |
+| `comparison_ineligible.model_outdated` | بيانات تقريرها من إصدار أقدم: أعد فتحها ثم أقفلها | its report data is from an older version: reopen and finalize it |
+| `comparison_ineligible.files_missing` | ملفات الجلسة مفقودة | the session's files are missing |
+| `comparison_ineligible.file_corrupt` | ملف الجلسة تالف | the session file is damaged |
+| `comparison_ineligible.files_changed` | تغيّرت ملفات الجلسة بعد إقفالها | the session's files changed after it was finalized |
+| `comparison_ineligible.delete_failed` | لم يكتمل حذفها | its deletion did not complete |
+| `comparison_stale.member_deleted` | حُذفت جلسة هذا الجمل | this camel's session was deleted |
+| `comparison_stale.member_unreadable` | تعذّرت قراءة جلسة هذا الجمل | this camel's session could not be read |
+| `comparison_stale.member_reopened` | أُعيد فتح جلسة هذا الجمل | this camel's session was reopened |
+| `comparison_stale.member_edited` | تغيّرت قياسات هذا الجمل أو بياناته | this camel's measurements or details changed |
+| `comparison_stale.member_refinalized` | أُقفلت جلسة هذا الجمل من جديد بصورة أخرى | this camel's session was finalized again with a new image |
+| `comparison_stale.member_session_changed` (a note) | تغيّر ملف الجلسة دون أن تتغيّر قياساتها | the session file changed; its measurements did not |
+| `comparison_statuses.created` | لم تُختم بعد | not sealed yet |
+| `comparison_statuses.sealed` | مختومة | sealed |
+
+### The comparison page's wording (`report_content.py`, `comparison_model.py`; printed in Stage 5)
+
+| Where | Arabic | English |
+|---|---|---|
+| `COMPARISON_TITLE` (when the operator gives no title) | مقارنة قياسات الإبل | Camel Measurement Comparison |
+| `COMPARISON_DISCLAIMERS[1]` | تظهر الإبل بالترتيب الذي اختاره المشغّل، وتُعرض القيم جنبًا إلى جنب دون ترتيب أو مفاضلة. | The camels appear in the order the operator chose; the values are shown side by side, not ranked. |
+| `COMPARISON_DISCLAIMERS[2]` | يُطابَق القياس بين الإبل بالاسم كما كُتب وبنوع القياس، ولا يُجمع قياس ثنائي الأبعاد مع ثلاثي الأبعاد. | Measurements are matched across camels by their name as written and by their kind; a 2D measurement never shares a row with a 3D one. |
+| headings `cover`, `members`, `table`, `member`, `member_provenance` | بيانات المقارنة · الإبل في هذه المقارنة · جدول المقارنة · الجمل · مصدر بيانات هذا الجمل | Comparison details · Camels in this comparison · Comparison table · Camel · This camel's sources |
+| columns `position`, `status` | # · الحالة | # · Status |
+| cover rows `title`, `judge`, `council`, `created`, `n_camels`, `comparison_id` | العنوان · الحكم · مجلس الحكام · تاريخ الإنشاء · عدد الإبل · معرّف المقارنة | Title · Judge · Council of Judges · Created · Camels · Comparison ID |
+| provenance row `comparison_model` | بيانات المقارنة | Comparison model |
+| `UNNAMED` (+ the measurement number) | قياس بلا اسم #4 | Unnamed measurement #4 |
+| a member's heading | الجمل #1: A001 | Camel #1: A001 |
+| a member's provenance line | <session id> · رقم المراجعة 9 | <session id> · revision 9 |
+
+Reused from the single report: the first disclaimer, «معرّف الجمل», «المعرّف», «المصدر», «الفعالية», the
+measurement table's columns, the frame rows, «مرفوض», the signature wells and fields.
+
+### Error labels (`ar.json`, `errors.*`)
+
+| Key | Arabic | English |
+|---|---|---|
+| `errors.comparison_assets_changed` | تغيّرت ملفات المقارنة على القرص | The comparison's files changed on disk |
+| `errors.comparison_busy` | المقارنة مشغولة: حاول مجددًا | The comparison is busy: try again |
+| `errors.comparison_duplicate_members` | اختيرت الجلسة نفسها مرتين | The same session was picked twice |
+| `errors.comparison_id_collision` | تعذّر تخصيص معرّف للمقارنة | A comparison ID could not be allocated |
+| `errors.comparison_member_model_outdated` | بيانات تقرير أحد الإبل المختارة من إصدار أقدم | A chosen camel's report data is from an older version |
+| `errors.comparison_member_not_final` | جلسة أحد الإبل المختارة لم تُقفل | A chosen camel's session is not finalized |
+| `errors.comparison_member_not_found` | جلسة أحد الإبل المختارة غير موجودة | A chosen camel's session was not found |
+| `errors.comparison_member_unavailable` | تعذّرت قراءة جلسة أحد الإبل المختارة | A chosen camel's session cannot be read |
+| `errors.comparison_no_members` | اختر جملًا واحدًا على الأقل للمقارنة | Pick at least one camel to compare |
+| `errors.comparison_not_found` | المقارنة غير موجودة | Comparison not found |
+| `errors.comparison_too_many_members` | عدد الإبل أكبر مما تتسع له مقارنة واحدة | More camels than one comparison holds |
+
+## D12: the comparison seal (Stage 3, 2026-10-17)
+
+Four error labels for the engine's new seal codes (`ar.json` / `en.json`, `errors.*`). «أنشئ مقارنة
+جديدة» stands for the "Compare again" action of Stage 4; when that button gets its Arabic wording,
+this label should use the same verb.
+
+| Key | Arabic | English |
+|---|---|---|
+| `errors.comparison_stale` | تغيّرت جلسة أحد الإبل بعد إنشاء المقارنة: أنشئ مقارنة جديدة | A camel's session changed after the comparison was made: compare again |
+| `errors.comparison_model_mismatch` | تغيّر غلاف المقارنة أو لغتها بعد الطباعة: أعد الطباعة | The comparison's cover or language changed after printing: print again |
+| `errors.comparison_model_sha_required` | بصمة بيانات المقارنة مفقودة | The comparison model fingerprint is missing |
+| `errors.overlay_out_of_place` | صورة أحد الإبل في غير موضعها من ملف PDF | A camel's image is out of place in the PDF |
+
+## D12: the comparison screens (Stage 4, 2026-10-17)
+
+The History tabs, the selection column and its bar, the Compare dialog (order, approval, cover), the
+Comparisons tab and the comparison screen. The fields "Event", "Judge", "Council of judges", the
+language and its options, "Approved", "Delete", "Open" and the pages reuse existing keys
+(`report.*`, `approval.*`, `history.*`). Labels of the engine's codes (why a camel cannot join,
+why a comparison is out of date, its status) come from `/meta/labels`, as before.
+
+- **"Compare again"** is «إنشاء مقارنة جديدة», the verb of `errors.comparison_stale` «… أنشئ مقارنة
+  جديدة» (Stage 3), as that row asked.
+- **"Out of date"** for a comparison is «قديمة», as History's «المخرجات قديمة» / «التقرير قديم».
+- **«نسخة» avoided:** the cover hint says «بيانات مقارنة جديدة» for a new comparison model version, since
+  «نسخة» is the saved copy of "Save as" (Q3) and already a version elsewhere (fact 9).
+
+### A word for the operator to decide: «ترتيب»
+
+«ترتيب» can mean the **order** the operator chose (the print order) and a **ranking** of camels,
+which the comparison must never imply (D12 F2.4). Where it stands now:
+
+- the engine's printed disclaimer (Stage 2, `report_content.py`, printed on every comparison):
+  «تظهر الإبل بالترتيب الذي اختاره المشغّل، وتُعرض القيم جنبًا إلى جنب دون ترتيب أو مفاضلة.» — the
+  word carries **both** meanings in one sentence;
+- the app (Stage 4): «ترتيب الطباعة» (`compare.order`), «اسحب لتغيير الترتيب» (`compare.drag`),
+  `compare.description` «تُطبع الإبل بالترتيب أدناه، وتُعرض القيم جنبًا إلى جنب دون مفاضلة بينها.»
+  (ranking said only with «مفاضلة»); History's existing sort field «الترتيب» (`history.sort`) is a
+  list order.
+
+Options:
+
+- **A (the app now):** «ترتيب» only for order, «مفاضلة» for ranking; the engine disclaimer becomes
+  «… وتُعرض القيم جنبًا إلى جنب دون مفاضلة بينها.» (one engine string changed).
+- **B:** «تسلسل» for the print order (`compare.order` «تسلسل الطباعة», the disclaimer «تظهر الإبل
+  بالتسلسل الذي اختاره المشغّل…»), «ترتيب» and «مفاضلة» kept for ranking.
+- **C:** keep everything as it is.
+
+| Key | Arabic | English |
+|---|---|---|
+| `history.tabSessions` | الجلسات | Sessions |
+| `history.tabComparisons` | المقارنات | Comparisons |
+| `history.createdFrom` | تاريخ القياس من | Measured from |
+| `history.createdTo` | إلى | to |
+| `history.select` | اختيار للمقارنة | Select for a comparison |
+| `history.selectColumn` | المقارنة | Comparison |
+| `history.cannotCompare` | لا يمكن ضمّها إلى مقارنة: | Cannot join a comparison: |
+| `history.selectAllShown` | اختيار كل المعروض | Select all shown |
+| `history.inComparisons` | المقارنات التي تضمّها (ستصبح قديمة): | Comparisons that include it (they will be out of date): |
+| `compare.selected` | الإبل المختارة | Camels selected |
+| `compare.clear` | إلغاء الاختيار | Clear |
+| `compare.open` | مقارنة | Compare |
+| `compare.full` | بلغ الاختيار الحد الأقصى | The selection is full |
+| `compare.title` | مقارنة الإبل | Compare camels |
+| `compare.description` | تُطبع الإبل بالترتيب أدناه، وتُعرض القيم جنبًا إلى جنب دون مفاضلة بينها. | The camels print in the order below; the values are shown side by side, never ranked. |
+| `compare.order` | ترتيب الطباعة | Print order |
+| `compare.drag` | اسحب لتغيير الترتيب | Drag to change the order |
+| `compare.moveUp` | نقل إلى الأعلى | Move up |
+| `compare.moveDown` | نقل إلى الأسفل | Move down |
+| `compare.remove` | إزالة من المقارنة | Remove from the comparison |
+| `compare.approvedBySeal` | معتمدة: في تقرير مختوم | Approved: in a sealed report |
+| `compare.approveImage` | اعتماد الصورة | Approve the image |
+| `compare.approveTitle` | اعتماد صورة هذا الجمل | Approve this camel's image |
+| `compare.needsApproval` | اعتمد كل صورة لا يُظهرها بعد تقرير مختوم. | Approve every image that no sealed report shows yet. |
+| `compare.cover` | الغلاف | Cover |
+| `compare.coverTitle` | العنوان | Title |
+| `compare.coverHint` | تُطبع على الغلاف كما كُتبت تمامًا؛ وإن تُرك العنوان فارغًا طُبع العنوان الافتراضي. | Printed on the cover exactly as typed; an empty title prints the default title. |
+| `compare.create` | إنشاء المقارنة | Create the comparison |
+| `compare.createFailed` | تعذّر إنشاء المقارنة | The comparison could not be created |
+| `compare.refused` | إبل رفضها المحرك | Camels the engine refused |
+| `compare.dropped` | إبل لم تُضمّ إلى المقارنة الجديدة | Camels left out of the new comparison |
+| `compare.noneLeft` | لا يمكن ضمّ أي جمل من هذه المقارنة إلى مقارنة جديدة. | No camel of this comparison can join a new one. |
+| `comparisons.search` | بحث (العنوان، الفعالية، الحكم، مجلس الحكام، معرّف الجمل) | Search (title, event, judge, council, camel ID) |
+| `comparisons.staleFilter` | مطابقة الجلسات | Sessions match |
+| `comparisons.staleOnly` | قديمة | Out of date |
+| `comparisons.currentOnly` | محدّثة | Up to date |
+| `comparisons.sorts.created_desc` | الأحدث إنشاءً أولًا | Newest first |
+| `comparisons.sorts.created_asc` | الأقدم أولًا | Oldest first |
+| `comparisons.sorts.updated_desc` | الأحدث تعديلًا أولًا | Last changed first |
+| `comparisons.sorts.title_asc` | حسب العنوان | By title |
+| `comparisons.loading` | جارٍ تحميل المقارنات… | Loading the comparisons… |
+| `comparisons.empty` | لا توجد مقارنات بعد: اختر الإبل في تبويب الجلسات | No comparisons yet: select camels under Sessions |
+| `comparisons.noMatch` | لا توجد مقارنة مطابقة | No comparison matches |
+| `comparisons.titleColumn` | العنوان | Title |
+| `comparisons.camels` | الإبل | Camels |
+| `comparisons.created` | تاريخ الإنشاء | Created |
+| `comparisons.stale` | قديمة | Out of date |
+| `comparisons.reportStale` | التقرير المختوم قديم | Sealed report out of date |
+| `comparisons.untitled` | مقارنة بلا عنوان | Untitled comparison |
+| `comparisons.deleteTitle` | حذف المقارنة؟ | Delete the comparison? |
+| `comparisons.deleteDescription` | تُنقل إلى سلة المحذوفات وتُزال نهائيًا عند التشغيل التالي. تبقى جلسات الإبل كما هي. | It moves to the trash and is removed for good at the next start. The camels' sessions stay. |
+| `comparisons.actionFailed` | فشل الإجراء على المقارنة | The action on the comparison failed |
+| `comparison.loading` | جارٍ تحميل المقارنة… | Loading the comparison… |
+| `comparison.loadFailed` | تعذّر تحميل المقارنة | The comparison could not be loaded |
+| `comparison.members` | الإبل بترتيب الطباعة | The camels, in print order |
+| `comparison.image` | الصورة | Image |
+| `comparison.atCreation` | عند المقارنة | When compared |
+| `comparison.now` | الآن | Now |
+| `comparison.deleted` | محذوفة | deleted |
+| `comparison.openSession` | فتح الجلسة | Open the session |
+| `comparison.staleTitle` | هذه المقارنة قديمة | This comparison is out of date |
+| `comparison.staleExplain` | تغيّرت جلسة جمل أو أكثر بعد إنشاء هذه المقارنة. يبقى ملف PDF المختوم كما هو؛ ولمقارنة الإبل بحالها الآن أنشئ مقارنة جديدة. | One or more camels' sessions changed after this comparison was made. Its sealed PDF stays as it was; to compare the camels as they are now, compare again. |
+| `comparison.compareAgain` | إنشاء مقارنة جديدة | Compare again |
+| `comparison.saveCover` | حفظ الغلاف | Save the cover |
+| `comparison.coverHint` | كل تغيير يكتب بيانات مقارنة جديدة، ويلزم عندها طباعة ملف PDF المختوم من جديد. | Each change writes new comparison data; a sealed PDF then needs printing again. |
+| `comparison.coverFailed` | فشل حفظ الغلاف | Saving the cover failed |
+| `comparison.modelVersion` | بيانات المقارنة | Comparison data |
+| `comparison.sealedReport` | التقرير المختوم | Sealed report |
+| `comparison.backToList` | كل المقارنات | All comparisons |
+
+## D12: the comparison's print (Stage 5, 2026-10-17)
+
+The "Print and seal" card of a comparison, its sealed PDF, the probe's table of camels, and the app's
+six new codes. The card's title, "Print again", "Printing and sealing…", "Printing failed", the print
+page's problems and warnings, "No report yet" and the PDF errors reuse the single report's strings
+(`report.*`, `pdf.*`). The printed comparison's wording is the engine's (Stage 2).
+
+- **«ترتيب» avoided:** `print_overlay_order` says «ليست في موضعها» (out of place) rather than «ليست
+  بترتيب المقارنة»; the word stays the operator's decision (Stage 4, options A/B/C).
+- **"Out of date"** for the sealed file: «هذا الملف لم يعد يطابق المقارنة», as the single report's
+  «هذا التقرير لم يعد يطابق الجلسة».
+
+| Key | Arabic | English |
+|---|---|---|
+| `comparison.print` | طباعة المقارنة | Print the comparison |
+| `comparison.printExplain` | تُصفّ المقارنة من بياناتها ومن الصورة المعتمدة لكل جمل وتُطبع ملف PDF، ثم يتحقق المحرك من صورة كل جمل وأسمائه في صفحاته ويرفق ملفات الإثبات ويختمه. يظهر الملف المختوم أدناه للمراجعة النهائية. | The comparison is laid out from its data and each camel's approved image and printed to PDF; the engine then checks each camel's image and names on its own pages, attaches the evidence files and seals it. The sealed file appears below for sign-off. |
+| `comparison.printStale` | هذه المقارنة قديمة: أنشئ مقارنة جديدة لطباعتها | This comparison is out of date: compare again to print it |
+| `comparison.approveAll` | اعتمد صورة كل جمل قبل الطباعة | Approve each camel's image before printing |
+| `comparison.saveCoverFirst` | احفظ الغلاف قبل الطباعة | Save the cover before printing |
+| `comparison.sealed` | خُتمت المقارنة | The comparison is sealed |
+| `comparison.sealedExplain` | نجحت فحوص المحرك كلها: صورة كل جمل في صفحتها، وأسماء كل جمل في صفحاته، والخط، وملفات الإثبات المرفقة. | Every engine check passed: each camel's image on its own page, each camel's names on its pages, the font, the attached evidence files. |
+| `comparison.pdfTitle` | المقارنة المختومة | Sealed comparison |
+| `comparison.pdfStale` | هذا الملف لم يعد يطابق المقارنة | This file no longer matches the comparison |
+| `comparison.pdfStaleMembers` | تغيّرت جلسة جمل أو أكثر بعد ختمه. يبقى الملف كما خُتم؛ ولمقارنة الإبل بحالها الآن أنشئ مقارنة جديدة. | One or more camels' sessions changed after it was sealed. The file stays as sealed; to compare the camels as they are now, compare again. |
+| `comparison.pdfStaleCover` | تغيّر الغلاف أو اللغة بعد ختمه: اطبعه من جديد. | The cover or language changed after it was sealed: print it again. |
+| `probe.members` | كل جمل في صفحاته | Each camel on its pages |
+| `probe.memberNames` | أسماؤه في صفحاته | Its names on its pages |
+| `appErrors.comparison_approval_required` | اعتمد صورة كل جمل قبل طباعة المقارنة | Approve each camel's image before printing the comparison |
+| `appErrors.comparison_model_hash_mismatch` | بيانات المقارنة لا تطابق بصمة المحرك | The comparison model does not match the engine's fingerprint |
+| `appErrors.comparison_model_outdated` | بيانات المقارنة أقدم من صفحة الطباعة | The comparison model is older than the print page |
+| `appErrors.comparison_model_unreadable` | لا تستطيع صفحة الطباعة قراءة بيانات المقارنة | The print page cannot read the comparison model |
+| `appErrors.print_overlay_order` | صورة أحد الإبل ليست في موضعها من صفحة الطباعة | A camel's image is out of place on the print page |
+| `appErrors.print_overflow` | خلية في جدول أعرض من عمودها وستُقصّ عند الطباعة | A table cell is wider than its column and would be cut when printed |
+
+## D12: end to end, the review's fixes and release 1.1.0 (Stage 6, 2026-10-18)
+
+No new UI string. The Arabic in `e2e/comparison-fast.spec.ts` and `e2e/helpers/comparison.ts`
+(camel ids «ناقة-مقارنة-أ» / «ناقة-مقارنة-ب», the cover «مقارنة اختبار سريع», the save folder
+«اختبار مقارنة») is test data, not app wording; the specs read every label from the i18n tables by
+key. The two words still open for the operator are unchanged: «مراجعة» (Stage 2) and «ترتيب»
+(Stage 4).

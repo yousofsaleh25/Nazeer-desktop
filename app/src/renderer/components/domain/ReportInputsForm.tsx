@@ -26,6 +26,47 @@ const NAME_KEYS = {
   event: "report.event",
 } as const;
 
+/** The PDF language (ar | en | both), an explicit input (D7); also the comparison's (D12). */
+export function ReportLanguagePicker({
+  value,
+  onChange,
+}: {
+  value: ReportLanguage;
+  onChange: (language: ReportLanguage) => void;
+}) {
+  const languageId = `report-language${useId()}`;
+  return (
+    <div className="flex flex-col gap-1.5">
+      <span id={languageId} className="text-sm font-medium">
+        <Bi {...messagePair("report.language")} />
+      </span>
+      <div
+        role="radiogroup"
+        aria-labelledby={languageId}
+        className="flex w-fit overflow-hidden rounded-md border border-border-control"
+      >
+        {LANGUAGES.map((language) => (
+          <button
+            key={language}
+            type="button"
+            role="radio"
+            aria-checked={value === language}
+            onClick={() => onChange(language)}
+            className={cn(
+              "min-h-8 px-3 text-sm",
+              value === language
+                ? "bg-primary text-primary-fg"
+                : "bg-surface hover:bg-surface-hover",
+            )}
+          >
+            <Bi {...messagePair(LANGUAGE_KEYS[language])} />
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export interface ReportInputsFormProps {
   value: ReportInputs;
   content: ReportFormContent;
@@ -39,7 +80,6 @@ export function ReportInputsForm({
   onChange,
   disabled = false,
 }: ReportInputsFormProps) {
-  const languageId = `report-language${useId()}`;
   const setName = (key: string, text: string) =>
     onChange({ ...value, names: { ...value.names, [key]: text } });
   const setObservation = (key: string, text: string) =>
@@ -47,34 +87,10 @@ export function ReportInputsForm({
 
   return (
     <fieldset disabled={disabled} className="flex flex-col gap-5">
-      <div className="flex flex-col gap-1.5">
-        <span id={languageId} className="text-sm font-medium">
-          <Bi {...messagePair("report.language")} />
-        </span>
-        <div
-          role="radiogroup"
-          aria-labelledby={languageId}
-          className="flex w-fit overflow-hidden rounded-md border border-border-control"
-        >
-          {LANGUAGES.map((language) => (
-            <button
-              key={language}
-              type="button"
-              role="radio"
-              aria-checked={value.language === language}
-              onClick={() => onChange({ ...value, language })}
-              className={cn(
-                "min-h-8 px-3 text-sm",
-                value.language === language
-                  ? "bg-primary text-primary-fg"
-                  : "bg-surface hover:bg-surface-hover",
-              )}
-            >
-              <Bi {...messagePair(LANGUAGE_KEYS[language])} />
-            </button>
-          ))}
-        </div>
-      </div>
+      <ReportLanguagePicker
+        value={value.language}
+        onChange={(language) => onChange({ ...value, language })}
+      />
 
       <Field label={messagePair("report.variant")}>
         <Select<RubricVariant>

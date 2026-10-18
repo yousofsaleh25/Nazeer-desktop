@@ -1,0 +1,2268 @@
+{
+  "comparison_model_version": "1.0",
+  "version": 2,
+  "engine_version": "0.1.0",
+  "generated_at": "2026-10-17T12:05:00+00:00",
+  "comparison_id": "20261017_120000_c0ffee",
+  "created_at": "2026-10-17T12:00:00+00:00",
+  "language": "both",
+  "cover": {
+    "title": "نهائي المزاين",
+    "event": "مهرجان الإبل",
+    "judge": "الحكم",
+    "council": "مجلس",
+    "title_text": {
+      "ar": "نهائي المزاين",
+      "en": "نهائي المزاين"
+    }
+  },
+  "members": [
+    {
+      "position": 1,
+      "session_id": "20261017_170623_32ceac",
+      "camel_id": "جمل-1",
+      "operator": "",
+      "status": "finalized",
+      "revision": 1,
+      "created_at": "2026-10-17T17:06:24+00:00",
+      "bag": {
+        "name": "20260414_175757-003.bag",
+        "read_index": 805
+      },
+      "overlay": {
+        "file": "overlay_v1.png",
+        "version": 1,
+        "sha256": "e165ecd9f4a5b6df3a40d9151157c7f52a83b9745b5f82df836401f79eb39ad0",
+        "width": 1280,
+        "height": 840
+      },
+      "report_model": {
+        "file": "report_model_v1.json",
+        "version": 1,
+        "sha256": "9879c5280ab7176d5df3020375c155592217a89d808de220beab5ba1e44b7ae1",
+        "report_model_version": "1.1",
+        "engine_version": "0.1.0",
+        "generated_at": "2026-10-17T17:06:24+00:00"
+      },
+      "session_json_sha256": "ed031954377c633c86cdbc091f3f060294b74e7e43ee8daf9d8a471fa4e002d0",
+      "input_sha256": "ba08a253f52990fbf2cf8dce5a68098a2b20282b0eef0a10e48bd8323e0b03e1",
+      "frame": {
+        "texts": {
+          "z_ref": {
+            "ar": "1.771 م: وسيط 248,846 قيمة عمق صالحة في القناع بعد تقليصه 2 بكسل (94.8% من 262,495 بكسل)، MAD 0.091 م",
+            "en": "1.771 m: median of 248,846 valid depths in the mask eroded by 2 px (94.8% of 262,495 px), robust MAD 0.091 m"
+          },
+          "ground": {
+            "ar": "الصف 709 هو المرسوم (صف المستوى القريب 709، أدنى صف خام 709)",
+            "en": "row 709 drawn (near-plane row 709, raw lowest row 709)"
+          },
+          "source": {
+            "ar": "مؤشر القراءة 805 · t = 26.83 ث · مائل",
+            "en": "read index 805 · t = 26.83 s · quarter"
+          }
+        }
+      },
+      "rows": [
+        {
+          "measurement_id": 1,
+          "name": "طول الجسم",
+          "kind": "distance_3d",
+          "kind_label": {
+            "ar": "مسافة ثلاثية الأبعاد",
+            "en": "3D distance"
+          },
+          "color": "#BE2C2C",
+          "note": "",
+          "value_text": {
+            "ar": "1.520 م",
+            "en": "1.520 m"
+          },
+          "uncertainty_text": {
+            "ar": "± 1.1 سم",
+            "en": "± 1.1 cm"
+          },
+          "depth_basis": [
+            {
+              "point": 1,
+              "ar": "مباشر 1.905 م",
+              "en": "direct 1.905 m"
+            },
+            {
+              "point": 2,
+              "ar": "مباشر 1.754 م",
+              "en": "direct 1.754 m"
+            }
+          ],
+          "depth_note": null,
+          "flags": [],
+          "confidence": null,
+          "rejected": false,
+          "rejection": [],
+          "detail": null
+        },
+        {
+          "measurement_id": 2,
+          "name": "ارتفاع السنام",
+          "kind": "distance_3d",
+          "kind_label": {
+            "ar": "مسافة ثلاثية الأبعاد",
+            "en": "3D distance"
+          },
+          "color": "#2C57BE",
+          "note": "",
+          "value_text": {
+            "ar": "1.706 م",
+            "en": "1.706 m"
+          },
+          "uncertainty_text": {
+            "ar": "± 1.2 سم",
+            "en": "± 1.2 cm"
+          },
+          "depth_basis": [
+            {
+              "point": 1,
+              "ar": "مباشر 1.930 م",
+              "en": "direct 1.930 m"
+            },
+            {
+              "point": 2,
+              "ar": "مباشر 1.778 م",
+              "en": "direct 1.778 m"
+            }
+          ],
+          "depth_note": null,
+          "flags": [],
+          "confidence": null,
+          "rejected": false,
+          "rejection": [],
+          "detail": null
+        },
+        {
+          "measurement_id": 3,
+          "name": "ارتفاع الكتف",
+          "kind": "distance_2d",
+          "kind_label": {
+            "ar": "مسافة ثنائية الأبعاد (مستوى Z_ref)",
+            "en": "2D distance (Z_ref plane)"
+          },
+          "color": "#81BE2C",
+          "note": "",
+          "value_text": {
+            "ar": "0.854 م",
+            "en": "0.854 m"
+          },
+          "uncertainty_text": {
+            "ar": "± 4.6 سم",
+            "en": "± 4.6 cm"
+          },
+          "depth_basis": [
+            {
+              "point": 1,
+              "ar": "مستوى Z_ref 1.771 م",
+              "en": "Z_ref 1.771 m"
+            },
+            {
+              "point": 2,
+              "ar": "مستوى Z_ref 1.771 م",
+              "en": "Z_ref 1.771 m"
+            }
+          ],
+          "depth_note": null,
+          "flags": [],
+          "confidence": null,
+          "rejected": false,
+          "rejection": [],
+          "detail": null
+        },
+        {
+          "measurement_id": 4,
+          "name": "محيط الصدر",
+          "kind": "curve_3d",
+          "kind_label": {
+            "ar": "طول خط منكسر ثلاثي الأبعاد",
+            "en": "3D polyline length"
+          },
+          "color": "#BE2CAB",
+          "note": "",
+          "value_text": {
+            "ar": "2.584 م",
+            "en": "2.584 m"
+          },
+          "uncertainty_text": {
+            "ar": "± 2.7 سم",
+            "en": "± 2.7 cm"
+          },
+          "depth_basis": [
+            {
+              "point": 1,
+              "ar": "مباشر 1.905 م",
+              "en": "direct 1.905 m"
+            },
+            {
+              "point": 2,
+              "ar": "مباشر 1.678 م",
+              "en": "direct 1.678 m"
+            },
+            {
+              "point": 3,
+              "ar": "مباشر 1.644 م",
+              "en": "direct 1.644 m"
+            },
+            {
+              "point": 4,
+              "ar": "مباشر 1.861 م",
+              "en": "direct 1.861 m"
+            }
+          ],
+          "depth_note": null,
+          "flags": [
+            {
+              "code": "segment_depth_jump",
+              "ar": "قفزة عمق في مقطع",
+              "en": "depth jump in a segment",
+              "severity": "warn"
+            }
+          ],
+          "confidence": {
+            "code": "low",
+            "ar": "منخفضة",
+            "en": "low"
+          },
+          "rejected": false,
+          "rejection": [],
+          "detail": {
+            "ar": "تحقق ثنائي الأبعاد 2.418 م · المقاطع 3، عليها تنبيه 1",
+            "en": "2D cross-check 2.418 m · 3 segments, 1 flagged"
+          }
+        },
+        {
+          "measurement_id": 5,
+          "name": "خط الظهر",
+          "kind": "curve_2d",
+          "kind_label": {
+            "ar": "طول خط منكسر ثنائي الأبعاد (مستوى Z_ref)",
+            "en": "2D polyline length (Z_ref plane)"
+          },
+          "color": "#2CBEA5",
+          "note": "",
+          "value_text": {
+            "ar": "2.725 م",
+            "en": "2.725 m"
+          },
+          "uncertainty_text": {
+            "ar": "± 0.147 م",
+            "en": "± 0.147 m"
+          },
+          "depth_basis": [
+            {
+              "point": 1,
+              "ar": "مستوى Z_ref 1.771 م",
+              "en": "Z_ref 1.771 m"
+            },
+            {
+              "point": 2,
+              "ar": "مستوى Z_ref 1.771 م",
+              "en": "Z_ref 1.771 m"
+            },
+            {
+              "point": 3,
+              "ar": "مستوى Z_ref 1.771 م",
+              "en": "Z_ref 1.771 m"
+            },
+            {
+              "point": 4,
+              "ar": "مستوى Z_ref 1.771 م",
+              "en": "Z_ref 1.771 m"
+            },
+            {
+              "point": 5,
+              "ar": "مستوى Z_ref 1.771 م",
+              "en": "Z_ref 1.771 m"
+            }
+          ],
+          "depth_note": null,
+          "flags": [],
+          "confidence": null,
+          "rejected": false,
+          "rejection": [],
+          "detail": null
+        },
+        {
+          "measurement_id": 6,
+          "name": "طول الرقبة",
+          "kind": "distance_3d",
+          "kind_label": {
+            "ar": "مسافة ثلاثية الأبعاد",
+            "en": "3D distance"
+          },
+          "color": "#BE7B2C",
+          "note": "",
+          "value_text": {
+            "ar": "0.244 م",
+            "en": "0.244 m"
+          },
+          "uncertainty_text": {
+            "ar": "± 0.2 سم",
+            "en": "± 0.2 cm"
+          },
+          "depth_basis": [
+            {
+              "point": 1,
+              "ar": "مباشر 1.673 م",
+              "en": "direct 1.673 m"
+            },
+            {
+              "point": 2,
+              "ar": "مباشر 1.652 م",
+              "en": "direct 1.652 m"
+            }
+          ],
+          "depth_note": null,
+          "flags": [],
+          "confidence": null,
+          "rejected": false,
+          "rejection": [],
+          "detail": null
+        },
+        {
+          "measurement_id": 7,
+          "name": "Hump height 2D",
+          "kind": "distance_2d",
+          "kind_label": {
+            "ar": "مسافة ثنائية الأبعاد (مستوى Z_ref)",
+            "en": "2D distance (Z_ref plane)"
+          },
+          "color": "#502CBE",
+          "note": "",
+          "value_text": {
+            "ar": "0.523 م",
+            "en": "0.523 m"
+          },
+          "uncertainty_text": {
+            "ar": "± 2.8 سم",
+            "en": "± 2.8 cm"
+          },
+          "depth_basis": [
+            {
+              "point": 1,
+              "ar": "مستوى Z_ref 1.771 م",
+              "en": "Z_ref 1.771 m"
+            },
+            {
+              "point": 2,
+              "ar": "مستوى Z_ref 1.771 م",
+              "en": "Z_ref 1.771 m"
+            }
+          ],
+          "depth_note": null,
+          "flags": [],
+          "confidence": null,
+          "rejected": false,
+          "rejection": [],
+          "detail": null
+        },
+        {
+          "measurement_id": 8,
+          "name": "Belly line",
+          "kind": "curve_3d",
+          "kind_label": {
+            "ar": "طول خط منكسر ثلاثي الأبعاد",
+            "en": "3D polyline length"
+          },
+          "color": "#32BE2C",
+          "note": "",
+          "value_text": {
+            "ar": "3.796 م",
+            "en": "3.796 m"
+          },
+          "uncertainty_text": {
+            "ar": "± 2.4 سم",
+            "en": "± 2.4 cm"
+          },
+          "depth_basis": [
+            {
+              "point": 1,
+              "ar": "مباشر 1.864 م",
+              "en": "direct 1.864 m"
+            },
+            {
+              "point": 2,
+              "ar": "مباشر 1.693 م",
+              "en": "direct 1.693 m"
+            },
+            {
+              "point": 3,
+              "ar": "مباشر 2.048 م",
+              "en": "direct 2.048 m"
+            },
+            {
+              "point": 4,
+              "ar": "مباشر 1.636 م",
+              "en": "direct 1.636 m"
+            }
+          ],
+          "depth_note": null,
+          "flags": [],
+          "confidence": null,
+          "rejected": false,
+          "rejection": [],
+          "detail": {
+            "ar": "تحقق ثنائي الأبعاد 3.453 م · المقاطع 3، عليها تنبيه 0",
+            "en": "2D cross-check 3.453 m · 3 segments, 0 flagged"
+          }
+        },
+        {
+          "measurement_id": 99,
+          "name": "طول الجسم",
+          "kind": "distance_3d",
+          "kind_label": {
+            "ar": "مسافة ثلاثية الأبعاد",
+            "en": "3D distance"
+          },
+          "color": "#BE2C2C",
+          "note": "",
+          "value_text": {
+            "ar": "1.520 م",
+            "en": "1.520 m"
+          },
+          "uncertainty_text": {
+            "ar": "± 1.1 سم",
+            "en": "± 1.1 cm"
+          },
+          "depth_basis": [
+            {
+              "point": 1,
+              "ar": "مباشر 1.905 م",
+              "en": "direct 1.905 m"
+            },
+            {
+              "point": 2,
+              "ar": "مباشر 1.754 م",
+              "en": "direct 1.754 m"
+            }
+          ],
+          "depth_note": null,
+          "flags": [],
+          "confidence": null,
+          "rejected": false,
+          "rejection": [],
+          "detail": null
+        }
+      ],
+      "summary": {
+        "snapped_text": {
+          "ar": "0 من 14 نقطة قُرِّبت إلى الجمل (KNN)",
+          "en": "0 of 14 points snapped to the camel (KNN)"
+        },
+        "counts_text": {
+          "ar": "القياسات: 8 · المرفوضة: 0 · منخفضة الثقة: 1",
+          "en": "Measurements: 8 · rejected: 0 · low confidence: 1"
+        }
+      },
+      "texts": {
+        "column": {
+          "ar": "#1 · جمل-1",
+          "en": "#1 · جمل-1"
+        },
+        "heading": {
+          "ar": "الجمل #1: جمل-1",
+          "en": "Camel #1: جمل-1"
+        },
+        "status": {
+          "ar": "مُقفلة",
+          "en": "finalized"
+        },
+        "source": {
+          "ar": "20260414_175757-003.bag · مؤشر القراءة 805 · t = 26.83 ث · مائل",
+          "en": "20260414_175757-003.bag · read index 805 · t = 26.83 s · quarter"
+        },
+        "provenance": {
+          "overlay": {
+            "ar": "overlay_v1.png · v1 · sha256 e165ecd9f4a5b6df3a40d9151157c7f52a83b9745b5f82df836401f79eb39ad0",
+            "en": "overlay_v1.png · v1 · sha256 e165ecd9f4a5b6df3a40d9151157c7f52a83b9745b5f82df836401f79eb39ad0"
+          },
+          "report_model": {
+            "ar": "report_model_v1.json · sha256 9879c5280ab7176d5df3020375c155592217a89d808de220beab5ba1e44b7ae1 · 0.1.0 · 2026-10-17T17:06:24+00:00",
+            "en": "report_model_v1.json · sha256 9879c5280ab7176d5df3020375c155592217a89d808de220beab5ba1e44b7ae1 · 0.1.0 · 2026-10-17T17:06:24+00:00"
+          },
+          "session": {
+            "ar": "20261017_170623_32ceac · رقم المراجعة 1",
+            "en": "20261017_170623_32ceac · revision 1"
+          }
+        }
+      }
+    },
+    {
+      "position": 2,
+      "session_id": "20261017_170624_c63bc3",
+      "camel_id": "جمل-2",
+      "operator": "",
+      "status": "finalized",
+      "revision": 1,
+      "created_at": "2026-10-17T17:06:24+00:00",
+      "bag": {
+        "name": "20260414_175757-003.bag",
+        "read_index": 760
+      },
+      "overlay": {
+        "file": "overlay_v1.png",
+        "version": 1,
+        "sha256": "6197ba8f5d69f57ba3ed2259a132aa38beafa6533cceb86ee550709b346ba3a5",
+        "width": 1280,
+        "height": 840
+      },
+      "report_model": {
+        "file": "report_model_v1.json",
+        "version": 1,
+        "sha256": "f7b5b5f459b01d9f1c5c6a058a55a84fdc48a8cadf6865b97c717b0d6e3d5edc",
+        "report_model_version": "1.1",
+        "engine_version": "0.1.0",
+        "generated_at": "2026-10-17T17:06:25+00:00"
+      },
+      "session_json_sha256": "37bfb95f01c62ab2d932a64fc75c395287234a784c7572048513c94a111c0272",
+      "input_sha256": "9e52719004a7ebbbf31ceac2aa32aa9161554cac6375a9b3471d49264671e401",
+      "frame": {
+        "texts": {
+          "z_ref": {
+            "ar": "1.878 م: وسيط 215,146 قيمة عمق صالحة في القناع بعد تقليصه 2 بكسل (92.8% من 231,874 بكسل)، MAD 0.066 م",
+            "en": "1.878 m: median of 215,146 valid depths in the mask eroded by 2 px (92.8% of 231,874 px), robust MAD 0.066 m"
+          },
+          "ground": {
+            "ar": "الصف 631 هو المرسوم (صف المستوى القريب 631، أدنى صف خام 631)",
+            "en": "row 631 drawn (near-plane row 631, raw lowest row 631)"
+          },
+          "source": {
+            "ar": "مؤشر القراءة 760 · t = 25.36 ث · مائل",
+            "en": "read index 760 · t = 25.36 s · quarter"
+          }
+        }
+      },
+      "rows": [
+        {
+          "measurement_id": 1,
+          "name": "طول الجسم",
+          "kind": "distance_3d",
+          "kind_label": {
+            "ar": "مسافة ثلاثية الأبعاد",
+            "en": "3D distance"
+          },
+          "color": "#BE2C2C",
+          "note": "",
+          "value_text": {
+            "ar": "1.022 م",
+            "en": "1.022 m"
+          },
+          "uncertainty_text": {
+            "ar": "± 0.9 سم",
+            "en": "± 0.9 cm"
+          },
+          "depth_basis": [
+            {
+              "point": 1,
+              "ar": "مباشر 1.883 م",
+              "en": "direct 1.883 m"
+            },
+            {
+              "point": 2,
+              "ar": "مباشر 1.910 م",
+              "en": "direct 1.910 m"
+            }
+          ],
+          "depth_note": null,
+          "flags": [],
+          "confidence": null,
+          "rejected": false,
+          "rejection": [],
+          "detail": null
+        },
+        {
+          "measurement_id": 2,
+          "name": "ارتفاع السنام",
+          "kind": "distance_3d",
+          "kind_label": {
+            "ar": "مسافة ثلاثية الأبعاد",
+            "en": "3D distance"
+          },
+          "color": "#2C57BE",
+          "note": "",
+          "value_text": {
+            "ar": "0.434 م",
+            "en": "0.434 m"
+          },
+          "uncertainty_text": {
+            "ar": "± 1.5 سم",
+            "en": "± 1.5 cm"
+          },
+          "depth_basis": [
+            {
+              "point": 1,
+              "ar": "مباشر 1.790 م",
+              "en": "direct 1.790 m"
+            },
+            {
+              "point": 2,
+              "ar": "مباشر 1.880 م",
+              "en": "direct 1.880 m"
+            }
+          ],
+          "depth_note": null,
+          "flags": [],
+          "confidence": null,
+          "rejected": false,
+          "rejection": [],
+          "detail": null
+        },
+        {
+          "measurement_id": 3,
+          "name": "ارتفاع الكتف",
+          "kind": "distance_2d",
+          "kind_label": {
+            "ar": "مسافة ثنائية الأبعاد (مستوى Z_ref)",
+            "en": "2D distance (Z_ref plane)"
+          },
+          "color": "#81BE2C",
+          "note": "",
+          "value_text": null,
+          "uncertainty_text": null,
+          "depth_basis": [
+            {
+              "point": 1,
+              "ar": "مستوى Z_ref 1.878 م",
+              "en": "Z_ref 1.878 m"
+            },
+            {
+              "point": 2,
+              "ar": "مستوى Z_ref 1.878 م",
+              "en": "Z_ref 1.878 m"
+            }
+          ],
+          "depth_note": null,
+          "flags": [],
+          "confidence": null,
+          "rejected": true,
+          "rejection": [
+            {
+              "code": "knn_too_far",
+              "point": "P2",
+              "ar": "أقرب نقاط الجمل بعيدة جدًا (> 30 سم)",
+              "en": "nearest camel pixels too far (> 30 cm)"
+            }
+          ],
+          "detail": null
+        },
+        {
+          "measurement_id": 4,
+          "name": "محيط الصدر",
+          "kind": "curve_3d",
+          "kind_label": {
+            "ar": "طول خط منكسر ثلاثي الأبعاد",
+            "en": "3D polyline length"
+          },
+          "color": "#BE2CAB",
+          "note": "",
+          "value_text": {
+            "ar": "2.609 م",
+            "en": "2.609 m"
+          },
+          "uncertainty_text": {
+            "ar": "± 2.3 سم",
+            "en": "± 2.3 cm"
+          },
+          "depth_basis": [
+            {
+              "point": 1,
+              "ar": "مباشر 1.962 م",
+              "en": "direct 1.962 m"
+            },
+            {
+              "point": 2,
+              "ar": "مباشر 1.910 م",
+              "en": "direct 1.910 m"
+            },
+            {
+              "point": 3,
+              "ar": "مباشر 2.039 م",
+              "en": "direct 2.039 m"
+            },
+            {
+              "point": 4,
+              "ar": "مباشر 1.971 م",
+              "en": "direct 1.971 m"
+            }
+          ],
+          "depth_note": null,
+          "flags": [],
+          "confidence": null,
+          "rejected": false,
+          "rejection": [],
+          "detail": {
+            "ar": "تحقق ثنائي الأبعاد 2.400 م · المقاطع 3، عليها تنبيه 0",
+            "en": "2D cross-check 2.400 m · 3 segments, 0 flagged"
+          }
+        },
+        {
+          "measurement_id": 5,
+          "name": "خط الظهر",
+          "kind": "curve_2d",
+          "kind_label": {
+            "ar": "طول خط منكسر ثنائي الأبعاد (مستوى Z_ref)",
+            "en": "2D polyline length (Z_ref plane)"
+          },
+          "color": "#2CBEA5",
+          "note": "",
+          "value_text": {
+            "ar": "1.732 م",
+            "en": "1.732 m"
+          },
+          "uncertainty_text": {
+            "ar": "± 8.3 سم",
+            "en": "± 8.3 cm"
+          },
+          "depth_basis": [
+            {
+              "point": 1,
+              "ar": "مستوى Z_ref 1.878 م",
+              "en": "Z_ref 1.878 m"
+            },
+            {
+              "point": 2,
+              "ar": "مستوى Z_ref 1.878 م",
+              "en": "Z_ref 1.878 m"
+            },
+            {
+              "point": 3,
+              "ar": "مستوى Z_ref 1.878 م",
+              "en": "Z_ref 1.878 m"
+            },
+            {
+              "point": 4,
+              "ar": "مستوى Z_ref 1.878 م",
+              "en": "Z_ref 1.878 m"
+            },
+            {
+              "point": 5,
+              "ar": "مستوى Z_ref 1.878 م",
+              "en": "Z_ref 1.878 m"
+            }
+          ],
+          "depth_note": null,
+          "flags": [
+            {
+              "code": "endpoint_dz",
+              "ar": "نقطة بعيدة عن مستوى Z_ref (> 10 %)",
+              "en": "point off the Z_ref plane (> 10 %)",
+              "severity": "warn"
+            }
+          ],
+          "confidence": {
+            "code": "low",
+            "ar": "منخفضة",
+            "en": "low"
+          },
+          "rejected": false,
+          "rejection": [],
+          "detail": null
+        },
+        {
+          "measurement_id": 6,
+          "name": "طول الرقبة",
+          "kind": "distance_3d",
+          "kind_label": {
+            "ar": "مسافة ثلاثية الأبعاد",
+            "en": "3D distance"
+          },
+          "color": "#BE7B2C",
+          "note": "",
+          "value_text": {
+            "ar": "0.477 م",
+            "en": "0.477 m"
+          },
+          "uncertainty_text": {
+            "ar": "± 1.7 سم",
+            "en": "± 1.7 cm"
+          },
+          "depth_basis": [
+            {
+              "point": 1,
+              "ar": "مباشر 1.880 م",
+              "en": "direct 1.880 m"
+            },
+            {
+              "point": 2,
+              "ar": "مباشر 2.171 م",
+              "en": "direct 2.171 m"
+            }
+          ],
+          "depth_note": null,
+          "flags": [],
+          "confidence": null,
+          "rejected": false,
+          "rejection": [],
+          "detail": null
+        },
+        {
+          "measurement_id": 7,
+          "name": "Hump height 2D",
+          "kind": "distance_2d",
+          "kind_label": {
+            "ar": "مسافة ثنائية الأبعاد (مستوى Z_ref)",
+            "en": "2D distance (Z_ref plane)"
+          },
+          "color": "#502CBE",
+          "note": "",
+          "value_text": {
+            "ar": "1.367 م",
+            "en": "1.367 m"
+          },
+          "uncertainty_text": {
+            "ar": "± 6.5 سم",
+            "en": "± 6.5 cm"
+          },
+          "depth_basis": [
+            {
+              "point": 1,
+              "ar": "مستوى Z_ref 1.878 م",
+              "en": "Z_ref 1.878 m"
+            },
+            {
+              "point": 2,
+              "ar": "مستوى Z_ref 1.878 م",
+              "en": "Z_ref 1.878 m"
+            }
+          ],
+          "depth_note": null,
+          "flags": [
+            {
+              "code": "endpoint_dz",
+              "ar": "نقطة بعيدة عن مستوى Z_ref (> 10 %)",
+              "en": "point off the Z_ref plane (> 10 %)",
+              "severity": "warn"
+            }
+          ],
+          "confidence": {
+            "code": "low",
+            "ar": "منخفضة",
+            "en": "low"
+          },
+          "rejected": false,
+          "rejection": [],
+          "detail": null
+        },
+        {
+          "measurement_id": 8,
+          "name": "",
+          "kind": "curve_3d",
+          "kind_label": {
+            "ar": "طول خط منكسر ثلاثي الأبعاد",
+            "en": "3D polyline length"
+          },
+          "color": "#32BE2C",
+          "note": "",
+          "value_text": {
+            "ar": "3.268 م",
+            "en": "3.268 m"
+          },
+          "uncertainty_text": {
+            "ar": "± 2.3 سم",
+            "en": "± 2.3 cm"
+          },
+          "depth_basis": [
+            {
+              "point": 1,
+              "ar": "مباشر 1.891 م",
+              "en": "direct 1.891 m"
+            },
+            {
+              "point": 2,
+              "ar": "مباشر 1.959 م",
+              "en": "direct 1.959 m"
+            },
+            {
+              "point": 3,
+              "ar": "مباشر 1.959 م",
+              "en": "direct 1.959 m"
+            },
+            {
+              "point": 4,
+              "ar": "مباشر 1.959 م",
+              "en": "direct 1.959 m"
+            }
+          ],
+          "depth_note": null,
+          "flags": [],
+          "confidence": null,
+          "rejected": false,
+          "rejection": [],
+          "detail": {
+            "ar": "تحقق ثنائي الأبعاد 3.140 م · المقاطع 3، عليها تنبيه 0",
+            "en": "2D cross-check 3.140 m · 3 segments, 0 flagged"
+          }
+        }
+      ],
+      "summary": {
+        "snapped_text": {
+          "ar": "0 من 14 نقطة قُرِّبت إلى الجمل (KNN)",
+          "en": "0 of 14 points snapped to the camel (KNN)"
+        },
+        "counts_text": {
+          "ar": "القياسات: 8 · المرفوضة: 0 · منخفضة الثقة: 2",
+          "en": "Measurements: 8 · rejected: 0 · low confidence: 2"
+        }
+      },
+      "texts": {
+        "column": {
+          "ar": "#2 · جمل-2",
+          "en": "#2 · جمل-2"
+        },
+        "heading": {
+          "ar": "الجمل #2: جمل-2",
+          "en": "Camel #2: جمل-2"
+        },
+        "status": {
+          "ar": "مُقفلة",
+          "en": "finalized"
+        },
+        "source": {
+          "ar": "20260414_175757-003.bag · مؤشر القراءة 760 · t = 25.36 ث · مائل",
+          "en": "20260414_175757-003.bag · read index 760 · t = 25.36 s · quarter"
+        },
+        "provenance": {
+          "overlay": {
+            "ar": "overlay_v1.png · v1 · sha256 6197ba8f5d69f57ba3ed2259a132aa38beafa6533cceb86ee550709b346ba3a5",
+            "en": "overlay_v1.png · v1 · sha256 6197ba8f5d69f57ba3ed2259a132aa38beafa6533cceb86ee550709b346ba3a5"
+          },
+          "report_model": {
+            "ar": "report_model_v1.json · sha256 f7b5b5f459b01d9f1c5c6a058a55a84fdc48a8cadf6865b97c717b0d6e3d5edc · 0.1.0 · 2026-10-17T17:06:25+00:00",
+            "en": "report_model_v1.json · sha256 f7b5b5f459b01d9f1c5c6a058a55a84fdc48a8cadf6865b97c717b0d6e3d5edc · 0.1.0 · 2026-10-17T17:06:25+00:00"
+          },
+          "session": {
+            "ar": "20261017_170624_c63bc3 · رقم المراجعة 1",
+            "en": "20261017_170624_c63bc3 · revision 1"
+          }
+        }
+      }
+    },
+    {
+      "position": 3,
+      "session_id": "20261017_170625_0af045",
+      "camel_id": "جمل-3",
+      "operator": "",
+      "status": "finalized",
+      "revision": 1,
+      "created_at": "2026-10-17T17:06:25+00:00",
+      "bag": {
+        "name": "20260414_175757-003.bag",
+        "read_index": 860
+      },
+      "overlay": {
+        "file": "overlay_v1.png",
+        "version": 1,
+        "sha256": "9eefbb1f1d2a40f178abad9c1b77f159509e810e9b4bde07fb9dea34d692bf11",
+        "width": 1280,
+        "height": 840
+      },
+      "report_model": {
+        "file": "report_model_v1.json",
+        "version": 1,
+        "sha256": "dd2f866f1c329315628e85bb9af056b37825be8388ae37fc2ac6aa748e575bfc",
+        "report_model_version": "1.1",
+        "engine_version": "0.1.0",
+        "generated_at": "2026-10-17T17:06:26+00:00"
+      },
+      "session_json_sha256": "d3309253c9de98608247519e30c5c85bfa56a37aa67d0d4d7a60905620231dcb",
+      "input_sha256": "893860549d48d2253e09da2e63e542504782cbbcd4a21a81f2eea7210c0c0964",
+      "frame": {
+        "texts": {
+          "z_ref": {
+            "ar": "1.838 م: وسيط 232,181 قيمة عمق صالحة في القناع بعد تقليصه 2 بكسل (93.8% من 247,652 بكسل)، MAD 0.082 م",
+            "en": "1.838 m: median of 232,181 valid depths in the mask eroded by 2 px (93.8% of 247,652 px), robust MAD 0.082 m"
+          },
+          "ground": {
+            "ar": "الصف 708 هو المرسوم (صف المستوى القريب 708، أدنى صف خام 708)",
+            "en": "row 708 drawn (near-plane row 708, raw lowest row 708)"
+          },
+          "source": {
+            "ar": "مؤشر القراءة 860 · t = 28.67 ث · أمامي / خلفي",
+            "en": "read index 860 · t = 28.67 s · end-on"
+          }
+        }
+      },
+      "rows": [
+        {
+          "measurement_id": 1,
+          "name": "طول الجسم",
+          "kind": "distance_3d",
+          "kind_label": {
+            "ar": "مسافة ثلاثية الأبعاد",
+            "en": "3D distance"
+          },
+          "color": "#BE2C2C",
+          "note": "",
+          "value_text": {
+            "ar": "1.874 م",
+            "en": "1.874 m"
+          },
+          "uncertainty_text": {
+            "ar": "± 3.2 سم",
+            "en": "± 3.2 cm"
+          },
+          "depth_basis": [
+            {
+              "point": 1,
+              "ar": "مُكمَّل من الجوار 2.9 سم",
+              "en": "filled from neighbours 2.9 cm"
+            },
+            {
+              "point": 2,
+              "ar": "مباشر 1.880 م",
+              "en": "direct 1.880 m"
+            }
+          ],
+          "depth_note": {
+            "ar": "1 من 2 نقطة قُرِّبت إلى الجمل (KNN)",
+            "en": "1 of 2 points snapped to the camel (KNN)"
+          },
+          "flags": [],
+          "confidence": null,
+          "rejected": false,
+          "rejection": [],
+          "detail": null
+        },
+        {
+          "measurement_id": 2,
+          "name": "ارتفاع السنام",
+          "kind": "distance_3d",
+          "kind_label": {
+            "ar": "مسافة ثلاثية الأبعاد",
+            "en": "3D distance"
+          },
+          "color": "#2C57BE",
+          "note": "",
+          "value_text": {
+            "ar": "0.608 م",
+            "en": "0.608 m"
+          },
+          "uncertainty_text": {
+            "ar": "± 0.7 سم",
+            "en": "± 0.7 cm"
+          },
+          "depth_basis": [
+            {
+              "point": 1,
+              "ar": "مباشر 1.715 م",
+              "en": "direct 1.715 m"
+            },
+            {
+              "point": 2,
+              "ar": "مباشر 1.795 م",
+              "en": "direct 1.795 m"
+            }
+          ],
+          "depth_note": null,
+          "flags": [],
+          "confidence": null,
+          "rejected": false,
+          "rejection": [],
+          "detail": null
+        },
+        {
+          "measurement_id": 3,
+          "name": "ارتفاع الكتف",
+          "kind": "distance_2d",
+          "kind_label": {
+            "ar": "مسافة ثنائية الأبعاد (مستوى Z_ref)",
+            "en": "2D distance (Z_ref plane)"
+          },
+          "color": "#81BE2C",
+          "note": "",
+          "value_text": {
+            "ar": "0.854 م",
+            "en": "0.854 m"
+          },
+          "uncertainty_text": {
+            "ar": "± 5.1 سم",
+            "en": "± 5.1 cm"
+          },
+          "depth_basis": [
+            {
+              "point": 1,
+              "ar": "مستوى Z_ref 1.838 م",
+              "en": "Z_ref 1.838 m"
+            },
+            {
+              "point": 2,
+              "ar": "مستوى Z_ref 1.838 م",
+              "en": "Z_ref 1.838 m"
+            }
+          ],
+          "depth_note": null,
+          "flags": [
+            {
+              "code": "endpoint_dz",
+              "ar": "نقطة بعيدة عن مستوى Z_ref (> 10 %)",
+              "en": "point off the Z_ref plane (> 10 %)",
+              "severity": "warn"
+            }
+          ],
+          "confidence": {
+            "code": "low",
+            "ar": "منخفضة",
+            "en": "low"
+          },
+          "rejected": false,
+          "rejection": [],
+          "detail": null
+        },
+        {
+          "measurement_id": 4,
+          "name": "محيط الصدر",
+          "kind": "curve_3d",
+          "kind_label": {
+            "ar": "طول خط منكسر ثلاثي الأبعاد",
+            "en": "3D polyline length"
+          },
+          "color": "#BE2CAB",
+          "note": "",
+          "value_text": {
+            "ar": "1.161 م",
+            "en": "1.161 m"
+          },
+          "uncertainty_text": {
+            "ar": "± 1.7 سم",
+            "en": "± 1.7 cm"
+          },
+          "depth_basis": [
+            {
+              "point": 1,
+              "ar": "مباشر 1.846 م",
+              "en": "direct 1.846 m"
+            },
+            {
+              "point": 2,
+              "ar": "مباشر 1.783 م",
+              "en": "direct 1.783 m"
+            },
+            {
+              "point": 3,
+              "ar": "مباشر 1.773 م",
+              "en": "direct 1.773 m"
+            },
+            {
+              "point": 4,
+              "ar": "مباشر 1.919 م",
+              "en": "direct 1.919 m"
+            }
+          ],
+          "depth_note": null,
+          "flags": [],
+          "confidence": null,
+          "rejected": false,
+          "rejection": [],
+          "detail": {
+            "ar": "تحقق ثنائي الأبعاد 1.103 م · المقاطع 3، عليها تنبيه 0",
+            "en": "2D cross-check 1.103 m · 3 segments, 0 flagged"
+          }
+        },
+        {
+          "measurement_id": 6,
+          "name": "طول الرقبة",
+          "kind": "distance_3d",
+          "kind_label": {
+            "ar": "مسافة ثلاثية الأبعاد",
+            "en": "3D distance"
+          },
+          "color": "#BE7B2C",
+          "note": "",
+          "value_text": {
+            "ar": "0.590 م",
+            "en": "0.590 m"
+          },
+          "uncertainty_text": {
+            "ar": "± 0.5 سم",
+            "en": "± 0.5 cm"
+          },
+          "depth_basis": [
+            {
+              "point": 1,
+              "ar": "مباشر 1.894 م",
+              "en": "direct 1.894 m"
+            },
+            {
+              "point": 2,
+              "ar": "مباشر 1.766 م",
+              "en": "direct 1.766 m"
+            }
+          ],
+          "depth_note": null,
+          "flags": [],
+          "confidence": null,
+          "rejected": false,
+          "rejection": [],
+          "detail": null
+        },
+        {
+          "measurement_id": 7,
+          "name": "Hump height 2D",
+          "kind": "distance_2d",
+          "kind_label": {
+            "ar": "مسافة ثنائية الأبعاد (مستوى Z_ref)",
+            "en": "2D distance (Z_ref plane)"
+          },
+          "color": "#502CBE",
+          "note": "",
+          "value_text": {
+            "ar": "1.218 م",
+            "en": "1.218 m"
+          },
+          "uncertainty_text": {
+            "ar": "± 7.3 سم",
+            "en": "± 7.3 cm"
+          },
+          "depth_basis": [
+            {
+              "point": 1,
+              "ar": "مستوى Z_ref 1.838 م",
+              "en": "Z_ref 1.838 m"
+            },
+            {
+              "point": 2,
+              "ar": "مستوى Z_ref 1.838 م",
+              "en": "Z_ref 1.838 m"
+            }
+          ],
+          "depth_note": null,
+          "flags": [],
+          "confidence": null,
+          "rejected": false,
+          "rejection": [],
+          "detail": null
+        },
+        {
+          "measurement_id": 8,
+          "name": "Belly line",
+          "kind": "curve_3d",
+          "kind_label": {
+            "ar": "طول خط منكسر ثلاثي الأبعاد",
+            "en": "3D polyline length"
+          },
+          "color": "#32BE2C",
+          "note": "",
+          "value_text": {
+            "ar": "3.465 م",
+            "en": "3.465 m"
+          },
+          "uncertainty_text": {
+            "ar": "± 2.0 سم",
+            "en": "± 2.0 cm"
+          },
+          "depth_basis": [
+            {
+              "point": 1,
+              "ar": "مباشر 2.029 م",
+              "en": "direct 2.029 m"
+            },
+            {
+              "point": 2,
+              "ar": "مباشر 1.735 م",
+              "en": "direct 1.735 m"
+            },
+            {
+              "point": 3,
+              "ar": "مباشر 1.756 م",
+              "en": "direct 1.756 m"
+            },
+            {
+              "point": 4,
+              "ar": "مباشر 1.754 م",
+              "en": "direct 1.754 m"
+            }
+          ],
+          "depth_note": null,
+          "flags": [],
+          "confidence": null,
+          "rejected": false,
+          "rejection": [],
+          "detail": {
+            "ar": "تحقق ثنائي الأبعاد 3.499 م · المقاطع 3، عليها تنبيه 0",
+            "en": "2D cross-check 3.499 m · 3 segments, 0 flagged"
+          }
+        }
+      ],
+      "summary": {
+        "snapped_text": {
+          "ar": "1 من 14 نقطة قُرِّبت إلى الجمل (KNN)",
+          "en": "1 of 14 points snapped to the camel (KNN)"
+        },
+        "counts_text": {
+          "ar": "القياسات: 8 · المرفوضة: 0 · منخفضة الثقة: 1",
+          "en": "Measurements: 8 · rejected: 0 · low confidence: 1"
+        }
+      },
+      "texts": {
+        "column": {
+          "ar": "#3 · جمل-3",
+          "en": "#3 · جمل-3"
+        },
+        "heading": {
+          "ar": "الجمل #3: جمل-3",
+          "en": "Camel #3: جمل-3"
+        },
+        "status": {
+          "ar": "مُقفلة",
+          "en": "finalized"
+        },
+        "source": {
+          "ar": "20260414_175757-003.bag · مؤشر القراءة 860 · t = 28.67 ث · أمامي / خلفي",
+          "en": "20260414_175757-003.bag · read index 860 · t = 28.67 s · end-on"
+        },
+        "provenance": {
+          "overlay": {
+            "ar": "overlay_v1.png · v1 · sha256 9eefbb1f1d2a40f178abad9c1b77f159509e810e9b4bde07fb9dea34d692bf11",
+            "en": "overlay_v1.png · v1 · sha256 9eefbb1f1d2a40f178abad9c1b77f159509e810e9b4bde07fb9dea34d692bf11"
+          },
+          "report_model": {
+            "ar": "report_model_v1.json · sha256 dd2f866f1c329315628e85bb9af056b37825be8388ae37fc2ac6aa748e575bfc · 0.1.0 · 2026-10-17T17:06:26+00:00",
+            "en": "report_model_v1.json · sha256 dd2f866f1c329315628e85bb9af056b37825be8388ae37fc2ac6aa748e575bfc · 0.1.0 · 2026-10-17T17:06:26+00:00"
+          },
+          "session": {
+            "ar": "20261017_170625_0af045 · رقم المراجعة 1",
+            "en": "20261017_170625_0af045 · revision 1"
+          }
+        }
+      }
+    }
+  ],
+  "rows": [
+    {
+      "row_id": 1,
+      "name": "طول الجسم",
+      "name_text": {
+        "ar": "طول الجسم",
+        "en": "طول الجسم"
+      },
+      "unnamed": false,
+      "kind": "distance_3d",
+      "kind_label": {
+        "ar": "مسافة ثلاثية الأبعاد",
+        "en": "3D distance"
+      },
+      "occurrence": 1,
+      "n_occurrences": 2,
+      "occurrence_text": {
+        "ar": "(1/2)",
+        "en": "(1/2)"
+      },
+      "cells": [
+        {
+          "measurement_id": 1,
+          "value_text": {
+            "ar": "1.520 م",
+            "en": "1.520 m"
+          },
+          "uncertainty_text": {
+            "ar": "± 1.1 سم",
+            "en": "± 1.1 cm"
+          },
+          "depth_note": null,
+          "flags": [],
+          "confidence": null,
+          "rejected": false,
+          "rejection": [],
+          "occurrence": 1,
+          "n_in_session": 2
+        },
+        {
+          "measurement_id": 1,
+          "value_text": {
+            "ar": "1.022 م",
+            "en": "1.022 m"
+          },
+          "uncertainty_text": {
+            "ar": "± 0.9 سم",
+            "en": "± 0.9 cm"
+          },
+          "depth_note": null,
+          "flags": [],
+          "confidence": null,
+          "rejected": false,
+          "rejection": [],
+          "occurrence": 1,
+          "n_in_session": 1
+        },
+        {
+          "measurement_id": 1,
+          "value_text": {
+            "ar": "1.874 م",
+            "en": "1.874 m"
+          },
+          "uncertainty_text": {
+            "ar": "± 3.2 سم",
+            "en": "± 3.2 cm"
+          },
+          "depth_note": {
+            "ar": "1 من 2 نقطة قُرِّبت إلى الجمل (KNN)",
+            "en": "1 of 2 points snapped to the camel (KNN)"
+          },
+          "flags": [],
+          "confidence": null,
+          "rejected": false,
+          "rejection": [],
+          "occurrence": 1,
+          "n_in_session": 1
+        }
+      ]
+    },
+    {
+      "row_id": 2,
+      "name": "ارتفاع السنام",
+      "name_text": {
+        "ar": "ارتفاع السنام",
+        "en": "ارتفاع السنام"
+      },
+      "unnamed": false,
+      "kind": "distance_3d",
+      "kind_label": {
+        "ar": "مسافة ثلاثية الأبعاد",
+        "en": "3D distance"
+      },
+      "occurrence": 1,
+      "n_occurrences": 1,
+      "occurrence_text": null,
+      "cells": [
+        {
+          "measurement_id": 2,
+          "value_text": {
+            "ar": "1.706 م",
+            "en": "1.706 m"
+          },
+          "uncertainty_text": {
+            "ar": "± 1.2 سم",
+            "en": "± 1.2 cm"
+          },
+          "depth_note": null,
+          "flags": [],
+          "confidence": null,
+          "rejected": false,
+          "rejection": [],
+          "occurrence": 1,
+          "n_in_session": 1
+        },
+        {
+          "measurement_id": 2,
+          "value_text": {
+            "ar": "0.434 م",
+            "en": "0.434 m"
+          },
+          "uncertainty_text": {
+            "ar": "± 1.5 سم",
+            "en": "± 1.5 cm"
+          },
+          "depth_note": null,
+          "flags": [],
+          "confidence": null,
+          "rejected": false,
+          "rejection": [],
+          "occurrence": 1,
+          "n_in_session": 1
+        },
+        {
+          "measurement_id": 2,
+          "value_text": {
+            "ar": "0.608 م",
+            "en": "0.608 m"
+          },
+          "uncertainty_text": {
+            "ar": "± 0.7 سم",
+            "en": "± 0.7 cm"
+          },
+          "depth_note": null,
+          "flags": [],
+          "confidence": null,
+          "rejected": false,
+          "rejection": [],
+          "occurrence": 1,
+          "n_in_session": 1
+        }
+      ]
+    },
+    {
+      "row_id": 3,
+      "name": "ارتفاع الكتف",
+      "name_text": {
+        "ar": "ارتفاع الكتف",
+        "en": "ارتفاع الكتف"
+      },
+      "unnamed": false,
+      "kind": "distance_2d",
+      "kind_label": {
+        "ar": "مسافة ثنائية الأبعاد (مستوى Z_ref)",
+        "en": "2D distance (Z_ref plane)"
+      },
+      "occurrence": 1,
+      "n_occurrences": 1,
+      "occurrence_text": null,
+      "cells": [
+        {
+          "measurement_id": 3,
+          "value_text": {
+            "ar": "0.854 م",
+            "en": "0.854 m"
+          },
+          "uncertainty_text": {
+            "ar": "± 4.6 سم",
+            "en": "± 4.6 cm"
+          },
+          "depth_note": null,
+          "flags": [],
+          "confidence": null,
+          "rejected": false,
+          "rejection": [],
+          "occurrence": 1,
+          "n_in_session": 1
+        },
+        {
+          "measurement_id": 3,
+          "value_text": null,
+          "uncertainty_text": null,
+          "depth_note": null,
+          "flags": [],
+          "confidence": null,
+          "rejected": true,
+          "rejection": [
+            {
+              "code": "knn_too_far",
+              "point": "P2",
+              "ar": "أقرب نقاط الجمل بعيدة جدًا (> 30 سم)",
+              "en": "nearest camel pixels too far (> 30 cm)"
+            }
+          ],
+          "occurrence": 1,
+          "n_in_session": 1
+        },
+        {
+          "measurement_id": 3,
+          "value_text": {
+            "ar": "0.854 م",
+            "en": "0.854 m"
+          },
+          "uncertainty_text": {
+            "ar": "± 5.1 سم",
+            "en": "± 5.1 cm"
+          },
+          "depth_note": null,
+          "flags": [
+            {
+              "code": "endpoint_dz",
+              "ar": "نقطة بعيدة عن مستوى Z_ref (> 10 %)",
+              "en": "point off the Z_ref plane (> 10 %)",
+              "severity": "warn"
+            }
+          ],
+          "confidence": {
+            "code": "low",
+            "ar": "منخفضة",
+            "en": "low"
+          },
+          "rejected": false,
+          "rejection": [],
+          "occurrence": 1,
+          "n_in_session": 1
+        }
+      ]
+    },
+    {
+      "row_id": 4,
+      "name": "محيط الصدر",
+      "name_text": {
+        "ar": "محيط الصدر",
+        "en": "محيط الصدر"
+      },
+      "unnamed": false,
+      "kind": "curve_3d",
+      "kind_label": {
+        "ar": "طول خط منكسر ثلاثي الأبعاد",
+        "en": "3D polyline length"
+      },
+      "occurrence": 1,
+      "n_occurrences": 1,
+      "occurrence_text": null,
+      "cells": [
+        {
+          "measurement_id": 4,
+          "value_text": {
+            "ar": "2.584 م",
+            "en": "2.584 m"
+          },
+          "uncertainty_text": {
+            "ar": "± 2.7 سم",
+            "en": "± 2.7 cm"
+          },
+          "depth_note": null,
+          "flags": [
+            {
+              "code": "segment_depth_jump",
+              "ar": "قفزة عمق في مقطع",
+              "en": "depth jump in a segment",
+              "severity": "warn"
+            }
+          ],
+          "confidence": {
+            "code": "low",
+            "ar": "منخفضة",
+            "en": "low"
+          },
+          "rejected": false,
+          "rejection": [],
+          "occurrence": 1,
+          "n_in_session": 1
+        },
+        {
+          "measurement_id": 4,
+          "value_text": {
+            "ar": "2.609 م",
+            "en": "2.609 m"
+          },
+          "uncertainty_text": {
+            "ar": "± 2.3 سم",
+            "en": "± 2.3 cm"
+          },
+          "depth_note": null,
+          "flags": [],
+          "confidence": null,
+          "rejected": false,
+          "rejection": [],
+          "occurrence": 1,
+          "n_in_session": 1
+        },
+        {
+          "measurement_id": 4,
+          "value_text": {
+            "ar": "1.161 م",
+            "en": "1.161 m"
+          },
+          "uncertainty_text": {
+            "ar": "± 1.7 سم",
+            "en": "± 1.7 cm"
+          },
+          "depth_note": null,
+          "flags": [],
+          "confidence": null,
+          "rejected": false,
+          "rejection": [],
+          "occurrence": 1,
+          "n_in_session": 1
+        }
+      ]
+    },
+    {
+      "row_id": 5,
+      "name": "خط الظهر",
+      "name_text": {
+        "ar": "خط الظهر",
+        "en": "خط الظهر"
+      },
+      "unnamed": false,
+      "kind": "curve_2d",
+      "kind_label": {
+        "ar": "طول خط منكسر ثنائي الأبعاد (مستوى Z_ref)",
+        "en": "2D polyline length (Z_ref plane)"
+      },
+      "occurrence": 1,
+      "n_occurrences": 1,
+      "occurrence_text": null,
+      "cells": [
+        {
+          "measurement_id": 5,
+          "value_text": {
+            "ar": "2.725 م",
+            "en": "2.725 m"
+          },
+          "uncertainty_text": {
+            "ar": "± 0.147 م",
+            "en": "± 0.147 m"
+          },
+          "depth_note": null,
+          "flags": [],
+          "confidence": null,
+          "rejected": false,
+          "rejection": [],
+          "occurrence": 1,
+          "n_in_session": 1
+        },
+        {
+          "measurement_id": 5,
+          "value_text": {
+            "ar": "1.732 م",
+            "en": "1.732 m"
+          },
+          "uncertainty_text": {
+            "ar": "± 8.3 سم",
+            "en": "± 8.3 cm"
+          },
+          "depth_note": null,
+          "flags": [
+            {
+              "code": "endpoint_dz",
+              "ar": "نقطة بعيدة عن مستوى Z_ref (> 10 %)",
+              "en": "point off the Z_ref plane (> 10 %)",
+              "severity": "warn"
+            }
+          ],
+          "confidence": {
+            "code": "low",
+            "ar": "منخفضة",
+            "en": "low"
+          },
+          "rejected": false,
+          "rejection": [],
+          "occurrence": 1,
+          "n_in_session": 1
+        },
+        null
+      ]
+    },
+    {
+      "row_id": 6,
+      "name": "طول الرقبة",
+      "name_text": {
+        "ar": "طول الرقبة",
+        "en": "طول الرقبة"
+      },
+      "unnamed": false,
+      "kind": "distance_3d",
+      "kind_label": {
+        "ar": "مسافة ثلاثية الأبعاد",
+        "en": "3D distance"
+      },
+      "occurrence": 1,
+      "n_occurrences": 1,
+      "occurrence_text": null,
+      "cells": [
+        {
+          "measurement_id": 6,
+          "value_text": {
+            "ar": "0.244 م",
+            "en": "0.244 m"
+          },
+          "uncertainty_text": {
+            "ar": "± 0.2 سم",
+            "en": "± 0.2 cm"
+          },
+          "depth_note": null,
+          "flags": [],
+          "confidence": null,
+          "rejected": false,
+          "rejection": [],
+          "occurrence": 1,
+          "n_in_session": 1
+        },
+        {
+          "measurement_id": 6,
+          "value_text": {
+            "ar": "0.477 م",
+            "en": "0.477 m"
+          },
+          "uncertainty_text": {
+            "ar": "± 1.7 سم",
+            "en": "± 1.7 cm"
+          },
+          "depth_note": null,
+          "flags": [],
+          "confidence": null,
+          "rejected": false,
+          "rejection": [],
+          "occurrence": 1,
+          "n_in_session": 1
+        },
+        {
+          "measurement_id": 6,
+          "value_text": {
+            "ar": "0.590 م",
+            "en": "0.590 m"
+          },
+          "uncertainty_text": {
+            "ar": "± 0.5 سم",
+            "en": "± 0.5 cm"
+          },
+          "depth_note": null,
+          "flags": [],
+          "confidence": null,
+          "rejected": false,
+          "rejection": [],
+          "occurrence": 1,
+          "n_in_session": 1
+        }
+      ]
+    },
+    {
+      "row_id": 7,
+      "name": "Hump height 2D",
+      "name_text": {
+        "ar": "Hump height 2D",
+        "en": "Hump height 2D"
+      },
+      "unnamed": false,
+      "kind": "distance_2d",
+      "kind_label": {
+        "ar": "مسافة ثنائية الأبعاد (مستوى Z_ref)",
+        "en": "2D distance (Z_ref plane)"
+      },
+      "occurrence": 1,
+      "n_occurrences": 1,
+      "occurrence_text": null,
+      "cells": [
+        {
+          "measurement_id": 7,
+          "value_text": {
+            "ar": "0.523 م",
+            "en": "0.523 m"
+          },
+          "uncertainty_text": {
+            "ar": "± 2.8 سم",
+            "en": "± 2.8 cm"
+          },
+          "depth_note": null,
+          "flags": [],
+          "confidence": null,
+          "rejected": false,
+          "rejection": [],
+          "occurrence": 1,
+          "n_in_session": 1
+        },
+        {
+          "measurement_id": 7,
+          "value_text": {
+            "ar": "1.367 م",
+            "en": "1.367 m"
+          },
+          "uncertainty_text": {
+            "ar": "± 6.5 سم",
+            "en": "± 6.5 cm"
+          },
+          "depth_note": null,
+          "flags": [
+            {
+              "code": "endpoint_dz",
+              "ar": "نقطة بعيدة عن مستوى Z_ref (> 10 %)",
+              "en": "point off the Z_ref plane (> 10 %)",
+              "severity": "warn"
+            }
+          ],
+          "confidence": {
+            "code": "low",
+            "ar": "منخفضة",
+            "en": "low"
+          },
+          "rejected": false,
+          "rejection": [],
+          "occurrence": 1,
+          "n_in_session": 1
+        },
+        {
+          "measurement_id": 7,
+          "value_text": {
+            "ar": "1.218 م",
+            "en": "1.218 m"
+          },
+          "uncertainty_text": {
+            "ar": "± 7.3 سم",
+            "en": "± 7.3 cm"
+          },
+          "depth_note": null,
+          "flags": [],
+          "confidence": null,
+          "rejected": false,
+          "rejection": [],
+          "occurrence": 1,
+          "n_in_session": 1
+        }
+      ]
+    },
+    {
+      "row_id": 8,
+      "name": "Belly line",
+      "name_text": {
+        "ar": "Belly line",
+        "en": "Belly line"
+      },
+      "unnamed": false,
+      "kind": "curve_3d",
+      "kind_label": {
+        "ar": "طول خط منكسر ثلاثي الأبعاد",
+        "en": "3D polyline length"
+      },
+      "occurrence": 1,
+      "n_occurrences": 1,
+      "occurrence_text": null,
+      "cells": [
+        {
+          "measurement_id": 8,
+          "value_text": {
+            "ar": "3.796 م",
+            "en": "3.796 m"
+          },
+          "uncertainty_text": {
+            "ar": "± 2.4 سم",
+            "en": "± 2.4 cm"
+          },
+          "depth_note": null,
+          "flags": [],
+          "confidence": null,
+          "rejected": false,
+          "rejection": [],
+          "occurrence": 1,
+          "n_in_session": 1
+        },
+        null,
+        {
+          "measurement_id": 8,
+          "value_text": {
+            "ar": "3.465 م",
+            "en": "3.465 m"
+          },
+          "uncertainty_text": {
+            "ar": "± 2.0 سم",
+            "en": "± 2.0 cm"
+          },
+          "depth_note": null,
+          "flags": [],
+          "confidence": null,
+          "rejected": false,
+          "rejection": [],
+          "occurrence": 1,
+          "n_in_session": 1
+        }
+      ]
+    },
+    {
+      "row_id": 9,
+      "name": "طول الجسم",
+      "name_text": {
+        "ar": "طول الجسم",
+        "en": "طول الجسم"
+      },
+      "unnamed": false,
+      "kind": "distance_3d",
+      "kind_label": {
+        "ar": "مسافة ثلاثية الأبعاد",
+        "en": "3D distance"
+      },
+      "occurrence": 2,
+      "n_occurrences": 2,
+      "occurrence_text": {
+        "ar": "(2/2)",
+        "en": "(2/2)"
+      },
+      "cells": [
+        {
+          "measurement_id": 99,
+          "value_text": {
+            "ar": "1.520 م",
+            "en": "1.520 m"
+          },
+          "uncertainty_text": {
+            "ar": "± 1.1 سم",
+            "en": "± 1.1 cm"
+          },
+          "depth_note": null,
+          "flags": [],
+          "confidence": null,
+          "rejected": false,
+          "rejection": [],
+          "occurrence": 2,
+          "n_in_session": 2
+        },
+        null,
+        null
+      ]
+    },
+    {
+      "row_id": 10,
+      "name": "",
+      "name_text": {
+        "ar": "قياس بلا اسم #8",
+        "en": "Unnamed measurement #8"
+      },
+      "unnamed": true,
+      "kind": "curve_3d",
+      "kind_label": {
+        "ar": "طول خط منكسر ثلاثي الأبعاد",
+        "en": "3D polyline length"
+      },
+      "occurrence": 1,
+      "n_occurrences": 1,
+      "occurrence_text": null,
+      "cells": [
+        null,
+        {
+          "measurement_id": 8,
+          "value_text": {
+            "ar": "3.268 م",
+            "en": "3.268 m"
+          },
+          "uncertainty_text": {
+            "ar": "± 2.3 سم",
+            "en": "± 2.3 cm"
+          },
+          "depth_note": null,
+          "flags": [],
+          "confidence": null,
+          "rejected": false,
+          "rejection": [],
+          "occurrence": 1,
+          "n_in_session": 1
+        },
+        null
+      ]
+    }
+  ],
+  "disambiguated": [
+    {
+      "name": "طول الجسم",
+      "kind": "distance_3d",
+      "pairing": "by_order",
+      "counts": [
+        {
+          "position": 1,
+          "n": 2
+        },
+        {
+          "position": 2,
+          "n": 1
+        },
+        {
+          "position": 3,
+          "n": 1
+        }
+      ]
+    }
+  ],
+  "signature_wells": [
+    {
+      "id": "judge",
+      "ar": "توقيع الحكم",
+      "en": "Judge Signature",
+      "name": "الحكم"
+    },
+    {
+      "id": "council",
+      "ar": "توقيع مجلس الحكام",
+      "en": "Council of Judges Signature",
+      "name": "مجلس"
+    }
+  ],
+  "static": {
+    "brand": {
+      "ar": "نظير",
+      "en": "Nazeer"
+    },
+    "title": {
+      "ar": "مقارنة قياسات الإبل",
+      "en": "Camel Measurement Comparison"
+    },
+    "certification": {
+      "ar": [
+        "معتمدة من شركة نظير",
+        "الموسوعة الرقمية للجمال العربية"
+      ],
+      "en": [
+        "Certified by Nazeer Company",
+        "Digital Encyclopedia of Arabian Beauty"
+      ]
+    },
+    "disclaimers": [
+      {
+        "ar": "يقيس نظير ما يرسمه الحكم على الصورة ولا يقيّم الجمال.",
+        "en": "Nazeer measures what the judge draws on the frame; it does not score beauty."
+      },
+      {
+        "ar": "تظهر الإبل بالترتيب الذي اختاره المشغّل، وتُعرض القيم جنبًا إلى جنب دون ترتيب أو مفاضلة.",
+        "en": "The camels appear in the order the operator chose; the values are shown side by side, not ranked."
+      },
+      {
+        "ar": "يُطابَق القياس بين الإبل بالاسم كما كُتب وبنوع القياس، ولا يُجمع قياس ثنائي الأبعاد مع ثلاثي الأبعاد.",
+        "en": "Measurements are matched across camels by their name as written and by their kind; a 2D measurement never shares a row with a 3D one."
+      }
+    ],
+    "headings": {
+      "cover": {
+        "ar": "بيانات المقارنة",
+        "en": "Comparison details"
+      },
+      "members": {
+        "ar": "الإبل في هذه المقارنة",
+        "en": "Camels in this comparison"
+      },
+      "table": {
+        "ar": "جدول المقارنة",
+        "en": "Comparison table"
+      },
+      "member": {
+        "ar": "الجمل",
+        "en": "Camel"
+      },
+      "measurements": {
+        "ar": "القياسات الآلية (الكاميرا)",
+        "en": "Camera-Derived Measurements"
+      },
+      "camel_view": {
+        "ar": "المنظر الجانبي مع القياسات",
+        "en": "Side View with Measurements"
+      },
+      "depth": {
+        "ar": "العمق المرجعي وخط الأرض",
+        "en": "Reference depth and ground line"
+      },
+      "member_provenance": {
+        "ar": "مصدر بيانات هذا الجمل",
+        "en": "This camel's sources"
+      },
+      "signatures": {
+        "ar": "التوقيعات",
+        "en": "Signatures"
+      },
+      "provenance": {
+        "ar": "مصدر البيانات والإصدارات",
+        "en": "Provenance and versions"
+      }
+    },
+    "columns": {
+      "position": {
+        "ar": "#",
+        "en": "#"
+      },
+      "camel_id": {
+        "ar": "معرّف الجمل",
+        "en": "Camel ID"
+      },
+      "session_id": {
+        "ar": "المعرّف",
+        "en": "Session ID"
+      },
+      "source_frame": {
+        "ar": "المصدر",
+        "en": "Source frame"
+      },
+      "status": {
+        "ar": "الحالة",
+        "en": "Status"
+      },
+      "measurement": {
+        "ar": "القياس",
+        "en": "Measurement"
+      },
+      "kind": {
+        "ar": "النوع",
+        "en": "Type"
+      },
+      "value": {
+        "ar": "القيمة",
+        "en": "Value"
+      },
+      "uncertainty": {
+        "ar": "الدقة",
+        "en": "Uncertainty"
+      },
+      "depth_basis": {
+        "ar": "أساس العمق",
+        "en": "Depth basis"
+      },
+      "flags": {
+        "ar": "تنبيهات",
+        "en": "Flags"
+      }
+    },
+    "cover_rows": {
+      "title": {
+        "ar": "العنوان",
+        "en": "Title"
+      },
+      "event": {
+        "ar": "الفعالية",
+        "en": "Event"
+      },
+      "judge": {
+        "ar": "الحكم",
+        "en": "Judge"
+      },
+      "council": {
+        "ar": "مجلس الحكام",
+        "en": "Council of Judges"
+      },
+      "created": {
+        "ar": "تاريخ الإنشاء",
+        "en": "Created"
+      },
+      "n_camels": {
+        "ar": "عدد الإبل",
+        "en": "Camels"
+      },
+      "comparison_id": {
+        "ar": "معرّف المقارنة",
+        "en": "Comparison ID"
+      }
+    },
+    "frame_rows": {
+      "z_ref": {
+        "ar": "العمق المرجعي",
+        "en": "Reference depth Z_ref"
+      },
+      "ground": {
+        "ar": "خط الأرض",
+        "en": "Ground line"
+      }
+    },
+    "provenance_rows": {
+      "engine": {
+        "ar": "المحرك",
+        "en": "Engine"
+      },
+      "comparison_model": {
+        "ar": "بيانات المقارنة",
+        "en": "Comparison model"
+      },
+      "overlay": {
+        "ar": "صورة المحرك",
+        "en": "Engine image"
+      },
+      "report_model": {
+        "ar": "بيانات التقرير",
+        "en": "Report model"
+      },
+      "session": {
+        "ar": "الجلسة",
+        "en": "Session"
+      },
+      "libraries": {
+        "ar": "المكتبات",
+        "en": "Libraries"
+      }
+    },
+    "signature_fields": {
+      "name": {
+        "ar": "الاسم",
+        "en": "Name"
+      },
+      "date": {
+        "ar": "التاريخ",
+        "en": "Date"
+      }
+    },
+    "rejected": {
+      "ar": "مرفوض",
+      "en": "Rejected"
+    },
+    "missing": {
+      "ar": "—",
+      "en": "—"
+    }
+  },
+  "versions": {
+    "python": "3.11.9",
+    "pypdf": "6.1.1",
+    "data_root": "C:\\Users\\op\\data"
+  },
+  "constants": {
+    "COMPARISON_MAX_SESSIONS": 20
+  }
+}

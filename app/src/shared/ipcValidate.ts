@@ -4,11 +4,17 @@
  */
 import { MAX_SAFE_INT, SESSION_ID_RE, SHA256_HEX_RE } from "./ids";
 import {
+  MAX_COMPARISON_APPROVALS,
   MAX_OVERLAY_BYTES,
+  type ComparisonExportRequest,
   type ExportRequest,
+  type OpenSavedRequest,
   type PreflightProblem,
   type PrintPreflight,
   type QuitAck,
+  type ReportKind,
+  type SaveAsRequest,
+  type SavedCopyQuery,
 } from "./ipc";
 
 export const MAX_CAPTURE_FOLDERS = 20;
@@ -137,6 +143,105 @@ export function validateExportRequest(value: unknown): ExportRequest {
       sha256: sha256(model["sha256"], "report model sha256"),
     },
   };
+}
+
+/**
+ * print.exportComparison (D12): a comparison id, the model version / SHA-256 the screen shows, and
+ * the approvals given in the app (each session at most once). No bytes: main fetches the overlays.
+ */
+export function validateComparisonExportRequest(value: unknown): ComparisonExportRequest {
+  const record = plainObject(value, "comparison export request");
+  exactKeys(record, ["comparisonId", "model", "approvals"], "comparison export request");
+  const { comparisonId } = record;
+  if (typeof comparisonId !== "string" || !SESSION_ID_RE.test(comparisonId)) {
+    throw new Error("comparison export request comparisonId is not a comparison id");
+  }
+  const model = plainObject(record["model"], "comparison export request model");
+  exactKeys(model, ["version", "sha256"], "comparison export request model");
+  const approvals = record["approvals"];
+  if (!Array.isArray(approvals) || approvals.length > MAX_COMPARISON_APPROVALS) {
+    throw new Error(
+      `comparison export approvals must be an array of at most ${MAX_COMPARISON_APPROVALS}`,
+    );
+  }
+  const seen = new Set<string>();
+  return {
+    comparisonId,
+    model: {
+      version: version(model["version"], "comparison model version"),
+      sha256: sha256(model["sha256"], "comparison model sha256"),
+    },
+    approvals: approvals.map((item) => {
+      const approval = plainObject(item, "comparison export approval");
+      exactKeys(approval, ["sessionId", "overlayVersion", "sha256"], "comparison export approval");
+      const { sessionId } = approval;
+      if (typeof sessionId !== "string" || !SESSION_ID_RE.test(sessionId)) {
+        throw new Error("comparison export approval sessionId is not a session id");
+      }
+      if (seen.has(sessionId)) throw new Error("comparison export approvals name a session twice");
+      seen.add(sessionId);
+      return {
+        sessionId,
+        overlayVersion: version(approval["overlayVersion"], "approval overlay version"),
+        sha256: sha256(approval["sha256"], "approval sha256"),
+      };
+    }),
+  };
+}
+
+/** The longest file name the renderer may suggest for a saved copy (main sanitises it again). */
+export const MAX_SUGGESTED_NAME_CHARS = 200;
+
+function reportRef(record: Record<string, unknown>, what: string): SavedCopyQuery {
+  const { kind, id } = record;
+  if (kind !== "session" && kind !== "comparison") {
+    throw new Error(`${what} kind must be "session" or "comparison"`);
+  }
+  // a comparison id has the session id's form (the engine's new_session_id)
+  if (typeof id !== "string" || !SESSION_ID_RE.test(id)) {
+    throw new Error(`${what} id is not a ${kind} id`);
+  }
+  return {
+    kind: kind satisfies ReportKind,
+    id,
+    version: version(record["version"], `${what} version`),
+  };
+}
+
+/** report.saveAs: which sealed report, and a file name (never a path, never bytes; D12). */
+export function validateSaveAsRequest(value: unknown): SaveAsRequest {
+  const record = plainObject(value, "save-as request");
+  exactKeys(record, ["kind", "id", "version", "suggestedName"], "save-as request");
+  const name = record["suggestedName"];
+  if (
+    typeof name !== "string" ||
+    name.length === 0 ||
+    name.length > MAX_SUGGESTED_NAME_CHARS ||
+    name.includes("\0")
+  ) {
+    throw new Error(
+      `save-as suggestedName must be a string of 1 to ${MAX_SUGGESTED_NAME_CHARS} characters`,
+    );
+  }
+  return { ...reportRef(record, "save-as request"), suggestedName: name };
+}
+
+/** report.savedCopy: which report version's recorded copy. */
+export function validateSavedCopyQuery(value: unknown): SavedCopyQuery {
+  const record = plainObject(value, "saved-copy query");
+  exactKeys(record, ["kind", "id", "version"], "saved-copy query");
+  return reportRef(record, "saved-copy query");
+}
+
+/** report.openSaved: open the recorded copy, or show it in its folder. */
+export function validateOpenSavedRequest(value: unknown): OpenSavedRequest {
+  const record = plainObject(value, "open-saved request");
+  exactKeys(record, ["kind", "id", "version", "action"], "open-saved request");
+  const action = record["action"];
+  if (action !== "open" && action !== "show") {
+    throw new Error('open-saved action must be "open" or "show"');
+  }
+  return { ...reportRef(record, "open-saved request"), action };
 }
 
 export const MAX_PREFLIGHT_PROBLEMS = 200;

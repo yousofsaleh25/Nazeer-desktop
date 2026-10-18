@@ -1,7 +1,13 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it, vi } from "vitest";
-import type { EngineConnection, ExportRequest, PrintJob, PrintPreflight } from "@shared/ipc";
+import type {
+  EngineConnection,
+  ExportRequest,
+  ExportResult,
+  PrintJob,
+  PrintPreflight,
+} from "@shared/ipc";
 import {
   engineCallUrl,
   exportPdf,
@@ -168,11 +174,12 @@ describe("exportPdf", () => {
     expect(result.ok).toBe(true);
     expect(result.ok && result.probe).toEqual({ verdict: "PASS" });
     const job = d.printed[0];
-    expect(job?.overlay.bytes).toEqual(OVERLAY);
-    expect(job?.font.sha256).toBe(PRINT_FONT_SHA256);
-    expect(job?.reportModel).toEqual({ version: 2, sha256: f.model.sha256 });
-    expect(job?.requiredTexts).toEqual(["جمل-1", "Height"]);
-    expect(job?.model).toEqual({ report_model_version: "1.1", static: {}, measurements: [] });
+    if (job?.kind !== "report") throw new Error("not a report job");
+    expect(job.overlay.bytes).toEqual(OVERLAY);
+    expect(job.font.sha256).toBe(PRINT_FONT_SHA256);
+    expect(job.reportModel).toEqual({ version: 2, sha256: f.model.sha256 });
+    expect(job.requiredTexts).toEqual(["جمل-1", "Height"]);
+    expect(job.model).toEqual({ report_model_version: "1.1", static: {}, measurements: [] });
     const upload = f.calls.find((c) => c.method === "POST");
     expect(upload?.bytes).toBe(5);
     expect(upload?.headers).toMatchObject({
@@ -364,8 +371,8 @@ describe("oneAtATime", () => {
   it("refuses a second export while one runs", async () => {
     let release: () => void = () => undefined;
     const run = oneAtATime(
-      () =>
-        new Promise((resolve) => {
+      (_request: ExportRequest) =>
+        new Promise<ExportResult>((resolve) => {
           release = () =>
             resolve({
               ok: true,

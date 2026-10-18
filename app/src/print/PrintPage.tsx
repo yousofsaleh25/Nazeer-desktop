@@ -21,7 +21,7 @@ export interface PrintPageProps {
   reportModel: { version: number; sha256: string };
 }
 
-function Heading({ label }: { label: Pair }) {
+export function Heading({ label }: { label: Pair }) {
   return (
     <h2 className="print-h2">
       <L label={label} />
@@ -29,7 +29,7 @@ function Heading({ label }: { label: Pair }) {
   );
 }
 
-function KeyValue({ rows }: { rows: [Pair, ReactNode][] }) {
+export function KeyValue({ rows }: { rows: [Pair, ReactNode][] }) {
   return (
     <table className="print-table print-kv">
       <tbody>
@@ -46,7 +46,7 @@ function KeyValue({ rows }: { rows: [Pair, ReactNode][] }) {
   );
 }
 
-function Chip({ label, warn }: { label: Pair; warn: boolean }) {
+export function Chip({ label, warn }: { label: Pair; warn: boolean }) {
   return (
     <span className={warn ? "print-chip print-chip-warn" : "print-chip"}>
       <L label={label} block />
@@ -54,7 +54,7 @@ function Chip({ label, warn }: { label: Pair; warn: boolean }) {
   );
 }
 
-function pointLabel(points: (number | null)[]): string | null {
+export function pointLabel(points: (number | null)[]): string | null {
   const first = points[0] ?? null;
   const last = points[points.length - 1] ?? null;
   if (first === null) return null;
@@ -62,7 +62,7 @@ function pointLabel(points: (number | null)[]): string | null {
 }
 
 /** Consecutive points with the same basis share one line ("P1–P5 Z_ref 2.329 m" once). */
-function groupedBasis(entries: BasisEntry[]): { points: (number | null)[]; label: Pair }[] {
+export function groupedBasis(entries: BasisEntry[]): { points: (number | null)[]; label: Pair }[] {
   const groups: { points: (number | null)[]; label: Pair }[] = [];
   for (const entry of entries) {
     const last = groups[groups.length - 1];
@@ -153,6 +153,47 @@ function MeasurementRow({ row, rejectedLabel }: { row: PrintRow; rejectedLabel: 
   );
 }
 
+/** The page's head: the logo, the brand, the title and the certification lines. */
+export function Masthead({
+  brand,
+  title,
+  certification,
+  logoUrl,
+}: {
+  brand: Pair;
+  title: ReactNode;
+  certification: Pair[];
+  logoUrl: string | null;
+}) {
+  return (
+    <header className="flex items-center gap-3 border-b-2 border-print-accent pb-1.5">
+      {logoUrl !== null ? <img className="h-11.5 w-auto" src={logoUrl} alt="" /> : null}
+      <div>
+        <div className="text-[17pt] leading-tight text-print-brand">
+          <L label={brand} />
+        </div>
+        <div className="text-[12pt]">{title}</div>
+        <div className="text-[7.5pt] text-print-muted">
+          {certification.map((line, i) => (
+            <div key={i}>
+              <L label={line} />
+            </div>
+          ))}
+        </div>
+      </div>
+    </header>
+  );
+}
+
+/** The libraries line of the provenance footer: the data root (a folder on this computer; on the
+ * field laptop it names the Windows user) stays in the attached files, not on the printed page. */
+export function librariesLine(versions: [string, string][]): string {
+  return versions
+    .filter(([name]) => name !== "data_root")
+    .map(([name, version]) => `${name} ${version}`)
+    .join(", ");
+}
+
 export function PrintPage({ model, overlayUrl, logoUrl, reportModel }: PrintPageProps) {
   const { labels, session, frame, overlay, summary } = model;
   const h = labels.headings;
@@ -188,12 +229,7 @@ export function PrintPage({ model, overlayUrl, logoUrl, reportModel }: PrintPage
     "depth_basis",
     "flags",
   ];
-  // the data root is a folder on this computer (on the field laptop it names the Windows user):
-  // it stays in the attached session.json and report model, not on the printed page
-  const libraries = model.versions
-    .filter(([name]) => name !== "data_root")
-    .map(([name, version]) => `${name} ${version}`)
-    .join(", ");
+  const libraries = librariesLine(model.versions);
   const provenanceRows: [string, string][] = [
     ["engine", model.engineVersion],
     [
@@ -211,24 +247,12 @@ export function PrintPage({ model, overlayUrl, logoUrl, reportModel }: PrintPage
   return (
     <LanguageContext value={model.language}>
       <main className="print-page">
-        <header className="flex items-center gap-3 border-b-2 border-print-accent pb-1.5">
-          {logoUrl !== null ? <img className="h-11.5 w-auto" src={logoUrl} alt="" /> : null}
-          <div>
-            <div className="text-[17pt] leading-tight text-print-brand">
-              <L label={labels.brand} />
-            </div>
-            <div className="text-[12pt]">
-              <L label={labels.title} />
-            </div>
-            <div className="text-[7.5pt] text-print-muted">
-              {labels.certification.map((line, i) => (
-                <div key={i}>
-                  <L label={line} />
-                </div>
-              ))}
-            </div>
-          </div>
-        </header>
+        <Masthead
+          brand={labels.brand}
+          title={<L label={labels.title} />}
+          certification={labels.certification}
+          logoUrl={logoUrl}
+        />
 
         <section>
           <Heading label={heading("session")} />

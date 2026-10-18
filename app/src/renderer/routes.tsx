@@ -4,6 +4,7 @@ import { createHashRouter, type RouteObject } from "react-router";
 import { About } from "./screens/About";
 import { Candidates } from "./screens/Candidates";
 import { CandidateSet } from "./screens/CandidateSet";
+import { ComparisonScreen } from "./screens/ComparisonScreen";
 import { FinalizeScreen } from "./screens/FinalizeScreen";
 import { HistoryScreen } from "./screens/HistoryScreen";
 import { Home } from "./screens/Home";
@@ -54,6 +55,7 @@ export const routes: RouteObject[] = [
           { path: "/sessions/:id/finalize", element: <FinalizeScreen /> },
           { path: "/sessions/:id/report", element: <ReportScreen /> },
           { path: "/history", element: <HistoryScreen /> },
+          { path: "/comparisons/:id", element: <ComparisonScreen /> },
           { path: "/about", element: <About /> },
           { path: "*", element: <NotFound /> },
         ],

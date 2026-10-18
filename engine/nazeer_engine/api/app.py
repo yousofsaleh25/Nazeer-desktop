@@ -30,7 +30,14 @@ from ..constants import ENGINE_VERSION, THREADPOOL_TOKENS
 from ..errors import EngineError
 from ..jsonsafe import FiniteJSONResponse
 from ..settings import dev_env_enabled
-from . import routes_bags, routes_candidates, routes_history, routes_sessions, routes_system
+from . import (
+    routes_bags,
+    routes_candidates,
+    routes_comparisons,
+    routes_history,
+    routes_sessions,
+    routes_system,
+)
 from .state import EngineState
 
 log = logging.getLogger("nazeer_engine.api")
@@ -49,6 +56,7 @@ ALLOWED_HEADERS = [
     "X-Overlay-Sha256",
     "X-Overlay-Version",
     "X-Report-Model-Sha256",
+    "X-Comparison-Model-Sha256",
     "X-App-Version",
     "X-Electron",
     "X-Chromium",
@@ -61,6 +69,7 @@ TAGS = [
     {"name": "bags", "description": "Step 1 — open a D455 .bag"},
     {"name": "candidates", "description": "Step 2 — best frames by mask depth statistics"},
     {"name": "sessions", "description": "Steps 3-5 — measure, autosave, finalize, PDF"},
+    {"name": "comparisons", "description": "D12 — one sealed PDF comparing camels from History"},
     {"name": "history", "description": "History index housekeeping"},
 ]
 STATUS_CODES = {404: "not_found", 405: "method_not_allowed", 413: "payload_too_large"}
@@ -241,7 +250,14 @@ def create_app(state: EngineState | None) -> FastAPI:
         log.exception("unhandled error")
         return _error("internal_error", f"{type(exc).__name__}: {exc}", 500)
 
-    for module in (routes_system, routes_bags, routes_candidates, routes_sessions, routes_history):
+    for module in (
+        routes_system,
+        routes_bags,
+        routes_candidates,
+        routes_sessions,
+        routes_comparisons,
+        routes_history,
+    ):
         app.include_router(module.router)
 
     generate_openapi = app.openapi

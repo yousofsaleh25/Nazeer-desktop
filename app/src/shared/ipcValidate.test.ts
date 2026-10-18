@@ -1,15 +1,20 @@
 import { describe, expect, it } from "vitest";
-import { MAX_OVERLAY_BYTES } from "./ipc";
+import { MAX_COMPARISON_APPROVALS, MAX_OVERLAY_BYTES } from "./ipc";
 import {
   isAbsolutePathString,
   MAX_CAPTURE_FOLDERS,
   MAX_LICENSE_INPUT_CHARS,
   MAX_PREFLIGHT_PROBLEMS,
+  MAX_SUGGESTED_NAME_CHARS,
   validateCaptureFolders,
+  validateComparisonExportRequest,
   validateExportRequest,
   validateLicenseKeyInput,
+  validateOpenSavedRequest,
   validatePreflight,
   validateQuitAck,
+  validateSaveAsRequest,
+  validateSavedCopyQuery,
   preflightOrRefusal,
 } from "./ipcValidate";
 
@@ -198,5 +203,91 @@ describe("validatePreflight", () => {
       },
     ];
     for (const value of bad) expect(() => validatePreflight(value)).toThrow();
+  });
+});
+
+describe("report save-as payloads (D12)", () => {
+  const ref = { kind: "session", id: "20261014_101500_abc123", version: 2 };
+
+  it("accepts a session report, its version and a suggested file name", () => {
+    expect(validateSaveAsRequest({ ...ref, suggestedName: "ناقة-7_2026-10-14_v2.pdf" })).toEqual({
+      ...ref,
+      suggestedName: "ناقة-7_2026-10-14_v2.pdf",
+    });
+    expect(validateSavedCopyQuery(ref)).toEqual(ref);
+    expect(validateOpenSavedRequest({ ...ref, action: "show" })).toEqual({
+      ...ref,
+      action: "show",
+    });
+  });
+
+  it("accepts a comparison's report too", () => {
+    const comparison = { ...ref, kind: "comparison" };
+    expect(validateSaveAsRequest({ ...comparison, suggestedName: "مقارنة_3.pdf" })).toEqual({
+      ...comparison,
+      suggestedName: "مقارنة_3.pdf",
+    });
+    expect(validateSavedCopyQuery(comparison)).toEqual(comparison);
+  });
+
+  it("refuses another kind, a bad id or version, extra fields and a bad name", () => {
+    const name = { suggestedName: "a.pdf" };
+    for (const value of [
+      null,
+      [],
+      { ...ref },
+      { ...ref, ...name, kind: "candidates" },
+      { ...ref, ...name, id: "../../evil" },
+      { ...ref, ...name, version: 0 },
+      { ...ref, ...name, version: 1.5 },
+      { ...ref, ...name, path: "C:\\x.pdf" },
+      { ...ref, suggestedName: "" },
+      { ...ref, suggestedName: "a".repeat(MAX_SUGGESTED_NAME_CHARS + 1) },
+      { ...ref, suggestedName: "a\0b" },
+      { ...ref, suggestedName: 7 },
+    ]) {
+      expect(() => validateSaveAsRequest(value), JSON.stringify(value)).toThrow();
+    }
+    expect(() => validateSavedCopyQuery({ ...ref, extra: 1 })).toThrow();
+    expect(() => validateOpenSavedRequest({ ...ref, action: "delete" })).toThrow();
+    expect(() => validateOpenSavedRequest({ ...ref, action: "open", path: "C:\\x" })).toThrow();
+  });
+});
+
+describe("comparison export payloads (D12)", () => {
+  const SHA = "a".repeat(64);
+  const request = {
+    comparisonId: "20261017_120000_abcdef",
+    model: { version: 2, sha256: SHA },
+    approvals: [{ sessionId: "20261017_100000_aaaaaa", overlayVersion: 1, sha256: SHA }],
+  };
+
+  it("accepts the comparison, its model and the approvals (no bytes)", () => {
+    expect(validateComparisonExportRequest(request)).toEqual(request);
+    expect(validateComparisonExportRequest({ ...request, approvals: [] }).approvals).toEqual([]);
+  });
+
+  it("refuses bad ids, versions, digests, extra fields, duplicates and too many approvals", () => {
+    const approval = request.approvals[0];
+    const many = Array.from({ length: MAX_COMPARISON_APPROVALS + 1 }, (_, i) => ({
+      ...approval,
+      sessionId: `20261017_100000_${i.toString(16).padStart(6, "0")}`,
+    }));
+    for (const value of [
+      null,
+      { ...request, comparisonId: "../x" },
+      { ...request, model: { version: 0, sha256: SHA } },
+      { ...request, model: { version: 1, sha256: "ABC" } },
+      { ...request, model: { version: 1, sha256: SHA, url: "/x" } },
+      { ...request, extra: true },
+      { ...request, approvals: "all" },
+      { ...request, approvals: [{ ...approval, bytes: new Uint8Array(1) }] },
+      { ...request, approvals: [{ ...approval, overlayVersion: -1 }] },
+      { ...request, approvals: [{ ...approval, sessionId: "x" }] },
+      { ...request, approvals: [approval, approval] },
+      { ...request, approvals: many },
+    ]) {
+      expect(() => validateComparisonExportRequest(value), JSON.stringify(value)).toThrow();
+    }
   });
 });

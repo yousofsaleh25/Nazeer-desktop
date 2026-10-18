@@ -199,6 +199,7 @@ export const sampleHistoryRows: HistoryRow[] = [
 
 export const sampleStats: HistoryStats = {
   sessions: { count: 4, bytes: 21_533_102 },
+  comparisons: { count: 1, bytes: 3_412_885 },
   candidates: { count: 1, bytes: 60_877_210 },
   trash: { count: 1, bytes: 5_120_331 },
   index: { rows: 5, by_index_state: { ok: 3, missing_files: 1, corrupt: 1 }, db_bytes: 40_960 },

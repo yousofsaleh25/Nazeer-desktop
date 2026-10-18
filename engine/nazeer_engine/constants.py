@@ -13,7 +13,10 @@ SESSION_SCHEMA_VERSION = "2.1"  # C3.6
 REPORT_MODEL_VERSION = "1.1"  # 1.1: the print page's frame-block, cross-check and count texts
 MANIFEST_VERSION = "1.0"
 CANDIDATES_VERSION = "1.0"
-HISTORY_INDEX_VERSION = 1
+HISTORY_INDEX_VERSION = 2  # 2: the comparisons tables and the sessions' comparison columns (D12)
+COMPARISON_SCHEMA_VERSION = "1.0"  # comparison.json (D12 F2.8)
+COMPARISON_MODEL_VERSION = "1.0"  # comparison_model_vN.json (D12 F2.6)
+COMPARISON_MANIFEST_VERSION = "1.0"  # comparison.manifest.json (D12 F2.10)
 
 # --- model card §3 (inference contract) -------------------------------------------------
 MODEL_FILE_DEFAULT = "best.pt"
@@ -107,6 +110,16 @@ BACKUP_INTERVAL_S = 86400
 BACKUP_KEEP = 5
 RECENT_BAGS_KEEP = 20
 FRAME_CONTEXT_CACHE = 4  # B5
+
+# --- D12 comparison report -----------------------------------------------------------------
+COMPARISON_MAX_SESSIONS = 20  # D12 F2.12: a proposal, the operator to confirm (any number >= 1)
+COMPARISON_MAX_TITLE = 200  # D12 F2.12
+COMPARISON_MAX_NAME = 100  # event, judge, council (as a session's report names)
+COMPARISON_REPORT_MODELS = ("1.1",)  # member report models a comparison reads (F2.1 model_outdated)
+COMPARISON_LOCK_TIMEOUT_S = 10.0  # waiting for a member session's lock, then session_busy
+# D12 F2.12, measured in Stage 3 (headless Edge, real frames): 1.46 MB printed per camel
+# (20 camels: 29.3 MB, sealed 55.4 MB); the cap allows twice that, never below one report's
+COMPARISON_PDF_MAX_BYTES = max(PDF_MAX_BYTES, COMPARISON_MAX_SESSIONS * 3 * 1024**2)
 
 # --- overlay (ADR-D7, B12) -----------------------------------------------------------------
 OVERLAY_DPI = 100

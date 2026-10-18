@@ -38,4 +38,57 @@ describe("summarizeProbe", () => {
     expect(s.verdict).toBe("UNKNOWN");
     expect([s.pixel.ok, s.text.ok, s.fonts.ok, s.attachments.ok]).toEqual([null, null, null, null]);
   });
+
+  it("a comparison's probe gives each camel's image page and its names' pages (D12)", () => {
+    const s = summarizeProbe({
+      kind: "comparison",
+      verdict: "DRIFT",
+      pixel: {
+        ok: false,
+        reasons: ["overlay_missing"],
+        members: [
+          { position: 1, ok: true, reason: "", page: 3, max_abs_diff: 0 },
+          { position: 2, ok: false, reason: "overlay_missing", page: null, max_abs_diff: null },
+        ],
+      },
+      text: {
+        ok: false,
+        names: [],
+        members: [
+          {
+            position: 1,
+            checked: true,
+            ok: false,
+            pages: [3, 4],
+            names: [{ name: "Hump", ok: false }],
+          },
+          { position: 2, checked: false, ok: false, pages: null, names: [] },
+        ],
+      },
+    });
+    expect(s.pixel.reason).toBe("overlay_missing");
+    expect(s.members).toEqual([
+      {
+        position: 1,
+        imageOk: true,
+        reason: "",
+        page: 3,
+        maxAbsDiff: 0,
+        textOk: false,
+        pages: [3, 4],
+        missing: ["Hump"],
+      },
+      {
+        position: 2,
+        imageOk: false,
+        reason: "overlay_missing",
+        page: null,
+        maxAbsDiff: null,
+        textOk: null,
+        pages: null,
+        missing: [],
+      },
+    ]);
+    expect(summarizeProbe({}).members).toEqual([]);
+  });
 });

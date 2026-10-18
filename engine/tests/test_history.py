@@ -196,3 +196,156 @@ def test_rebuild_backup_and_auto_backup(index: HistoryIndex, tmp_path: Path):
     index.record_engine_run("run2", 123, {"numpy": "2.4.6"})
     stats = index.stats()
     assert stats["rows"] == 3 and stats["by_index_state"] == {"ok": 3} and stats["db_bytes"] > 0
+
+
+# ----- version 2 (D12): the migration, the comparison columns, the filters ----------------------
+
+V1_DDL = """
+CREATE TABLE sessions (
+    session_id TEXT PRIMARY KEY, camel_id TEXT NOT NULL DEFAULT '',
+    operator TEXT NOT NULL DEFAULT '', status TEXT NOT NULL DEFAULT '',
+    revision INTEGER NOT NULL DEFAULT 0, created_at TEXT NOT NULL DEFAULT '',
+    updated_at TEXT NOT NULL DEFAULT '', bag_name TEXT, bag_path TEXT, bag_fingerprint TEXT,
+    read_index INTEGER, n_measurements INTEGER NOT NULL DEFAULT 0,
+    n_rejected INTEGER NOT NULL DEFAULT 0, outputs_stale INTEGER NOT NULL DEFAULT 0,
+    report_stale INTEGER NOT NULL DEFAULT 0, overlay_version INTEGER NOT NULL DEFAULT 0,
+    report_version INTEGER NOT NULL DEFAULT 0, session_mtime_ns INTEGER NOT NULL DEFAULT 0,
+    session_size INTEGER NOT NULL DEFAULT 0, index_state TEXT NOT NULL DEFAULT 'ok',
+    index_error TEXT NOT NULL DEFAULT ''
+);
+CREATE TABLE measurement_names (
+    session_id TEXT NOT NULL REFERENCES sessions(session_id) ON DELETE CASCADE,
+    measurement_id INTEGER NOT NULL, kind TEXT NOT NULL, name TEXT NOT NULL,
+    PRIMARY KEY (session_id, measurement_id)
+);
+CREATE TABLE engine_runs (run_id TEXT PRIMARY KEY, started_at TEXT NOT NULL, pid INTEGER NOT NULL,
+    library_versions TEXT NOT NULL);
+CREATE TABLE meta (key TEXT PRIMARY KEY, value TEXT NOT NULL);
+INSERT INTO meta(key, value) VALUES ('index_version', '1');
+INSERT INTO sessions(session_id, camel_id, status, session_mtime_ns, session_size, index_state)
+    VALUES ('20261011_100000_aaaaaa', 'A001', 'open', 111, 222, 'ok'),
+           ('20261011_100001_bbbbbb', '', '', 333, 444, 'corrupt'),
+           ('20261011_100002_cccccc', 'C003', 'exported', 555, 666, 'delete_failed');
+INSERT INTO measurement_names VALUES ('20261011_100000_aaaaaa', 1, 'distance_3d', 'طول');
+"""
+
+
+def _columns(index: HistoryIndex) -> set[str]:
+    with index.connect() as conn:
+        return {r[1] for r in conn.execute("PRAGMA table_info(sessions)").fetchall()}
+
+
+def test_a_version_1_index_migrates_in_place(tmp_path: Path):
+    path = tmp_path / "history.sqlite"
+    conn = sqlite3.connect(str(path))
+    conn.executescript(V1_DDL)
+    conn.close()
+    index = HistoryIndex(path)
+    assert index.migration == {
+        "from": "1",
+        "added_columns": [
+            "event",
+            "input_sha256",
+            "overlay_sha256",
+            "report_overlay_version",
+            "report_model_schema",
+        ],
+        "rows_to_refresh": 2,
+    }
+    assert {"event", "report_model_schema"} <= _columns(index)
+    a = index.get("20261011_100000_aaaaaa")
+    assert a["session_mtime_ns"] == 0 and a["camel_id"] == "A001"  # refreshed at the next list
+    assert index.get("20261011_100001_bbbbbb")["session_mtime_ns"] == 0
+    kept = index.get("20261011_100002_cccccc")
+    assert kept["index_state"] == "delete_failed" and kept["session_mtime_ns"] == 555
+    assert index.measurement_names("20261011_100000_aaaaaa")[0]["name"] == "طول"
+    assert index.stats()["index_version"] == 2
+    again = HistoryIndex(path)  # a second start changes nothing
+    assert again.migration == {"from": "2", "added_columns": [], "rows_to_refresh": 0}
+
+
+def test_a_1_0_0_engine_on_a_version_2_index_forces_a_refresh(index: HistoryIndex, tmp_path: Path):
+    sessions = tmp_path / "sessions"
+    doc = _doc("20261011_100000_aaaaaa", names=("x",))
+    doc.report_inputs.names["event"] = "مزاين"
+    _write(sessions, doc)
+    index.reconcile(sessions, load_session)
+    assert index.get(doc.session_id)["event"] == "مزاين"
+    # what release 1.0.0 does on the same data root: writes version 1 and upserts v1 columns
+    with index.write() as conn:
+        conn.execute("UPDATE meta SET value = '1' WHERE key = 'index_version'")
+        conn.execute("UPDATE sessions SET event = '', input_sha256 = ''")
+    reopened = HistoryIndex(index.path)
+    assert reopened.migration["from"] == "1" and reopened.migration["rows_to_refresh"] == 1
+    assert reopened.reconcile(sessions, load_session)["refreshed"] == 1
+    row = reopened.get(doc.session_id)
+    assert row["event"] == "مزاين" and row["input_sha256"]
+
+
+def test_the_migration_keeps_a_comparison_whose_delete_failed(index: HistoryIndex):
+    # D12 F2.8: a failed delete stays visible, also after a 1.0.0 engine ran on the root
+    # (review, Stage 6: the refresh reset every comparison row)
+    with index.write() as conn:
+        conn.executemany(
+            "INSERT INTO comparisons(comparison_id, file_mtime_ns, file_size, index_state)"
+            " VALUES (?, ?, ?, ?)",
+            [
+                ("20261017_100000_aaaaaa", 111, 1, "ok"),
+                ("20261017_100001_bbbbbb", 222, 1, "delete_failed"),
+            ],
+        )
+        conn.execute("UPDATE meta SET value = '1' WHERE key = 'index_version'")
+    reopened = HistoryIndex(index.path)
+    assert reopened.get_comparison("20261017_100000_aaaaaa")["file_mtime_ns"] == 0
+    kept = reopened.get_comparison("20261017_100001_bbbbbb")
+    assert kept["index_state"] == "delete_failed" and kept["file_mtime_ns"] == 222
+
+
+def test_the_comparison_columns(index: HistoryIndex, tmp_path: Path):
+    sessions = tmp_path / "sessions"
+    doc = _doc("20261011_100000_aaaaaa", status="finalized")
+    doc.outputs.overlay_version = 2
+    doc.outputs.overlay_sha256 = "o" * 64
+    doc.outputs.report_model_file = "report_model_v2.json"
+    path = _write(sessions, doc)
+    index.reconcile(sessions, load_session)
+    row = index.get(doc.session_id)
+    assert row["overlay_sha256"] == "o" * 64 and row["report_model_schema"] == ""  # file missing
+    (path.parent / "report_model_v2.json").write_text(
+        '{"report_model_version": "1.1"}', encoding="utf-8"
+    )
+    index.upsert(doc, mtime_ns=1, size=1, session_dir=path.parent)
+    assert index.get(doc.session_id)["report_model_schema"] == "1.1"
+    doc.status, doc.outputs_stale = "open", True
+    index.upsert(doc, mtime_ns=1, size=1, session_dir=path.parent)
+    assert index.get(doc.session_id)["report_model_schema"] is None  # no current model
+    assert index.get(doc.session_id)["n_comparisons"] == 0
+
+
+def test_event_and_date_filters_compare_instants(index: HistoryIndex):
+    stamps = {
+        "20261011_100000_aaaaaa": ("2026-10-16T21:30:00+00:00", "مزاين الظفرة"),
+        "20261011_100001_bbbbbb": ("2026-10-17T08:00:00+00:00", "مزاين الملك"),
+        "20261011_100002_cccccc": ("2026-10-18T10:00:00+00:00", ""),
+    }
+    for session_id, (created, event) in stamps.items():
+        doc = _doc(session_id)
+        doc.created_at = doc.updated_at = created
+        doc.report_inputs.names["event"] = event
+        index.upsert(doc, mtime_ns=1, size=1)
+
+    def ids(**kw) -> list[str]:
+        return sorted(r["session_id"] for r in index.list(**kw)[0])
+
+    # 17 October in Riyadh (+03:00) starts at 16 October 21:00 UTC
+    day = ids(created_from="2026-10-17T00:00:00+03:00", created_to="2026-10-17T23:59:59+03:00")
+    assert day == ["20261011_100000_aaaaaa", "20261011_100001_bbbbbb"]
+    assert ids(created_from="2026-10-17T08:00:00Z") == [  # inclusive
+        "20261011_100001_bbbbbb",
+        "20261011_100002_cccccc",
+    ]
+    assert ids(created_to="2026-10-16T21:30:00+00:00") == ["20261011_100000_aaaaaa"]
+    assert ids(event="مزاين") == ["20261011_100000_aaaaaa", "20261011_100001_bbbbbb"]
+    assert ids(event="الملك") == ["20261011_100001_bbbbbb"]
+    assert ids(q="الظفرة") == ["20261011_100000_aaaaaa"]  # the search reads the event too
+    assert ids(event="%") == []  # LIKE wildcards are escaped

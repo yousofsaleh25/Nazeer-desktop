@@ -70,6 +70,9 @@ export async function launchApp({
       NAZEER_USER_DATA_DIR: userData,
       NAZEER_DATA_ROOT: dataRoot,
       ...(stubModel ? { NAZEER_STUB_MODEL: "1" } : {}),
+      // the Save dialog opens by itself after every seal (D12): answered "cancel" unless a spec
+      // names a file or folder, so no spec waits on a modal OS dialog
+      NAZEER_E2E_SAVE_DIALOG: "cancel",
       ...env,
     }),
   });

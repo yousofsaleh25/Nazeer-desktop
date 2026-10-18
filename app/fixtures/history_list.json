@@ -20,8 +20,17 @@
       "report_version": 1,
       "index_state": "ok",
       "index_error": "",
+      "event": "مزاين الإبل - تشغيل تجريبي",
+      "report_overlay_version": 1,
+      "n_comparisons": 0,
       "session_url": "/sessions/20261011_152956_e20a7c",
-      "thumb_url": "/sessions/20261011_152956_e20a7c/assets/thumb.jpg"
+      "thumb_url": "/sessions/20261011_152956_e20a7c/assets/thumb.jpg",
+      "comparison": {
+        "eligible": false,
+        "reason": "model_outdated",
+        "approved_by_seal": false,
+        "overlay": null
+      }
     }
   ],
   "total": 1,

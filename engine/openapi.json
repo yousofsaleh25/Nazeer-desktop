@@ -1250,10 +1250,10 @@
                   "type": "null"
                 }
               ],
-              "description": "camel, operator, bag, names",
+              "description": "camel, operator, bag, event, names",
               "title": "Q"
             },
-            "description": "camel, operator, bag, names"
+            "description": "camel, operator, bag, event, names"
           },
           {
             "name": "index_state",
@@ -1277,6 +1277,63 @@
               ],
               "title": "Index State"
             }
+          },
+          {
+            "name": "event",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 100
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "part of the event name",
+              "title": "Event"
+            },
+            "description": "part of the event name"
+          },
+          {
+            "name": "created_from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "measured at or after this instant (ISO 8601, inclusive)",
+              "title": "Created From"
+            },
+            "description": "measured at or after this instant (ISO 8601, inclusive)"
+          },
+          {
+            "name": "created_to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "measured at or before this instant (ISO 8601, inclusive)",
+              "title": "Created To"
+            },
+            "description": "measured at or before this instant (ISO 8601, inclusive)"
           },
           {
             "name": "limit",
@@ -2538,12 +2595,907 @@
         }
       }
     },
+    "/comparisons": {
+      "post": {
+        "tags": [
+          "comparisons"
+        ],
+        "summary": "Compare camels picked in History (the operator's order); every member re-checked",
+        "operationId": "create_comparison",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ComparisonCreateIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ComparisonView"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Request validation (code validation_error) or a semantic 422 with its own code"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Missing or wrong token (only when the engine runs with --token); code unauthorized"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unexpected engine error (code internal_error) or a typed 500 such as corrupt_file"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Engine not ready, or a file could not be saved (code save_failed)"
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "comparisons"
+        ],
+        "summary": "The Comparisons tab: reconcile the index with the folders, then list",
+        "operationId": "list_comparisons",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 200
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "title, event, judge, council, camel ids",
+              "title": "Q"
+            },
+            "description": "title, event, judge, council, camel ids"
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "created",
+                    "sealed"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          },
+          {
+            "name": "stale",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "only stale (true) or current (false)",
+              "title": "Stale"
+            },
+            "description": "only stale (true) or current (false)"
+          },
+          {
+            "name": "index_state",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "ok",
+                    "missing_files",
+                    "corrupt",
+                    "delete_failed",
+                    "unindexed"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Index State"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 500,
+              "minimum": 1,
+              "default": 50,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "created_desc",
+                "created_asc",
+                "updated_desc",
+                "title_asc"
+              ],
+              "type": "string",
+              "default": "created_desc",
+              "title": "Sort"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ComparisonList"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Request validation (code validation_error) or a semantic 422 with its own code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Missing or wrong token (only when the engine runs with --token); code unauthorized"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unexpected engine error (code internal_error) or a typed 500 such as corrupt_file"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Engine not ready, or a file could not be saved (code save_failed)"
+          }
+        }
+      }
+    },
+    "/comparisons/{comparison_id}": {
+      "get": {
+        "tags": [
+          "comparisons"
+        ],
+        "summary": "One comparison; staleness read from the member files (no frame context is built)",
+        "operationId": "get_comparison",
+        "parameters": [
+          {
+            "name": "comparison_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Comparison Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ComparisonView"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "422": {
+            "description": "Request validation (code validation_error) or a semantic 422 with its own code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Missing or wrong token (only when the engine runs with --token); code unauthorized"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Engine not ready, or a file could not be saved (code save_failed)"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "comparisons"
+        ],
+        "summary": "Move the comparison to the trash (purged at the next start); sessions stay",
+        "operationId": "delete_comparison",
+        "parameters": [
+          {
+            "name": "comparison_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Comparison Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeleteOut"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "description": "Request validation (code validation_error) or a semantic 422 with its own code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Missing or wrong token (only when the engine runs with --token); code unauthorized"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unexpected engine error (code internal_error) or a typed 500 such as corrupt_file"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Engine not ready, or a file could not be saved (code save_failed)"
+          }
+        }
+      }
+    },
+    "/comparisons/{comparison_id}/inputs": {
+      "patch": {
+        "tags": [
+          "comparisons"
+        ],
+        "summary": "Cover texts and language: a change writes a new comparison model version",
+        "operationId": "patch_comparison_inputs",
+        "parameters": [
+          {
+            "name": "comparison_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Comparison Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ComparisonInputsIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ComparisonView"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Request validation (code validation_error) or a semantic 422 with its own code"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Missing or wrong token (only when the engine runs with --token); code unauthorized"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unexpected engine error (code internal_error) or a typed 500 such as corrupt_file"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Engine not ready, or a file could not be saved (code save_failed)"
+          }
+        }
+      }
+    },
+    "/comparisons/{comparison_id}/report": {
+      "post": {
+        "tags": [
+          "comparisons"
+        ],
+        "summary": "Upload the printed comparison: ordered probes, attachments, version, manifest",
+        "operationId": "upload_comparison_report",
+        "parameters": [
+          {
+            "name": "comparison_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Comparison Id"
+            }
+          },
+          {
+            "name": "require_text",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "description": "a missing operator string is a DRIFT (false: soft failure)",
+              "default": true,
+              "title": "Require Text"
+            },
+            "description": "a missing operator string is a DRIFT (false: soft failure)"
+          },
+          {
+            "name": "require_font",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "description": "a missing IBM Plex Sans Arabic subset is a DRIFT",
+              "default": true,
+              "title": "Require Font"
+            },
+            "description": "a missing IBM Plex Sans Arabic subset is a DRIFT"
+          },
+          {
+            "name": "x-comparison-model-sha256",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "sha256 of the comparison model the page was printed from",
+              "title": "X-Comparison-Model-Sha256"
+            },
+            "description": "sha256 of the comparison model the page was printed from"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ComparisonReportOut"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "415": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unsupported Media Type"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Request validation (code validation_error) or a semantic 422 with its own code"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Missing or wrong token (only when the engine runs with --token); code unauthorized"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unexpected engine error (code internal_error) or a typed 500 such as corrupt_file"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Engine not ready, or a file could not be saved (code save_failed)"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/pdf": {
+              "schema": {
+                "type": "string",
+                "format": "binary"
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "comparisons"
+        ],
+        "summary": "The sealed comparison PDF (latest, or version v)",
+        "operationId": "get_comparison_report",
+        "parameters": [
+          {
+            "name": "comparison_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Comparison Id"
+            }
+          },
+          {
+            "name": "v",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "V"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              },
+              "application/pdf": {}
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "description": "Request validation (code validation_error) or a semantic 422 with its own code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Missing or wrong token (only when the engine runs with --token); code unauthorized"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unexpected engine error (code internal_error) or a typed 500 such as corrupt_file"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Engine not ready, or a file could not be saved (code save_failed)"
+          }
+        }
+      }
+    },
+    "/comparisons/{comparison_id}/assets/{name}": {
+      "get": {
+        "tags": [
+          "comparisons"
+        ],
+        "summary": "comparison_model_vN.json, comparison.json, comparison.manifest.json, PDFs",
+        "operationId": "get_comparison_asset",
+        "parameters": [
+          {
+            "name": "comparison_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Comparison Id"
+            }
+          },
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Name"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "the file",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "description": "Request validation (code validation_error) or a semantic 422 with its own code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Missing or wrong token (only when the engine runs with --token); code unauthorized"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unexpected engine error (code internal_error) or a typed 500 such as corrupt_file"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Engine not ready, or a file could not be saved (code save_failed)"
+          }
+        }
+      }
+    },
     "/history/rebuild": {
       "post": {
         "tags": [
           "history"
         ],
-        "summary": "Rebuild the index from the session folders",
+        "summary": "Rebuild the index from the session and comparison folders",
         "operationId": "rebuild_history",
         "responses": {
           "200": {
@@ -2669,7 +3621,7 @@
         "tags": [
           "history"
         ],
-        "summary": "Disk use of sessions, candidates, trash",
+        "summary": "Disk use of sessions, comparisons, candidates, trash",
         "operationId": "history_stats",
         "responses": {
           "200": {
@@ -3496,6 +4448,861 @@
           "warnings"
         ],
         "title": "CandidateSet"
+      },
+      "ComparisonCreateIn": {
+        "properties": {
+          "session_ids": {
+            "items": {
+              "type": "string",
+              "pattern": "^\\d{8}_\\d{6}_[0-9a-f]{6}$"
+            },
+            "type": "array",
+            "maxItems": 500,
+            "title": "Session Ids",
+            "description": "the camels in the operator's order (the order the PDF prints)"
+          },
+          "cover": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CoverIn"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "language": {
+            "type": "string",
+            "enum": [
+              "ar",
+              "en",
+              "both"
+            ],
+            "title": "Language",
+            "default": "both"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "session_ids"
+        ],
+        "title": "ComparisonCreateIn"
+      },
+      "ComparisonEligibility": {
+        "properties": {
+          "eligible": {
+            "type": "boolean",
+            "title": "Eligible"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "delete_failed",
+                  "files_missing",
+                  "file_corrupt",
+                  "files_changed",
+                  "not_finalized",
+                  "reopened",
+                  "model_outdated"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "approved_by_seal": {
+            "type": "boolean",
+            "title": "Approved By Seal",
+            "description": "a report sealed from the current image: no approval needed in the dialog"
+          },
+          "overlay": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/OverlayRef"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "the image to approve; null when ineligible"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "eligible",
+          "reason",
+          "approved_by_seal",
+          "overlay"
+        ],
+        "title": "ComparisonEligibility",
+        "description": "D12 F2.1: whether the row can join a comparison (labels group comparison_ineligible)."
+      },
+      "ComparisonInputsIn": {
+        "properties": {
+          "cover": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CoverIn"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "language": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "ar",
+                  "en",
+                  "both"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Language"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "ComparisonInputsIn"
+      },
+      "ComparisonList": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ComparisonRow"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "reconciled": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Reconciled"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "reconciled"
+        ],
+        "title": "ComparisonList"
+      },
+      "ComparisonMember": {
+        "properties": {
+          "position": {
+            "type": "integer",
+            "title": "Position"
+          },
+          "session_id": {
+            "type": "string",
+            "title": "Session Id"
+          },
+          "camel_id": {
+            "type": "string",
+            "title": "Camel Id"
+          },
+          "revision": {
+            "type": "integer",
+            "title": "Revision"
+          },
+          "status_at_creation": {
+            "type": "string",
+            "enum": [
+              "open",
+              "finalized",
+              "exported"
+            ],
+            "title": "Status At Creation"
+          },
+          "current": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ComparisonMemberNow"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "null: the session was deleted"
+          },
+          "stale_reasons": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "member_deleted",
+                "member_unreadable",
+                "member_reopened",
+                "member_edited",
+                "member_refinalized"
+              ]
+            },
+            "type": "array",
+            "title": "Stale Reasons"
+          },
+          "notes": {
+            "items": {
+              "type": "string",
+              "const": "member_session_changed"
+            },
+            "type": "array",
+            "title": "Notes"
+          },
+          "approved_by_seal": {
+            "type": "boolean",
+            "title": "Approved By Seal",
+            "description": "its image was sealed in a report (its own, or this comparison's)"
+          },
+          "overlay": {
+            "$ref": "#/components/schemas/ComparisonOverlay"
+          },
+          "report_model": {
+            "$ref": "#/components/schemas/ComparisonMemberModel"
+          },
+          "session_url": {
+            "type": "string",
+            "title": "Session Url"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "position",
+          "session_id",
+          "camel_id",
+          "revision",
+          "status_at_creation",
+          "current",
+          "stale_reasons",
+          "notes",
+          "approved_by_seal",
+          "overlay",
+          "report_model",
+          "session_url"
+        ],
+        "title": "ComparisonMember"
+      },
+      "ComparisonMemberModel": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "title": "File"
+          },
+          "version": {
+            "type": "integer",
+            "title": "Version"
+          },
+          "sha256": {
+            "type": "string",
+            "title": "Sha256"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "file",
+          "version",
+          "sha256"
+        ],
+        "title": "ComparisonMemberModel"
+      },
+      "ComparisonMemberNow": {
+        "properties": {
+          "readable": {
+            "type": "boolean",
+            "title": "Readable"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "open",
+                  "finalized",
+                  "exported"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Status"
+          },
+          "revision": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Revision"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "readable",
+          "status",
+          "revision"
+        ],
+        "title": "ComparisonMemberNow"
+      },
+      "ComparisonModelOutput": {
+        "properties": {
+          "version": {
+            "type": "integer",
+            "title": "Version",
+            "description": "new on every cover or language change"
+          },
+          "file": {
+            "type": "string",
+            "title": "File"
+          },
+          "sha256": {
+            "type": "string",
+            "title": "Sha256"
+          },
+          "url": {
+            "type": "string",
+            "title": "Url"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "version",
+          "file",
+          "sha256",
+          "url"
+        ],
+        "title": "ComparisonModelOutput"
+      },
+      "ComparisonOutputs": {
+        "properties": {
+          "model": {
+            "$ref": "#/components/schemas/ComparisonModelOutput"
+          },
+          "report": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ComparisonReportOutput"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "manifest_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Manifest Url"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "model",
+          "report",
+          "manifest_url"
+        ],
+        "title": "ComparisonOutputs"
+      },
+      "ComparisonOverlay": {
+        "properties": {
+          "version": {
+            "type": "integer",
+            "title": "Version"
+          },
+          "file": {
+            "type": "string",
+            "title": "File"
+          },
+          "sha256": {
+            "type": "string",
+            "title": "Sha256"
+          },
+          "width": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Width"
+          },
+          "height": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Height"
+          },
+          "url": {
+            "type": "string",
+            "title": "Url"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "version",
+          "file",
+          "sha256",
+          "width",
+          "height",
+          "url"
+        ],
+        "title": "ComparisonOverlay"
+      },
+      "ComparisonReportOut": {
+        "properties": {
+          "comparison": {
+            "$ref": "#/components/schemas/ComparisonView"
+          },
+          "probe": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Probe",
+            "description": "kind comparison: the ordered pixel probe per member (page, |Δ|), the text probe per member section, fonts, attachments, timings"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "comparison",
+          "probe"
+        ],
+        "title": "ComparisonReportOut"
+      },
+      "ComparisonReportOutput": {
+        "properties": {
+          "version": {
+            "type": "integer",
+            "title": "Version"
+          },
+          "file": {
+            "type": "string",
+            "title": "File"
+          },
+          "sha256": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sha256"
+          },
+          "url": {
+            "type": "string",
+            "title": "Url"
+          },
+          "model_version": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model Version"
+          },
+          "stale": {
+            "type": "boolean",
+            "title": "Stale"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "version",
+          "file",
+          "sha256",
+          "url",
+          "model_version",
+          "stale"
+        ],
+        "title": "ComparisonReportOutput"
+      },
+      "ComparisonRow": {
+        "properties": {
+          "comparison_id": {
+            "type": "string",
+            "title": "Comparison Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "event": {
+            "type": "string",
+            "title": "Event"
+          },
+          "judge": {
+            "type": "string",
+            "title": "Judge"
+          },
+          "council": {
+            "type": "string",
+            "title": "Council"
+          },
+          "language": {
+            "type": "string",
+            "title": "Language"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "created_at": {
+            "type": "string",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "title": "Updated At"
+          },
+          "n_members": {
+            "type": "integer",
+            "title": "N Members"
+          },
+          "model_version": {
+            "type": "integer",
+            "title": "Model Version"
+          },
+          "report_version": {
+            "type": "integer",
+            "title": "Report Version"
+          },
+          "report_stale": {
+            "type": "boolean",
+            "title": "Report Stale"
+          },
+          "index_state": {
+            "type": "string",
+            "title": "Index State"
+          },
+          "index_error": {
+            "type": "string",
+            "title": "Index Error"
+          },
+          "members": {
+            "items": {
+              "$ref": "#/components/schemas/ComparisonRowMember"
+            },
+            "type": "array",
+            "title": "Members"
+          },
+          "stale": {
+            "type": "boolean",
+            "title": "Stale"
+          },
+          "comparison_url": {
+            "type": "string",
+            "title": "Comparison Url"
+          },
+          "report_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Report Url"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "comparison_id",
+          "title",
+          "event",
+          "judge",
+          "council",
+          "language",
+          "status",
+          "created_at",
+          "updated_at",
+          "n_members",
+          "model_version",
+          "report_version",
+          "report_stale",
+          "index_state",
+          "index_error",
+          "members",
+          "stale",
+          "comparison_url",
+          "report_url"
+        ],
+        "title": "ComparisonRow"
+      },
+      "ComparisonRowMember": {
+        "properties": {
+          "position": {
+            "type": "integer",
+            "title": "Position"
+          },
+          "session_id": {
+            "type": "string",
+            "title": "Session Id"
+          },
+          "camel_id": {
+            "type": "string",
+            "title": "Camel Id"
+          },
+          "stale_reasons": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "member_deleted",
+                "member_unreadable",
+                "member_reopened",
+                "member_edited",
+                "member_refinalized"
+              ]
+            },
+            "type": "array",
+            "title": "Stale Reasons"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "position",
+          "session_id",
+          "camel_id",
+          "stale_reasons"
+        ],
+        "title": "ComparisonRowMember"
+      },
+      "ComparisonView": {
+        "properties": {
+          "comparison_id": {
+            "type": "string",
+            "title": "Comparison Id"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "created",
+              "sealed"
+            ],
+            "title": "Status"
+          },
+          "language": {
+            "type": "string",
+            "enum": [
+              "ar",
+              "en",
+              "both"
+            ],
+            "title": "Language"
+          },
+          "cover": {
+            "$ref": "#/components/schemas/Cover"
+          },
+          "created_at": {
+            "type": "string",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "title": "Updated At"
+          },
+          "n_members": {
+            "type": "integer",
+            "title": "N Members"
+          },
+          "members": {
+            "items": {
+              "$ref": "#/components/schemas/ComparisonMember"
+            },
+            "type": "array",
+            "title": "Members"
+          },
+          "stale": {
+            "type": "boolean",
+            "title": "Stale",
+            "description": "a member changed since the comparison was made (Q2)"
+          },
+          "report_stale": {
+            "type": "boolean",
+            "title": "Report Stale",
+            "description": "the sealed PDF shows an earlier cover or language"
+          },
+          "outputs": {
+            "$ref": "#/components/schemas/ComparisonOutputs"
+          },
+          "required_report_texts": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Required Report Texts"
+          },
+          "versions": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Versions"
+          },
+          "index_state": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "ok",
+                  "missing_files",
+                  "corrupt",
+                  "delete_failed",
+                  "unindexed"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Index State"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "comparison_id",
+          "status",
+          "language",
+          "cover",
+          "created_at",
+          "updated_at",
+          "n_members",
+          "members",
+          "stale",
+          "report_stale",
+          "outputs",
+          "required_report_texts",
+          "versions"
+        ],
+        "title": "ComparisonView"
+      },
+      "Cover": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "event": {
+            "type": "string",
+            "title": "Event"
+          },
+          "judge": {
+            "type": "string",
+            "title": "Judge"
+          },
+          "council": {
+            "type": "string",
+            "title": "Council"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "title",
+          "event",
+          "judge",
+          "council"
+        ],
+        "title": "Cover"
+      },
+      "CoverIn": {
+        "properties": {
+          "title": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          },
+          "event": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Event"
+          },
+          "judge": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Judge"
+          },
+          "council": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Council"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "CoverIn"
       },
       "DeleteOut": {
         "properties": {
@@ -4508,6 +6315,11 @@
             "type": "integer",
             "title": "Report Version"
           },
+          "report_overlay_version": {
+            "type": "integer",
+            "title": "Report Overlay Version",
+            "description": "the overlay version its report was sealed with"
+          },
           "index_state": {
             "type": "string",
             "title": "Index State"
@@ -4530,6 +6342,19 @@
           "session_url": {
             "type": "string",
             "title": "Session Url"
+          },
+          "event": {
+            "type": "string",
+            "title": "Event",
+            "description": "the report's event name (report inputs)"
+          },
+          "n_comparisons": {
+            "type": "integer",
+            "title": "N Comparisons",
+            "description": "comparisons that include this session"
+          },
+          "comparison": {
+            "$ref": "#/components/schemas/ComparisonEligibility"
           }
         },
         "additionalProperties": true,
@@ -4552,10 +6377,14 @@
           "report_stale",
           "overlay_version",
           "report_version",
+          "report_overlay_version",
           "index_state",
           "index_error",
           "thumb_url",
-          "session_url"
+          "session_url",
+          "event",
+          "n_comparisons",
+          "comparison"
         ],
         "title": "HistoryRow"
       },
@@ -4567,6 +6396,13 @@
             },
             "type": "object",
             "title": "Sessions"
+          },
+          "comparisons": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Comparisons"
           },
           "candidates": {
             "additionalProperties": {
@@ -4599,6 +6435,7 @@
         "type": "object",
         "required": [
           "sessions",
+          "comparisons",
           "candidates",
           "trash",
           "index",
@@ -5378,6 +7215,30 @@
         ],
         "title": "OverlayOutput"
       },
+      "OverlayRef": {
+        "properties": {
+          "version": {
+            "type": "integer",
+            "title": "Version"
+          },
+          "sha256": {
+            "type": "string",
+            "title": "Sha256"
+          },
+          "url": {
+            "type": "string",
+            "title": "Url"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "version",
+          "sha256",
+          "url"
+        ],
+        "title": "OverlayRef"
+      },
       "Presentation": {
         "properties": {
           "kind_label": {
@@ -6088,6 +7949,10 @@
     {
       "name": "sessions",
       "description": "Steps 3-5 — measure, autosave, finalize, PDF"
+    },
+    {
+      "name": "comparisons",
+      "description": "D12 — one sealed PDF comparing camels from History"
     },
     {
       "name": "history",

@@ -99,6 +99,21 @@
     width: 28%;
   }
 
+  /* the comparison (D12): its width is the A4 content box on screen and on paper, so the
+     overflow check the page runs before printing measures what will be printed */
+  .print-comparison {
+    max-width: 186mm;
+  }
+
+  .print-compare {
+    table-layout: fixed;
+    overflow-wrap: anywhere;
+  }
+
+  .print-compare + .print-compare {
+    margin-top: 6px;
+  }
+
   .print-small {
     font-size: 7.4pt;
     color: var(--color-print-muted);

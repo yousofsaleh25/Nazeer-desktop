@@ -4,17 +4,29 @@ import {
   IPC,
   type ActivationResult,
   type CaptureScan,
+  type ComparisonExportRequest,
+  type ComparisonExportResult,
   type EngineConnection,
   type EngineStatusEvent,
   type ExportRequest,
   type ExportResult,
   type LicenseStatus,
+  type OpenSavedRequest,
+  type OpenSavedResult,
+  type SaveAsRequest,
+  type SaveAsResult,
+  type SavedCopy,
+  type SavedCopyQuery,
 } from "@shared/ipc";
 import {
   validateCaptureFolders,
+  validateComparisonExportRequest,
   validateExportRequest,
   validateLicenseKeyInput,
+  validateOpenSavedRequest,
   validateQuitAck,
+  validateSaveAsRequest,
+  validateSavedCopyQuery,
 } from "@shared/ipcValidate";
 import { openBagDialog, pickFolderDialog } from "./dialogs";
 import type { RendererQuitBridge } from "./quit";
@@ -41,6 +53,14 @@ export interface IpcDeps {
   onLicenseActivated(): void;
   /** print and seal a report (print/exportPdf.ts; one at a time) */
   exportPdf(request: ExportRequest): Promise<ExportResult>;
+  /** print and seal a comparison (print/exportComparison.ts; one at a time with exportPdf, D12) */
+  exportComparison(request: ComparisonExportRequest): Promise<ComparisonExportResult>;
+  /** "Save as" for a sealed PDF (report/saveAs.ts, report/savedCopies.ts; D12) */
+  report: {
+    saveAs(request: SaveAsRequest): Promise<SaveAsResult>;
+    savedCopy(query: SavedCopyQuery): Promise<SavedCopy | null>;
+    openSaved(request: OpenSavedRequest): Promise<OpenSavedResult>;
+  };
 }
 
 export function registerIpc(ctx: SecurityContext, deps: IpcDeps): void {
@@ -84,4 +104,15 @@ export function registerIpc(ctx: SecurityContext, deps: IpcDeps): void {
   });
 
   handle(IPC.printExportPdf, (_event, payload) => deps.exportPdf(validateExportRequest(payload)));
+  handle(IPC.printExportComparison, (_event, payload) =>
+    deps.exportComparison(validateComparisonExportRequest(payload)),
+  );
+
+  handle(IPC.reportSaveAs, (_event, payload) => deps.report.saveAs(validateSaveAsRequest(payload)));
+  handle(IPC.reportSavedCopy, (_event, payload) =>
+    deps.report.savedCopy(validateSavedCopyQuery(payload)),
+  );
+  handle(IPC.reportOpenSaved, (_event, payload) =>
+    deps.report.openSaved(validateOpenSavedRequest(payload)),
+  );
 }

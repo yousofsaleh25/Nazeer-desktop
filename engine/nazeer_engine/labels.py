@@ -11,6 +11,9 @@ import math
 from typing import Any
 
 from .constants import (
+    COMPARISON_MAX_NAME,
+    COMPARISON_MAX_SESSIONS,
+    COMPARISON_MAX_TITLE,
     ENDPOINT_DZ_FLAG_FRAC,
     KNN_FAR_M,
     KNN_K,
@@ -206,6 +209,56 @@ CONFIDENCE_LABELS: dict[str, Label] = {
     "high": {"ar": "عالية", "en": "high"},
     "low": {"ar": "منخفضة", "en": "low"},
 }
+# D12 F2.1: why a History row cannot join a comparison (sent under "reason", never "code")
+COMPARISON_INELIGIBLE_LABELS: dict[str, Label] = {
+    "not_finalized": {
+        "ar": "لم تُقفل بعد: أقفلها أولًا",
+        "en": "not finalized yet: finalize it first",
+    },
+    "reopened": {
+        "ar": "أُعيد فتحها بعد الإقفال: أقفلها من جديد",
+        "en": "reopened after finalizing: finalize it again",
+    },
+    "model_outdated": {
+        "ar": "بيانات تقريرها من إصدار أقدم: أعد فتحها ثم أقفلها",
+        "en": "its report data is from an older version: reopen and finalize it",
+    },
+    "files_missing": {"ar": "ملفات الجلسة مفقودة", "en": "the session's files are missing"},
+    "file_corrupt": {"ar": "ملف الجلسة تالف", "en": "the session file is damaged"},
+    "files_changed": {
+        "ar": "تغيّرت ملفات الجلسة بعد إقفالها",
+        "en": "the session's files changed after it was finalized",
+    },
+    "delete_failed": {"ar": "لم يكتمل حذفها", "en": "its deletion did not complete"},
+}
+# D12 F2.7: why a comparison no longer shows its camels (per member); the last one is a note
+COMPARISON_STALE_LABELS: dict[str, Label] = {
+    "member_deleted": {"ar": "حُذفت جلسة هذا الجمل", "en": "this camel's session was deleted"},
+    "member_unreadable": {
+        "ar": "تعذّرت قراءة جلسة هذا الجمل",
+        "en": "this camel's session could not be read",
+    },
+    "member_reopened": {
+        "ar": "أُعيد فتح جلسة هذا الجمل",
+        "en": "this camel's session was reopened",
+    },
+    "member_edited": {
+        "ar": "تغيّرت قياسات هذا الجمل أو بياناته",
+        "en": "this camel's measurements or details changed",
+    },
+    "member_refinalized": {
+        "ar": "أُقفلت جلسة هذا الجمل من جديد بصورة أخرى",
+        "en": "this camel's session was finalized again with a new image",
+    },
+    "member_session_changed": {
+        "ar": "تغيّر ملف الجلسة دون أن تتغيّر قياساتها",
+        "en": "the session file changed; its measurements did not",
+    },
+}
+COMPARISON_STATUS_LABELS: dict[str, Label] = {
+    "created": {"ar": "لم تُختم بعد", "en": "not sealed yet"},
+    "sealed": {"ar": "مختومة", "en": "sealed"},
+}
 JOB_STATE_LABELS: dict[str, Label] = {
     "queued": {"ar": "في الانتظار", "en": "queued"},
     "running": {"ar": "قيد التشغيل", "en": "running"},
@@ -389,6 +442,9 @@ def labels_payload() -> dict[str, Any]:
         "ground_badges": GROUND_BADGE_LABELS,
         "confidence": CONFIDENCE_LABELS,
         "job_states": JOB_STATE_LABELS,
+        "comparison_ineligible": COMPARISON_INELIGIBLE_LABELS,
+        "comparison_stale": COMPARISON_STALE_LABELS,
+        "comparison_statuses": COMPARISON_STATUS_LABELS,
         "constants": {
             "KNN_K": KNN_K,
             "KNN_RING_EXCLUDE_PX": KNN_RING_EXCLUDE_PX,
@@ -396,6 +452,10 @@ def labels_payload() -> dict[str, Any]:
             "KNN_MAX_DIST_M": KNN_MAX_DIST_M,
             "ENDPOINT_DZ_FLAG_FRAC": ENDPOINT_DZ_FLAG_FRAC,
             "Z_MEAN_MIN_M": Z_MEAN_MIN_M,
+            # D12: the Compare dialog's limits (the engine refuses beyond them)
+            "COMPARISON_MAX_SESSIONS": COMPARISON_MAX_SESSIONS,
+            "COMPARISON_MAX_TITLE": COMPARISON_MAX_TITLE,
+            "COMPARISON_MAX_NAME": COMPARISON_MAX_NAME,
         },
     }
 
@@ -420,6 +480,22 @@ def coverage_problems() -> list[str]:
     for code in CANDIDATE_FLAGS:
         if code not in CANDIDATE_FLAG_LABELS:
             missing.append(f"candidate_flag:{code}")
+    from .comparison_model import (
+        COMPARISON_STATUSES,
+        INELIGIBLE_REASONS,
+        STALE_NOTES,
+        STALE_REASONS,
+    )
+
+    for code in INELIGIBLE_REASONS:
+        if code not in COMPARISON_INELIGIBLE_LABELS:
+            missing.append(f"comparison_ineligible:{code}")
+    for code in (*STALE_REASONS, *STALE_NOTES):
+        if code not in COMPARISON_STALE_LABELS:
+            missing.append(f"comparison_stale:{code}")
+    for code in COMPARISON_STATUSES:
+        if code not in COMPARISON_STATUS_LABELS:
+            missing.append(f"comparison_status:{code}")
     for table in (
         KINDS,
         INPUT_KINDS,
@@ -434,6 +510,9 @@ def coverage_problems() -> list[str]:
         GROUND_BADGE_LABELS,
         CONFIDENCE_LABELS,
         JOB_STATE_LABELS,
+        COMPARISON_INELIGIBLE_LABELS,
+        COMPARISON_STALE_LABELS,
+        COMPARISON_STATUS_LABELS,
     ):
         for code, entry in table.items():
             if not entry.get("ar") or not entry.get("en"):

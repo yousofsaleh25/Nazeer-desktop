@@ -5,11 +5,15 @@ import {
   type ActivationResult,
   type BeforeQuitHandler,
   type CaptureScan,
+  type ComparisonExportResult,
   type EngineConnection,
   type EngineStatusEvent,
   type ExportResult,
   type LicenseStatus,
   type NazeerApi,
+  type OpenSavedResult,
+  type SaveAsResult,
+  type SavedCopy,
 } from "@shared/ipc";
 
 let beforeQuit: BeforeQuitHandler | null = null;
@@ -67,6 +71,15 @@ const api: NazeerApi = {
   print: {
     exportPdf: (request) =>
       ipcRenderer.invoke(IPC.printExportPdf, request) as Promise<ExportResult>,
+    exportComparison: (request) =>
+      ipcRenderer.invoke(IPC.printExportComparison, request) as Promise<ComparisonExportResult>,
+  },
+  report: {
+    saveAs: (request) => ipcRenderer.invoke(IPC.reportSaveAs, request) as Promise<SaveAsResult>,
+    savedCopy: (query) =>
+      ipcRenderer.invoke(IPC.reportSavedCopy, query) as Promise<SavedCopy | null>,
+    openSaved: (request) =>
+      ipcRenderer.invoke(IPC.reportOpenSaved, request) as Promise<OpenSavedResult>,
   },
 };
 

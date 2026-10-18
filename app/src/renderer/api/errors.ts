@@ -32,9 +32,11 @@ export type AppErrorCode =
   | "engine_protocol_error"
   | "bridge_missing"
   | "screen_failed"
-  | (typeof PRINT_ERROR_CODES)[number];
+  | (typeof PRINT_ERROR_CODES)[number]
+  | (typeof SAVE_AS_ERROR_CODES)[number];
 
-/** The export's own codes (main/print/exportPdf.ts, printWindow.ts, print/preflight.ts). */
+/** The export's own codes (main/print/exportPdf.ts, exportComparison.ts, printWindow.ts,
+ * print/preflight.ts). */
 export const PRINT_ERROR_CODES = [
   "approval_required",
   "approval_outdated",
@@ -59,6 +61,27 @@ export const PRINT_ERROR_CODES = [
   "print_image_not_decoded",
   "print_overlay_missing",
   "print_overlay_altered",
+  // D12: the comparison's print (main/print/exportComparison.ts, print/preflight.ts)
+  "comparison_approval_required",
+  "comparison_model_hash_mismatch",
+  "comparison_model_outdated",
+  "comparison_model_unreadable",
+  "print_overlay_order",
+  "print_overflow",
+] as const;
+
+/** "Save as"'s own codes (main/report/saveAs.ts, savedCopies.ts; D12). Never `save_failed`: that is
+ * the engine's code for a session that could not be written. */
+export const SAVE_AS_ERROR_CODES = [
+  "save_as_busy",
+  "save_as_no_report",
+  "save_as_report_changed",
+  "save_as_report_mismatch",
+  "save_as_write_failed",
+  "save_as_copy_mismatch",
+  "save_as_no_copy",
+  "save_as_copy_missing",
+  "save_as_open_failed",
 ] as const;
 
 export function isRecord(value: unknown): value is Record<string, unknown> {

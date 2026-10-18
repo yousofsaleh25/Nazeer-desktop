@@ -11,7 +11,7 @@ from .errors import EngineError
 
 FORBIDDEN_SEGMENTS = frozenset({"desktop", "documents", "onedrive"})
 ONEDRIVE_ENV_VARS = ("OneDrive", "OneDriveConsumer", "OneDriveCommercial")
-LAYOUT_DIRS = ("sessions", "candidates", "trash", "logs", "backups")
+LAYOUT_DIRS = ("sessions", "candidates", "comparisons", "trash", "logs", "backups")
 DEV_ENV_VAR = "NAZEER_ENGINE_DEV"
 
 

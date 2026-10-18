@@ -82,7 +82,7 @@ function input(root: HTMLElement, overrides: Partial<PreflightInput> = {}): Pref
     face: { status: "loaded" } as FontFace,
     fontsCheck: () => true,
     requiredTexts: [],
-    overlay: { width: 4, height: 3 },
+    overlays: [{ member: null, width: 4, height: 3 }],
     getStyle: () =>
       ({
         fontFamily: `"${PRINT_FONT_FAMILY}"`,
@@ -166,5 +166,51 @@ describe("runPreflight", () => {
     withOverlay(root, 2, 2);
     const resized = runPreflight(input(root));
     expect(resized.problems.map((p) => p.code)).toEqual(["print_overlay_altered"]);
+  });
+
+  it("for a comparison: one image per camel, in order, each naming its camel", () => {
+    const img = (member: string) =>
+      `<img data-role="overlay" data-member="${member}" src="blob:${member}" alt="">`;
+    const overlays = [
+      { member: "s1", width: 4, height: 3 },
+      { member: "s2", width: 4, height: 3 },
+    ];
+    const decoded = (root: HTMLElement) => {
+      for (const el of root.querySelectorAll<HTMLImageElement>("img")) {
+        Object.defineProperty(el, "complete", { value: true });
+        Object.defineProperty(el, "naturalWidth", { value: 4 });
+        Object.defineProperty(el, "naturalHeight", { value: 3 });
+      }
+      return root;
+    };
+    expect(runPreflight(input(decoded(page(img("s1") + img("s2"))), { overlays })).ok).toBe(true);
+    const swapped = runPreflight(input(decoded(page(img("s2") + img("s1"))), { overlays }));
+    expect(swapped.problems.map((p) => p.code)).toEqual(["print_overlay_order"]);
+    expect(swapped.problems[0]?.details).toEqual({
+      members: [
+        { position: 1, expected: "s1", found: "s2" },
+        { position: 2, expected: "s2", found: "s1" },
+      ],
+    });
+    // a thumbnail of camel 1 elsewhere on the page is one image too many
+    const extra = runPreflight(
+      input(decoded(page(img("s1") + img("s1") + img("s2"))), { overlays }),
+    );
+    expect(extra.problems.map((p) => p.code)).toContain("print_overlay_missing");
+  });
+
+  it("for a comparison: refuses a table cell wider than its column", () => {
+    const wide = "x".repeat(80);
+    const root = page(
+      `<table data-overflow-check><tbody><tr><td>fits</td><td id="b">${wide}</td></tr></tbody></table>`,
+    );
+    const cell = root.querySelector<HTMLElement>("#b");
+    if (cell === null) throw new Error("no cell");
+    Object.defineProperty(cell, "scrollWidth", { value: 300 });
+    Object.defineProperty(cell, "clientWidth", { value: 120 });
+    const checked = runPreflight(input(root, { overlays: [], overflow: true }));
+    expect(checked.problems.map((p) => p.code)).toEqual(["print_overflow"]);
+    // the single report does not run the check
+    expect(runPreflight(input(root, { overlays: [] })).ok).toBe(true);
   });
 });

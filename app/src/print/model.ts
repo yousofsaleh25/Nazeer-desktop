@@ -124,47 +124,47 @@ export class ModelError extends Error {}
 
 type Json = Record<string, unknown>;
 
-function record(value: unknown, path: string): Json {
+export function record(value: unknown, path: string): Json {
   if (typeof value !== "object" || value === null || Array.isArray(value)) {
     throw new ModelError(`${path} is not an object`);
   }
   return value as Json;
 }
 
-function list(value: unknown, path: string): unknown[] {
+export function list(value: unknown, path: string): unknown[] {
   if (!Array.isArray(value)) throw new ModelError(`${path} is not a list`);
   return value;
 }
 
-function text(value: unknown, path: string): string {
+export function text(value: unknown, path: string): string {
   if (typeof value !== "string") throw new ModelError(`${path} is not a string`);
   return value;
 }
 
 /** Operator text the engine stores as "" when empty; null is accepted as "" too. */
-function optText(value: unknown, path: string): string {
+export function optText(value: unknown, path: string): string {
   return value === null || value === undefined ? "" : text(value, path);
 }
 
-function number(value: unknown, path: string): number {
+export function number(value: unknown, path: string): number {
   if (typeof value !== "number" || !Number.isFinite(value)) {
     throw new ModelError(`${path} is not a number`);
   }
   return value;
 }
 
-function int(value: unknown, path: string): number {
+export function int(value: unknown, path: string): number {
   const n = number(value, path);
   if (!Number.isInteger(n)) throw new ModelError(`${path} is not an integer`);
   return n;
 }
 
-function pair(value: unknown, path: string): Pair {
+export function pair(value: unknown, path: string): Pair {
   const r = record(value, path);
   return { ar: text(r["ar"], `${path}.ar`), en: text(r["en"], `${path}.en`) };
 }
 
-function pairs(value: unknown, path: string): Record<string, Pair> {
+export function pairs(value: unknown, path: string): Record<string, Pair> {
   const r = record(value, path);
   return Object.fromEntries(Object.entries(r).map(([key, v]) => [key, pair(v, `${path}.${key}`)]));
 }
@@ -174,9 +174,47 @@ function strings(value: unknown, path: string): Record<string, string> {
   return Object.fromEntries(Object.entries(r).map(([key, v]) => [key, text(v, `${path}.${key}`)]));
 }
 
+/** A row's depth basis: one entry per point (the point number, or null for a whole row). */
+export function depthBasis(value: unknown, path: string): BasisEntry[] {
+  return list(value, path).map((entry, i) => {
+    const at = `${path}[${i}]`;
+    const point = record(entry, at)["point"];
+    return { ...pair(entry, at), point: point === null ? null : int(point, `${at}.point`) };
+  });
+}
+
+export function flagChips(value: unknown, path: string): FlagChip[] {
+  return list(value, path).map((chip, i) => {
+    const at = `${path}[${i}]`;
+    const c = record(chip, at);
+    return {
+      ...pair(chip, at),
+      code: text(c["code"], `${at}.code`),
+      severity: text(c["severity"], `${at}.severity`),
+    };
+  });
+}
+
+/** A confidence label (null or absent: none to show). */
+export function confidenceLabel(value: unknown, path: string): (Pair & { code: string }) | null {
+  if (value === null || value === undefined) return null;
+  return { ...pair(value, path), code: text(record(value, path)["code"], `${path}.code`) };
+}
+
+export function rejectionParts(value: unknown, path: string): RejectionPart[] {
+  return list(value, path).map((part, i) => {
+    const at = `${path}[${i}]`;
+    const p = record(part, at);
+    return {
+      ...pair(part, at),
+      code: text(p["code"], `${at}.code`),
+      point: p["point"] === null ? null : text(p["point"], `${at}.point`),
+    };
+  });
+}
+
 function row(value: unknown, path: string): PrintRow {
   const r = record(value, path);
-  const confidence = r["confidence_label"];
   const curve = r["curve"];
   const lines = r["lines"];
   return {
@@ -187,37 +225,11 @@ function row(value: unknown, path: string): PrintRow {
     kindLabel: pair(r["kind_label"], `${path}.kind_label`),
     valueText: pair(r["value_text"], `${path}.value_text`),
     uncertaintyText: pair(r["uncertainty_text"], `${path}.uncertainty_text`),
-    depthBasis: list(r["depth_basis"], `${path}.depth_basis`).map((entry, i) => {
-      const at = `${path}.depth_basis[${i}]`;
-      const point = record(entry, at)["point"];
-      return { ...pair(entry, at), point: point === null ? null : int(point, `${at}.point`) };
-    }),
-    flags: list(r["flags"], `${path}.flags`).map((chip, i) => {
-      const at = `${path}.flags[${i}]`;
-      const c = record(chip, at);
-      return {
-        ...pair(chip, at),
-        code: text(c["code"], `${at}.code`),
-        severity: text(c["severity"], `${at}.severity`),
-      };
-    }),
-    confidence:
-      confidence === null || confidence === undefined
-        ? null
-        : {
-            ...pair(confidence, `${path}.confidence_label`),
-            code: text(record(confidence, path)["code"], `${path}.confidence_label.code`),
-          },
+    depthBasis: depthBasis(r["depth_basis"], `${path}.depth_basis`),
+    flags: flagChips(r["flags"], `${path}.flags`),
+    confidence: confidenceLabel(r["confidence_label"], `${path}.confidence_label`),
     rejected: r["rejected"] === true,
-    rejection: list(r["rejection"], `${path}.rejection`).map((part, i) => {
-      const at = `${path}.rejection[${i}]`;
-      const p = record(part, at);
-      return {
-        ...pair(part, at),
-        code: text(p["code"], `${at}.code`),
-        point: p["point"] === null ? null : text(p["point"], `${at}.point`),
-      };
-    }),
+    rejection: rejectionParts(r["rejection"], `${path}.rejection`),
     crossCheck:
       curve === undefined ||
       curve === null ||
@@ -234,9 +246,47 @@ function row(value: unknown, path: string): PrintRow {
   };
 }
 
-function language(value: unknown): Language {
+export function language(value: unknown, path = "inputs.language"): Language {
   if (value === "ar" || value === "en" || value === "both") return value;
-  throw new ModelError("inputs.language is not ar, en or both");
+  throw new ModelError(`${path} is not ar, en or both`);
+}
+
+/** The engine's certification lines: `{ar: [...], en: [...]}` of the same length. */
+export function certification(value: unknown, path: string): Pair[] {
+  const lines = record(value, path);
+  const ar = list(lines["ar"], `${path}.ar`);
+  const en = list(lines["en"], `${path}.en`);
+  if (ar.length !== en.length) {
+    throw new ModelError(`${path} has different Arabic and English line counts`);
+  }
+  return ar.map((line, i) => ({
+    ar: text(line, `${path}.ar[${i}]`),
+    en: text(en[i], `${path}.en[${i}]`),
+  }));
+}
+
+/** library name → version, as the provenance footer prints them (short values, sorted). */
+export function versionList(value: unknown, path = "versions"): [string, string][] {
+  return Object.entries(record(value ?? {}, path))
+    .filter((entry): entry is [string, string | number] => {
+      const v = entry[1];
+      return (typeof v === "string" && v.length > 0) || typeof v === "number";
+    })
+    .map(([key, v]): [string, string] => [key, String(v)])
+    .filter(([, v]) => v.length <= 80)
+    .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0));
+}
+
+export function signatureWells(value: unknown, path: string): SignatureWell[] {
+  return list(value, path).map((w, i) => {
+    const at = `${path}[${i}]`;
+    const v = record(w, at);
+    return {
+      ...pair(w, at),
+      id: text(v["id"], `${at}.id`),
+      name: optText(v["name"], `${at}.name`),
+    };
+  });
 }
 
 /** The print model, or a ModelError naming the first field that is missing or wrong. */
@@ -256,12 +306,6 @@ export function parsePrintModel(raw: unknown): PrintModel {
   const summary = record(m["summary"], "summary");
   const st = record(m["static"], "static");
   const rubric = record(st["rubric"], "static.rubric");
-  const certification = record(st["certification"], "static.certification");
-  const certAr = list(certification["ar"], "static.certification.ar");
-  const certEn = list(certification["en"], "static.certification.en");
-  if (certAr.length !== certEn.length) {
-    throw new ModelError("static.certification has different Arabic and English line counts");
-  }
   const frameRows = pairs(st["frame_rows"], "static.frame_rows");
   const frameTexts: Record<string, Pair> = {};
   for (const key of [...FRAME_ROW_KEYS, "source"] as const) {
@@ -271,7 +315,6 @@ export function parsePrintModel(raw: unknown): PrintModel {
     }
   }
   const signatureFields = record(st["signature_fields"], "static.signature_fields");
-  const versions = record(m["versions"] ?? {}, "versions");
   return {
     schemaVersion,
     engineVersion: text(m["engine_version"], "engine_version"),
@@ -306,10 +349,7 @@ export function parsePrintModel(raw: unknown): PrintModel {
     labels: {
       brand: pair(st["brand"], "static.brand"),
       title: pair(st["title"], "static.title"),
-      certification: certAr.map((ar, i) => ({
-        ar: text(ar, `static.certification.ar[${i}]`),
-        en: text(certEn[i], `static.certification.en[${i}]`),
-      })),
+      certification: certification(st["certification"], "static.certification"),
       disclaimer: pair(st["disclaimer"], "static.disclaimer"),
       headings: pairs(st["headings"], "static.headings"),
       columns: pairs(st["columns"], "static.columns"),
@@ -353,22 +393,7 @@ export function parsePrintModel(raw: unknown): PrintModel {
         placeholder: optText(v["placeholder"], `${at}.placeholder`),
       };
     }),
-    signatureWells: list(m["signature_wells"], "signature_wells").map((w, i) => {
-      const at = `signature_wells[${i}]`;
-      const v = record(w, at);
-      return {
-        ...pair(w, at),
-        id: text(v["id"], `${at}.id`),
-        name: optText(v["name"], `${at}.name`),
-      };
-    }),
-    versions: Object.entries(versions)
-      .filter((entry): entry is [string, string | number] => {
-        const value = entry[1];
-        return (typeof value === "string" && value.length > 0) || typeof value === "number";
-      })
-      .map(([key, value]): [string, string] => [key, String(value)])
-      .filter(([, value]) => value.length <= 80)
-      .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0)),
+    signatureWells: signatureWells(m["signature_wells"], "signature_wells"),
+    versions: versionList(m["versions"]),
   };
 }

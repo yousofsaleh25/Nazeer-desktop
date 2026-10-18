@@ -1,6 +1,8 @@
 /**
  * `/meta/labels`: the bilingual label of every code the engine emits (kinds, depth sources, flags,
- * rejections, candidate codes, statuses, buckets, targets, ground badges, confidence, job states).
+ * rejections, candidate codes, statuses, buckets, targets, ground badges, confidence, job states,
+ * and D12's comparison groups: why a session cannot join a comparison, why a comparison is stale,
+ * a comparison's status).
  * The OpenAPI types it as a free object, so the shape is written out here and checked at runtime
  * (`parseLabels`). The UI never hard-codes these strings; a code missing from the payload renders
  * as the raw code (`labelOf` returns null), never as a blank.
@@ -31,6 +33,9 @@ export interface EngineLabels {
   ground_badges: Record<string, LabelPair>;
   confidence: Record<string, LabelPair>;
   job_states: Record<string, LabelPair>;
+  comparison_ineligible: Record<string, LabelPair>;
+  comparison_stale: Record<string, LabelPair>;
+  comparison_statuses: Record<string, LabelPair>;
   constants: Record<string, number>;
 }
 
@@ -49,6 +54,9 @@ const PAIR_GROUPS = [
   "ground_badges",
   "confidence",
   "job_states",
+  "comparison_ineligible",
+  "comparison_stale",
+  "comparison_statuses",
 ] as const satisfies readonly LabelGroup[];
 const SEVERITY_GROUPS = ["flags", "candidate_flags"] as const satisfies readonly LabelGroup[];
 
@@ -92,6 +100,12 @@ export function parseLabels(raw: unknown): EngineLabels {
     return value;
   });
   return out as EngineLabels;
+}
+
+/** An engine constant from the payload (e.g. COMPARISON_MAX_SESSIONS), or null when not sent. */
+export function constantOf(labels: EngineLabels | null, name: string): number | null {
+  if (labels === null || !Object.hasOwn(labels.constants, name)) return null;
+  return labels.constants[name] ?? null;
 }
 
 /** The label of `code` in `group`, or null when the engine sent none (render the raw code). */

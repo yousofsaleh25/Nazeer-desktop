@@ -4,6 +4,9 @@
  * code — the app:// handler; the print preload; background throttling off, so a hidden page still
  * lays out and runs its timers. It loads print.html, hands the page its job over the print bridge
  * (answered only for this window), waits for the page's checks, prints with printToPDF and closes.
+ * Each phase has its own time limit (D12): the page's layout and checks, then printToPDF itself —
+ * a print that hangs destroys the window and ends the export with `print_timeout`, so the
+ * one-export-at-a-time guard never stays busy until the app restarts.
  */
 import { randomUUID } from "node:crypto";
 import { BrowserWindow, ipcMain, session, type IpcMainInvokeEvent } from "electron";
@@ -12,7 +15,7 @@ import { preflightOrRefusal } from "@shared/ipcValidate";
 import { PRINT_IPC } from "@shared/printChannels";
 import { handleAppProtocol } from "../protocol";
 import { hardenSession, type SecurityContext } from "../security";
-import type { PrintOutcome } from "./exportPdf";
+import type { PrintOutcome, PrintTimeouts } from "./exportPdf";
 
 /** A4 from the page's own `@page` rule (12 mm margins there), backgrounds printed (D7). */
 export const PRINT_TO_PDF_OPTIONS = {
@@ -79,9 +82,24 @@ export interface PrintWindowConfig {
   log?: (line: string) => void;
 }
 
+/** `work`, or a PrintError `print_timeout` when it takes longer than `ms` (the caller cleans up). */
+export async function withinTime<T>(work: Promise<T>, ms: number, what: string): Promise<T> {
+  let timer: NodeJS.Timeout | undefined;
+  const late = new Promise<never>((_resolve, reject) => {
+    timer = setTimeout(() => {
+      reject(new PrintError("print_timeout", `${what} took longer than ${ms} ms`));
+    }, ms);
+  });
+  try {
+    return await Promise.race([work, late]);
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 export async function printInHiddenWindow(
   job: PrintJob,
-  timeoutMs: number,
+  timeouts: PrintTimeouts,
   config: PrintWindowConfig,
 ): Promise<PrintOutcome> {
   const partition = `print-${randomUUID()}`; // no "persist:" prefix: kept in memory only
@@ -106,7 +124,6 @@ export async function printInHiddenWindow(
     },
   });
   const contents = win.webContents;
-  let timer: NodeJS.Timeout | undefined;
   try {
     const ready = new Promise<PrintPreflight>((resolve, reject) => {
       pending.set(contents.id, { job, given: false, ready: resolve });
@@ -123,27 +140,21 @@ export async function printInHiddenWindow(
           );
         }
       });
-      timer = setTimeout(() => {
-        reject(
-          new PrintError("print_timeout", `the print page was not ready within ${timeoutMs} ms`),
-        );
-      }, timeoutMs);
     });
     void contents.loadURL(config.pageUrl).catch(() => undefined); // did-fail-load reports it
-    const preflight = await ready;
+    const preflight = await withinTime(ready, timeouts.layoutMs, "the print page's layout");
     if (!preflight.ok) return { preflight, pdf: null };
-    let pdf: Buffer;
-    try {
-      pdf = await contents.printToPDF(PRINT_TO_PDF_OPTIONS);
-    } catch (error) {
+    const printing = contents.printToPDF(PRINT_TO_PDF_OPTIONS).catch((error: unknown) => {
       throw new PrintError("print_failed", error instanceof Error ? error.message : String(error));
-    }
+    });
+    // a print abandoned by the timeout still settles later (the window is destroyed): no warning
+    printing.catch(() => undefined);
+    const pdf = await withinTime(printing, timeouts.printMs, "printing to PDF");
     config.log?.(
       `print: ${pdf.byteLength} bytes, ${preflight.checked.textNodes} text nodes checked`,
     );
     return { preflight, pdf: new Uint8Array(pdf) };
   } finally {
-    clearTimeout(timer);
     pending.delete(contents.id);
     if (!win.isDestroyed()) win.destroy();
     await ses.clearStorageData().catch(() => undefined);

@@ -1,7 +1,8 @@
 /**
  * The engine's PDF probe result (`POST …/report` → `probe`, and a DRIFT 409's `details.probe`),
  * typed as a free object by the OpenAPI. These readers pull out what ProbeReport shows; anything
- * missing reads as "not checked", never as a pass.
+ * missing reads as "not checked", never as a pass. A comparison's probe (D12) also checks each
+ * camel: its image on one page, in order, and its names within its own pages (`members`).
  */
 import {
   readArray,
@@ -32,6 +33,19 @@ export interface ProbeAttachment {
   matches: boolean | null;
 }
 
+/** One camel of a comparison's probe: its image's page, and its names within its pages. */
+export interface ProbeMember {
+  position: number;
+  imageOk: boolean | null;
+  reason: string;
+  page: number | null;
+  maxAbsDiff: number | null;
+  textOk: boolean | null;
+  /** [first, last] page of its section */
+  pages: [number, number] | null;
+  missing: string[];
+}
+
 export interface ProbeSummary {
   verdict: ProbeVerdict;
   hardFailures: string[];
@@ -42,7 +56,37 @@ export interface ProbeSummary {
   text: { ok: boolean | null; missing: number | null; names: ProbeName[] };
   fonts: { ok: boolean | null; fonts: string[]; type3: boolean | null; required: string | null };
   attachments: { ok: boolean | null; reason: string; files: ProbeAttachment[] };
+  /** a comparison's camels (empty for a session's report) */
+  members: ProbeMember[];
   sha256Out: string | null;
+}
+
+function probeMembers(pixel: unknown, text: unknown): ProbeMember[] {
+  const byText = new Map(
+    (readArray(text, "members") ?? []).map((entry) => [readNumber(entry, "position"), entry]),
+  );
+  return (readArray(pixel, "members") ?? []).flatMap((entry) => {
+    const position = readNumber(entry, "position");
+    if (position === null) return [];
+    const words = byText.get(position);
+    const range = readArray(words, "pages");
+    const first = typeof range?.[0] === "number" ? range[0] : null;
+    const last = typeof range?.[1] === "number" ? range[1] : null;
+    return [
+      {
+        position,
+        imageOk: readBoolean(entry, "ok"),
+        reason: readString(entry, "reason") ?? "",
+        page: readNumber(entry, "page"),
+        maxAbsDiff: readNumber(entry, "max_abs_diff"),
+        textOk: readBoolean(words, "checked") === true ? readBoolean(words, "ok") : null,
+        pages: first !== null && last !== null ? [first, last] : null,
+        missing: (readArray(words, "names") ?? []).flatMap((name) =>
+          readBoolean(name, "ok") === false ? [readString(name, "name") ?? ""] : [],
+        ),
+      },
+    ];
+  });
 }
 
 export function summarizeProbe(probe: unknown): ProbeSummary {
@@ -61,7 +105,7 @@ export function summarizeProbe(probe: unknown): ProbeSummary {
     pages: readNumber(probe, "n_pages"),
     pixel: {
       ok: readBoolean(pixel, "ok"),
-      reason: readString(pixel, "reason") ?? "",
+      reason: readString(pixel, "reason") ?? readStrings(pixel, "reasons").join(", "),
       page: readNumber(match, "page"),
       maxAbsDiff: readNumber(match, "max_abs_diff"),
     },
@@ -96,6 +140,7 @@ export function summarizeProbe(probe: unknown): ProbeSummary {
         matches: readBoolean(info, "matches"),
       })),
     },
+    members: probeMembers(pixel, text),
     sha256Out: readString(probe, "sha256_out"),
   };
 }

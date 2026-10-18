@@ -238,3 +238,27 @@ engine, and run on the real engine through the UI (D9, "Run on the real engine")
   session or quitting asks before anything the engine does not hold is dropped. Added at the
   operator's request: the open session's entry in the header shows its save state from every screen
   (D9 "Printing").
+
+## History index version 2 (D12 Stage 2, 2026-10-17)
+
+C3.3 is unchanged: `history.sqlite` stays a derived, rebuildable index and the files win. Version 2
+adds what D12's comparison report needs:
+
+- the `comparisons` and `comparison_members` tables, the index of `<root>/comparisons/*/comparison.json`
+  (reconciled like the sessions: before every list, a failed delete kept visible, a broken folder a
+  `corrupt` row). `comparison_members` has **no foreign key to `sessions`**: an upsert is an
+  `INSERT OR REPLACE`, which SQLite carries out as a delete that would cascade (measured), and a
+  member must outlive its session's row to say `member_deleted`;
+- the sessions' `event` (the report's event name), `input_sha256` (`document_input_sha256`),
+  `overlay_sha256`, `report_overlay_version` and `report_model_schema` (the version string in the
+  current report model file; `""` when it is missing or unreadable);
+- History filters by event and by measuring date (`created_from` / `created_to`, ISO instants,
+  inclusive, compared with `julianday()` so a stored `+00:00` and a local offset agree), and the
+  search also reads the event.
+
+The migration runs once per start in one `BEGIN IMMEDIATE`: it reads the stored `index_version`
+first, adds only the columns `PRAGMA table_info` lacks, and — when the stored version is not 2
+(a new file, version 1, or release 1.0.0 run on the same data root since, which writes 1 and upserts
+without the new columns) — sets `session_mtime_ns = 0` on every `ok` and `corrupt` row so the next
+reconcile refreshes it; a `delete_failed` row keeps its state. Tested on a hand-built version-1
+file and on a version-2 file reset the way release 1.0.0 would (`tests/test_history.py`).

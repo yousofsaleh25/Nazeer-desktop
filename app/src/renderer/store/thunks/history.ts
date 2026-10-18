@@ -10,6 +10,7 @@ import { activeEngine, ENGINE_NOT_CONNECTED } from "@/api/connection";
 import { engineApi } from "@/api/engineApi";
 import type { ApiErrorShape } from "@/api/errors";
 import { forgetVerifiedOverlay } from "../services/overlayBytes";
+import { memberRemoved } from "../slices/comparisons";
 import { sessionClosed } from "../slices/session";
 import { openSession, reopenSession, type AppThunk } from "./session";
 
@@ -26,7 +27,7 @@ export function reopenSessionById(id: string): AppThunk<Promise<ApiErrorShape | 
       if (error !== null) return error;
     }
     const error = await dispatch(reopenSession());
-    dispatch(engineApi.util.invalidateTags(["History"]));
+    dispatch(engineApi.util.invalidateTags(["History", "Comparisons"]));
     return error;
   };
 }
@@ -43,12 +44,14 @@ export function deleteSessionById(id: string): AppThunk<Promise<ApiErrorShape | 
       );
       if (!("error" in result) || result.error.status === 404) break;
       if (result.error.code !== "session_busy" || attempt >= DELETE_ATTEMPTS) {
-        dispatch(engineApi.util.invalidateTags(["History"]));
+        dispatch(engineApi.util.invalidateTags(["History", "Comparisons"]));
         return result.error;
       }
       await sleep(DELETE_RETRY_MS);
     }
-    dispatch(engineApi.util.invalidateTags(["History"]));
+    // a deleted camel leaves the comparison being picked; the comparisons that hold it turn stale
+    dispatch(memberRemoved(id));
+    dispatch(engineApi.util.invalidateTags(["History", "Comparisons"]));
     return null;
   };
 }
